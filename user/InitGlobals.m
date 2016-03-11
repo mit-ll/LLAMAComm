@@ -33,7 +33,8 @@ simulationSampleRate = 12.5e6;
 
 %------------------------------------------------------------------------
 % Determines the channel propagation model used to build links in LLAMAComm
-chanType = 'stfcs';  % 'wssus', 'stfcs', 'los_awgn', or 'env_awgn'
+chanType = 'stfcs';  % 'wssus', 'stfcs', 'los_awgn', 'wideband_awgn',
+                     % or 'env_awgn'
 
 %------------------------------------------------------------------------
 % Include propagation delay
