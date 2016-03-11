@@ -1,0 +1,192 @@
+%------------------------------------------------------------------
+%------------------------------------------------------------------
+%------------------------------------------------------------------
+%------------------------------------------------------------------
+{\global\def\putFig#1#2#3{
+        \begin{figure}[tp]
+           \begin{center}
+              \epsfxsize=#3in
+              \epsfbox{figures/#1.eps}
+           \end{center}
+           \caption{\small{#2}}
+           \label{fig:#1}
+        \end{figure}
+        }
+} {\global\def\putFrag#1#2#3#4{
+        \begin{figure}[tp]
+           \begin{center}
+              #4
+              \epsfxsize=#3in
+              \epsfbox{figures/#1.eps}
+           \end{center}
+           \caption{\small{#2}}
+           \label{fig:#1}
+        \end{figure}
+        }
+} {\global\def\twoFig#1#2#3{
+        \begin{figure}[tp]
+           \begin{center}
+              \hfill
+              \epsfxsize=2.75in
+              \epsfbox{figures/#1.eps}
+              \hfill
+              \epsfxsize=2.75in
+              \epsfbox{figures/#2.eps}
+           \end{center}
+           \caption{\small{#3}}
+           \label{fig:#1}
+        \end{figure}
+        }
+} {\global\def\twoFrag#1#2#3#4{
+        \begin{figure}[tp]
+           \begin{center}
+              #4
+              \hfill
+              \epsfxsize=2.75in
+              \epsfbox{figures/#1.eps}
+              \hfill
+              \epsfxsize=2.75in
+              \epsfbox{figures/#2.eps}
+           \end{center}
+           \caption{\small{#3}}
+           \label{fig:#1}
+        \end{figure}
+        }
+} {\global\def\tempFig#1#2#3{
+        \begin{figure}[h]
+           \begin{center}
+              \framebox[6in]{
+                \bigskip
+                {\bf Figure will go here.}
+                \bigskip
+              }
+           \end{center}
+           \caption{\small{#2}}
+           \label{fig:#1}
+        \end{figure}
+        }
+}
+%------------------------------------------------------------------
+
+ % math shortcuts
+ \newcommand{\defn}{:=}
+ \newcommand{\limit}[2]{\lim_{#1 \rightarrow #2}}
+ \newcommand{\tvec}[1]{\Tilde{{\mathbf{#1}}}}
+ \newcommand{\bvec}[1]{\boldsymbol{#1}}
+ \newcommand{\ovec}[1]{{\mathbf{\Bar{#1}}}}
+ \renewcommand{\vec}[1]{{\boldsymbol{#1}}}
+ \newcommand{\mat}[1]{\ensuremath{\begin{pmatrix}#1\end{pmatrix}}}
+ \newcommand{\smallmat}[1]{\ensuremath{
+        \begin{smallmatrix}#1\end{smallmatrix}}}
+ %\newcommand{\inprod}[1]{\ensuremath{\langle #1 \rangle}}
+ \newcommand{\ip}[1]{\hspace{1mm}<\hspace{-1mm}#1\hspace{-1mm}>}
+ \newcommand{\norm}[1]{\ensuremath{\| #1 \|}}
+ \newcommand{\mc}[1]{\ensuremath{\mathcal{#1}}}
+ \newcommand{\st}{{\;|\;}}
+ \newcommand{\barst}[1]{\ensuremath{\text{\raisebox{-0.5mm}{$\bigl|_{#1}$}}}}
+ \newcommand{\Barst}[1]{\ensuremath{\text{\raisebox{-0.5mm}{$\biggl|_{#1}$}}}}
+ \newcommand{\zci}{{\textstyle\frac{1}{z^*}}}
+ \newcommand{\Real}{{\mathbb{R}}}
+ \newcommand{\Complex}{{\mathbb{C}}}
+ \newcommand{\Int}{{\mathbb{Z}}}
+ \newcommand{\Rat}{{\mathbb{Q}}}
+ \newcommand{\Nat}{{\mathbb{N}}}
+
+ % operators
+ \DeclareMathOperator{\real}{Re}
+ \DeclareMathOperator{\imag}{Im}
+ \DeclareMathOperator{\sgn}{sgn}
+ \DeclareMathOperator{\csgn}{csgn}
+ \DeclareMathOperator{\E}{E}
+ \DeclareMathOperator{\kurt}{kurt}
+ \DeclareMathOperator{\Kurt}{{\mc K}}
+ \DeclareMathOperator{\row}{row}
+ \DeclareMathOperator{\col}{col}
+ \DeclareMathOperator{\spn}{span}
+ \DeclareMathOperator{\tr}{tr}
+ \DeclareMathOperator{\diag}{diag}
+
+% % theorems
+% \newtheorem{theorem}{Theorem}
+% \newtheorem{lemma}{Lemma}
+% \newtheorem{conjecture}{Conjecture}
+% \newtheorem{corollary}{Corollary}
+
+ % Theorems
+ \newtheorem{theorem}{Theorem}
+ \newtheorem{proposition}[theorem]{Proposition}%[chapter]
+ \newtheorem{corollary}[theorem]{Corollary}%[chapter]
+ \newtheorem{conjecture}[theorem]{Conjecture}%[chapter]
+ \newtheorem{lemma}[theorem]{Lemma}%[chapter]
+ \newtheorem{claim}[theorem]{Claim}
+ \newtheorem{definition}[theorem]{Definition}%[chapter]
+% \newenvironment{proof}{{\sl Proof\/}:\ \ }{\qed\vspace{\baselineskip}}
+% \newenvironment{proof}{{\sl Proof\/}:\ \ }{\vspace{\baselineskip}}
+ \newenvironment{points}{\hrule\vspace{0.5\baselineskip}\sfbegin These
+ points should be
+ covered:\begin{itemize}}{\end{itemize}\sfend\hrule\vspace{\baselineskip}}
+ \newenvironment{example}{{\bf Example}.}{\vspace{\baselineskip}}
+
+ % references
+ \renewcommand{\eqref}[1]{(\ref{eq:#1})}
+ \newcommand{\figref}[1]{Fig.~\ref{fig:#1}}
+ \newcommand{\Figref}[1]{Figure~\ref{fig:#1}}
+ \newcommand{\tabref}[1]{Table~\ref{tab:#1}}
+ \newcommand{\secref}[1]{Section~\ref{sec:#1}}
+ \newcommand{\chpref}[1]{Chapter~\ref{chp:#1}}
+ \newcommand{\appref}[1]{Appendix~\ref{app:#1}}
+ \newcommand{\lemref}[1]{Lemma~\ref{lem:#1}}
+ \newcommand{\thmref}[1]{Theorem~\ref{thm:#1}}
+ \newcommand{\corref}[1]{Corollary~\ref{cor:#1}}
+ \newcommand{\conref}[1]{Conjecture~\ref{con:#1}}
+ \newcommand{\clmref}[1]{Claim~\ref{clm:#1}}
+
+ % statistical quantities
+ \newcommand{\Rrr}{\vec{R}_{\vec{r},\vec{r}}}
+ \newcommand{\SINR}{{\mathrm{SINR}}}
+ \newcommand{\UMSE}{{\mathrm{UMSE}}}
+ \newcommand{\cm}{_{\mathrm{c}}}
+ \newcommand{\mse}{_{\mathrm{m}}}
+ \newcommand{\Jcm}{J_{\mathrm{c}}}
+ \newcommand{\Jmse}{J_{\mathrm{m}}}
+ \newcommand{\Jumse}{J_{\mathrm{u}}}
+ \newcommand{\Jumsebnd}[1]{\Jumse\text{\raisebox{-0.5mm}
+                {$\bigl|_{#1}^{\max}$}}}
+ \newcommand{\Eumse}{{\cal E}_{\mathrm{u}}}
+ \newcommand{\Eumsebnd}{\Eumse\text{\raisebox{-0.5mm}{$\bigl|^{\max}$}}}
+
+ % multi-source
+ \newcommand{\of}[1]{^{\scriptscriptstyle (#1)}}
+ \newcommand{\ofc}[1]{^{{\scriptscriptstyle (#1)}*}}
+ \newcommand{\oft}[1]{^{{\scriptscriptstyle (#1)}t}}
+ \newcommand{\ofH}[1]{^{{\scriptscriptstyle (#1)}H}}
+
+ % CDMA stuff
+ \newcommand{\J}{J^{\scriptscriptstyle (\nu)}}
+ \newcommand{\Jhat}{\Hat{J}^{\scriptscriptstyle (\nu)}}
+ \newcommand{\Jz}{J_{\mathrm{z}}^{\scriptscriptstyle (\nu)}}
+ \newcommand{\Jzhat}{\Hat{J}_{\mathrm{z}}^{\scriptscriptstyle (\nu)}}
+ \newcommand{\Jm}{J_{\mathrm{m}}^{\scriptscriptstyle (\nu)}}
+ \newcommand{\Jmhat}{\Hat{J}_{\mathrm{m}}^{\scriptscriptstyle (\nu)}}
+ \newcommand{\Ja}{\Hat{J}_{{a}}}
+ \newcommand{\Ju}{\Hat{J}_{{u}}}
+ \newcommand{\Jt}{\Hat{J}_{{t}}}
+ \newcommand{\Jp}{\Hat{J}_{{p}}}
+
+ % Equalizer stuff
+ \newcommand{\ftilde}{\tilde{\vec{f}}} % Equalizer Weight Error Vector
+ \newcommand{\Nmax}{N_{\max}}
+
+ % MMSE stuff (by Adam Margetts)
+ %\def\argmin{\mathop{\rm arg\,min}}
+ \newcommand{\argmin}[1]{\mathop{\rm arg}\,\mathop{\rm min}_{#1}}
+ \newcommand{\pbox}{\parbox}
+ %\newcommand{\argmin}[1]{\text{arg}\:\:\:{\mathop\text{min}}_{#1}}
+ \newcommand{\rvec}{\vec{r}}
+ \newcommand{\f}{\vec{f}}
+ \newcommand{\vpsi}{\bvec{\psi}}
+ \newcommand{\valpha}{\bvec{\alpha}}
+%------------------------------------------------------------------
+%------------------------------------------------------------------
+%------------------------------------------------------------------
+%------------------------------------------------------------------

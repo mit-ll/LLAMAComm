@@ -1,0 +1,2574 @@
+\chapter{Tutorial} \label{chp:tutorial}
+
+The purpose of this chapter is to demonstrate how to use LLAMAComm
+through the study of one canonical example.  This chapter will first
+walk through running the example which is provided with the
+installation archive.  It will then delve into the the MATLAB code
+used to implement the example radios.  By the end of this chapter,
+the reader should be comfortable with the idea of simulating a new
+radio in LLAMAComm.
+
+\section{Installing LLAMAComm}
+
+LLAMAComm is provided as a single archive file with the extension
+\verb+.tar.gz+.  To install LLAMAComm, simply place the archive file
+into a working directory.  If using UNIX or one of its variants,
+unpack the archive using the command: \verb+tar -xzvf llamacommVxxx.tar.gz+
+(where \verb+xxx+ depends on the version of
+the software).  PC users can unpack the archive using WinZip.
+Successfully unpacking the archive will create the following
+directory structure:
+
+\begin{verbatim}
+     llamacomm/
+         docs/
+         simulator/
+         user/
+             examples/
+             LL/
+         InitGlobals.m
+         SetupPaths.m
+         StartExample.m
+\end{verbatim}
+
+The directory \verb+docs/+ contains LLAMAComm documentation (this
+file), \verb+simulator/+ contains the MATLAB code that implements
+LLAMAComm, and \verb+user/+ contains user-defined radios.  The
+installation archive ships with several examples in \verb+examples/+
+and \verb+LL/+.
+
+When developing radios for simulation in LLAMAComm, user code should
+be confined to a folder within \verb+user/+. (e.g.
+\verb+user/newradio/+)  The only exception is the startup script
+which must be located in \verb+llamacomm/+.  Code within
+\verb+simulator/+ should never be modified.
+
+\section{Running the Example}
+
+LLAMAComm is set up by default to run the example simulation.  Start
+MATLAB and change the working directory to
+\verb+installdir/llamacomm/+. Run \verb+StartExample.m+. The example
+simulation should finish without error in about 30 seconds.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=6in]{"figs/Canonical Scenario"}
+\caption{The canonical example scenario}
+\label{fig:canonicalEx}
+\end{figure}
+
+Figure \ref{fig:canonicalEx} shows a cartoon of the example
+scenario. The example is a rural environment containing eight nodes.
+The color of the arrows corresponds to the frequency of the
+transmissions.  The two half-duplex nodes transmit and receive at
+the same frequency in the FM radio band.  The two full-duplex nodes
+transmit in two different frequency bands.  The yellow arrow
+corresponds to 1500 MHz, while the dark red arrow corresponds to
+2495 MHz (ISM band). Two interferers are present---one in the FM
+band, and one in the ISM band. The LL MIMO transmitter transmits in
+the FM band, but uses a special ``genie'' channel to send channel
+information from the receiver back to the transmitter.  This genie
+channel is represented by a black dotted line.  Note that genie transmit modules can ``multi-cast'' to multiple genie receive modules.
+
+\subsection{Node Map}
+
+LLAMAComm produces a couple plots by default.  When the example
+scenario is run, a map is produced to show the positions and
+relative heights of the nodes present in the scenario.
+Figure~\ref{fig:nodeMap}(a) is a screen capture of the node map. The
+map may be rotated and zoomed using the MATLAB figure toolbar.
+Clicking with the regular mouse cursor\footnote{If nothing happens
+when clicking, check that no buttons (including the arrow) are
+depressed on the figure toolbar and try again.} on any of the node
+names will produce a pop-up plot of the antenna positions and look
+angles. Figure~\ref{fig:nodeMap}(b) shows this detail plot for the
+node named \verb+AN+.
+
+\begin{figure}[h]
+\centering \mbox{
+    \subfigure[Node map]{\includegraphics[width=3in]{"figs/Node Map"}} \quad
+    \subfigure[Antenna map]{\includegraphics[width=3in]{"figs/Antenna Map"}}
+} \caption{Node map and detail plot of antenna positions}
+\label{fig:nodeMap}
+\end{figure}
+
+
+\subsection{Timing Diagram Figure}\label{sec:tdSec}
+
+Signal processing in the simulation is done in a block-wise fashion.
+These blocks (which we refer to as segments) are drawn in a timing
+diagram figure as the simulation runs.  Figure
+\ref{fig:exTimingDiagram} shows a screen capture of the timing
+diagram.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=6in]{"figs/Example Timing Diagram"}
+\caption{Screen capture of timing diagram from example simulation}
+\label{fig:exTimingDiagram}
+\end{figure}
+
+Each horizontal line in the diagram is associated with a module
+within a node.  For example, the half-duplex radio (labeled
+\verb+HD_UserA+) contains two modules: \verb+hd_tx+ and
+\verb+hd_rx+. \verb+hd_tx+ is the BPSK transmit module, and
+\verb+hd_rx+ is the BPSK receive module. This node alternates
+between transmitting and receiving because it is operating in
+half-duplex mode.  All the segments are blue because the radios are
+operating at the same center frequency. In contrast, the full-duplex
+nodes have a red segments and yellow segments because the modules
+operate at different frequencies.
+
+The small number near each segment indicates the order in which the
+segment was processed.  This is mainly for debugging purposes, but
+it is useful to note that the segments are not processed
+sequentially.  Segments are processed out of order so that a receive
+segment contains the contribution of all in-band signals present in
+its duration.  This scheduling is handled by the simulator.
+
+%Previous users of the Cogcom should also note that the LL MIMO nodes
+%are named DN and AN.  This was done to show how Cogcom code can be
+%ported to LLAMAComm.  The AN and DN become separate nodes, and the
+%magic feedback loop is modeled by including special genie modules
+%(more on this later).
+
+After the simulation has finished running, clicking on any of the
+rectangles in the timing diagram with the mouse cursor will bring up
+a plot of the data in that segment.  It also is possible to define a
+custom plot.  Figure \ref{fig:tdCallback} shows a picture of the
+default plot and a custom plot.  Both plots show the power spectral
+density in the right subplot.  In the left subplot, the default plot
+shows the real (blue) and imaginary (green) parts of the ``analog''
+waveform. The highlighted portion is the segment that was selected.
+The adjacent segment is also plotted, but in thinner blue and green
+lines, so that the continuity of the signal can be examined.  The
+left subplot of the custom plot shows a constellation plot of the
+beamformer output for the LL MIMO receiver.
+
+\begin{figure}[h]
+\centering \mbox{
+    \subfigure[Default plot]{\includegraphics[width=3in]{"figs/TD Default Callback"}} \quad
+    \subfigure[Custom plot]{\includegraphics[width=3in]{"figs/TD Custom Callback"}} \quad
+    }
+\caption{Default plot for full-duplex UserB node and custom plot for
+LL MIMO receive node} \label{fig:tdCallback}
+\end{figure}
+
+By clicking on other segments in the timing diagram, it should be
+possible to observe the interaction between the various nodes.  For
+example, segments of signal for \verb+FD_UserA:fd2_rx+ appear very
+clean because they contain no interference.  In contrast, receive
+segments for \verb+HD_UserA:hd_rx+ and \verb+HD_UserB:hd_rx+ are
+very noisy because they contain interference from
+\verb+Interf_FM:ccgn_tx+ and \verb+DN:LLmimo_tx+.
+
+\subsection{Text Output}
+
+The simulation also produces a great deal of text output.  Like
+typical MATLAB programs, any function may write to the command
+window.  The output from running the example simulation is shown
+below. The LL MIMO transmitter and receiver dump many of their
+operating parameters to screen as the simulation runs.  The
+calculated bit error rates are also displayed at the end.  As
+expected, links with interferers present exhibit a higher bit error
+rate.
+
+\begin{lstlisting}[name=output,numbers=none]
+ ...
+LLMimo Transmit Block 7/8
+  txPower: 0.006163
+LLMimo Receive Block 7/8
+ rxDemod: eig(rNoise) (dB) = -36.6221 -54.2714  -74.452...
+ rxDemod: frob(hEst)^2 (dB) = 1.7569
+ rxDemod: eig(hhd) (dB) =2.29083 -12.2962 -26.7783 -29.1565
+ Passed back to Tx:
+         vTx: [0.3667+i*0.1181;0.2149+i*0.1234;0.2007+i*...
+    domAtten: 1.6947
+Simulation finished successfully.
+HD_UserA->HD_UserB BER: 0.001133
+HD_UserB->HD_UserA BER: 0.003533
+FD_UserA->FD_UserB BER: 0.000300
+FD_UserB->FD_UserA BER: 0.000000
+LL MIMO example, DN->AN BER:0.010254
+Elapsed time is 25.098511 seconds.
+>>
+\end{lstlisting}
+
+\subsection{Simulator Output Files} \label{sec:simOutputFiles}
+
+LLAMAComm produces a number of output files which can be used later
+for analyzing the results.  These files include records of all
+transmitted/received signals, transmitted/received bits, the timing
+diagram figure, and workspace-level variables (including all
+objects).  By default, the save directory is
+\verb+llamacom/save/timestamp+, where \verb+timestamp+ is generated
+based on the clock.  Each run of the simulation will produce a new
+folder in the \verb+save/+ subdirectory with a different timestamp.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=5in]{"figs/Save Files"}
+\caption{Simulator output files}
+\label{fig:saveFiles}
+\end{figure}
+
+Figure \ref{fig:saveFiles} shows the output produced by running the
+example scenario.  These files are located in
+\verb+llamacomm/save/20060406T132616+ because the simulation was
+started at 1:26:16 pm on April 6, 2006.
+
+Files with the extension \verb+.sig+ are saved automatically by
+LLAMAComm. These files contain baseband samples of the
+transmitted/received waveforms at the simulator's universal sample
+rate.  There is one \verb+.sig+ file for each module in the
+scenario. The naming convention is \verb+nodename-modulename.sig+.
+
+Files with the \verb+.bit+ extension keep a record of the binary
+bits transmitted or received.  These files are used to calculate the
+bit error rate at the end of the simulation.  For short simulations,
+transmitted and received bits can simply be stored within the node
+objects.  For long simulations, however, it is more memory-efficient
+to save this information to disk.  The half-duplex and full-duplex
+examples in the following sections save the bits within the node
+object, while the LL MIMO example writes the bits to disk.
+
+\verb+TimingDiagram.fig+ is a saved copy of the timing diagram
+discussed in \S\ref{sec:tdSec}.  Opening the saved figure in MATLAB
+will bring back the figure window.  Callback plots (the plots that
+appear when the segment rectangles are clicked with the mouse) will
+function just as before since the data used to generate the plots is
+stored in the \verb+.sig+ files.\footnote{The MATLAB paths may need
+to be manually configured for the callbacks to work correctly.}
+
+\verb+Workspace.mat+ contains all the variables accessible from the
+MATLAB workspace at the completion of a simulation.  This includes a
+copy of all the objects and setup properties.  From this
+information, it is possible to determine all the properties of the
+finished simulation.
+
+\section{Creating Nodes, Modules, and Environments}
+\label{sec:exampleSection}
+
+The previous section explored the output generated by the example
+simulation.  This section discusses the MATLAB code required to
+actually implement the example.
+
+LLAMAComm is implemented using MATLAB classes.  Instances of a class
+are known as objects.  MATLAB classes are defined by creating a
+subdirectory with the class name appended to the \verb+@+ character.
+All functions within these class directories have access to object
+variables---these are referred to as class methods.  Functions
+outside the class directories normally do not have access to object
+variables.\footnote{Please refer to the MATLAB documentation on
+programming with classes for more detail.}
+
+By using classes, information can be protected from improper sharing
+or modification.  For example, a receiver should not know the true
+channel matrix, so the channel matrix is hidden within a link object
+where it cannot be directly accessed by code written for the
+receiver.  For debugging, utilities have been included to display
+the information to screen.
+
+Using LLAMAComm requires some understanding of the various classes.
+There are four classes used to implement the simulator:
+\verb+@node+, \verb+@module+, \verb+@link+, and \verb+@environment+.
+Users interested in simulating their own designs will need to become
+familiar with the node and module classes. The environment and link
+classes are not as important to the user.  The environment class is
+used only once during startup by the user, and the link class is
+accessed only by internal code.
+
+Because of the divisions enforced by the simulator, the operation of
+one set of radios does not affect another (other than possibly
+causing interference, as it would in the real world).  As a result,
+radio pairs can be designed independently.  Each example radio in
+the simulation will be discussed separately in the following
+sections. We will examine the MATLAB code closely.
+
+\subsection{The Half-Duplex Radios} \label{sec:hdExample}
+
+The half-duplex radios were the first example created for LLAMAComm.
+They consist of two nearly identical transceivers that transmit a
+very simple BPSK signal in the FM frequency band.  It is assumed
+that the radios are already synchronized.
+
+Nodes represent physical radios.  Since there are two radios in the
+example scenario, there are two node objects.  Figure
+\ref{fig:hdNodes} shows two nodes labeled \verb+HD_UserA+ and
+\verb+HD_UserB+.  Conceptually, modules represent the physical layer
+of a communication system, and controllers represent the link layer
+as well as any operator actions.  Modules are responsible for the
+modulation/demodulation and coding/decoding of a signal.  The
+controller determines when to transmit/receive and what to do with
+the data.  The controller implements the functionality of the
+microcontroller in a physical radio.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=3.5in]{"figs/HD Example"}
+\caption{Example half-duplex nodes} \label{fig:hdNodes}
+\end{figure}
+
+In LLAMAComm, modules must either be transmitters or receivers.  So,
+for a transceiver, the minimum number of modules is two.  Note that
+for certain communication systems, it may be desirable to have
+multiple receive modules (a software radio, for example). This can
+be simulated by adding any number of module objects into the node.
+It is the controller's responsibility to decide which modules to use
+at any given time for sending or receiving data.
+
+Each node object in Figure \ref{fig:hdNodes} is shown to contain a
+controller function and two module objects labeled \verb+BPSK Tx+
+and \verb+BPSK Rx+.  The module objects are the same in the two
+radios since they transmit in the same frequency using the same
+transmission scheme. The two controller functions are very similar;
+they are different only in that one controller starts in a transmit
+state while the other starts in a receive state.
+
+There are six files in the \verb+user/examples+ directory that are
+used to implement the half-duplex radios: \verb+HD_BuildNodes.m+,
+\verb+BPSK_Receive.m+, \verb+BPSK_Transmit.m+,
+\verb+HD_UserA_Controller.m+, \verb+HD_UserB_Controller.m+,
+\verb+HD_CalculateBER.m+.
+
+\subsubsection{HD\_BuildNodes.m}
+
+The basic steps for building any LLAMAComm node are shown below.  In
+all the example radios provided, these steps are incorporated into a
+``top-level'' function with the name \verb+*_BuildNodes.m+.
+
+\begin{enumerate}
+\item Specify required transmit and receive module properties
+\item Provide handle to callback function that does the modulation/demodulation
+\item Call module class constructor to create module objects
+\item Specify required node properties
+\item Provide handle to controller function
+\item Include copies of the newly created module objects
+\item Call node class constructor and return new node objects
+\end{enumerate}
+
+Code to construct the half-duplex nodes is found in
+\verb+llamacomm/user/examples/HD_BuildNodes.m+.  Let us walk through
+the file.  The block of code listed below is the function header and
+help comments. The build functions return an array of completed node
+objects.
+
+\begin{lstlisting}[name=hdBuildNodes]
+function hdNodes = HD_BuildNodes
+
+% Function HD_BuildNodes.m:
+% Example function for building example half-duplex
+% nodes with common transmit/receive modules and user
+% parameters.
+%
+% USAGE: hdNodes = BuildUserNodes
+%
+% Input arguments:
+%  -none-
+%
+% Output arguments:
+%  hdNodes  (1xN Node obj array) Newly-created user nodes
+%
+\end{lstlisting}
+
+The next block of code defines two structs that contain all the
+required properties for building a module. \verb+hd_tx_mod_params+
+defines the transmit module and \verb+hd_rx_mod_params+ defines the
+receive module.\footnote{Future versions of this code may have
+default values assigned for some variables such as wall material and
+antenna type.}
+
+\begin{lstlisting}[firstnumber = 22, name=hdBuildNodes]
+% Define transmit/recieve modules
+
+hd_tx_mod_params.name = 'hd_tx';
+hd_tx_mod_params.callbackFcn = @BPSK_Transmit;
+hd_tx_mod_params.fc = 98.5e6;
+hd_tx_mod_params.type = 'transmitter';
+hd_tx_mod_params.loError = 0;
+hd_tx_mod_params.antType = {'dipole_halfWavelength'};
+hd_tx_mod_params.antPosition = [0 0 0];
+hd_tx_mod_params.antPolarization = {'v'};
+hd_tx_mod_params.antAzimuth = [0];
+hd_tx_mod_params.antElevation = [0];
+hd_tx_mod_params.exteriorWallMaterial = 'none';
+hd_tx_mod_params.distToExteriorWall = [0];
+hd_tx_mod_params.exteriorBldgAngle = [0];
+hd_tx_mod_params.numInteriorWalls = [0];
+
+hd_rx_mod_params.name = 'hd_rx';
+hd_rx_mod_params.callbackFcn = @BPSK_Receive;
+hd_rx_mod_params.fc = 98.5e6;
+hd_rx_mod_params.type = 'receiver';
+hd_rx_mod_params.loError = 0;
+hd_rx_mod_params.antType = {'dipole_halfWavelength'};
+hd_rx_mod_params.antPosition = [0 0 0];
+hd_rx_mod_params.antPolarization = {'v'};
+hd_rx_mod_params.antAzimuth = [0];
+hd_rx_mod_params.antElevation = [0];
+hd_rx_mod_params.exteriorWallMaterial = 'none';
+hd_rx_mod_params.distToExteriorWall = [0];
+hd_rx_mod_params.exteriorBldgAngle = [0];
+hd_rx_mod_params.numInteriorWalls = [0];
+hd_rx_mod_params.noiseFigure = 6; % (dB) noise figure of receiver
+
+hd_tx_mod = module(hd_tx_mod_params);
+hd_rx_mod = module(hd_rx_mod_params);
+
+
+\end{lstlisting}
+
+Module names (\verb+hd_tx+ and \verb+hd_rx+, in this example) must
+be unique for a given node.  \verb+callbackFcn+ is the function
+handle to the function that performs the modulation/demodulation. In
+this case, the functions are \verb+BPSK_Receive.m+ and
+\verb+BPSK_Transmit.m+. MATLAB syntax uses the \verb+@+ symbol to
+turn a function name into a function handle. \verb+fc+ specifies the
+center frequency of the modulated signal. \verb+type+, is a string
+that tells LLAMAComm whether the module is a transmitter or a
+receiver. Details on the other properties can be found in the
+reference section of the documentation.
+
+The last two lines of the block of code shown above (lines 49-50)
+are calls to the module class constructor.  The constructor expects
+a struct with the specific field names provided in the example.  It
+returns a module object.  In this example, two modules are produced:
+\verb+hd_tx_mod+ and \verb+hd_rx_mod+.
+
+\begin{lstlisting}[name=hdBuildNodes]
+% Define nodes
+
+userA_node_params.name = 'HD_UserA';
+userA_node_params.location = [0 20 3];
+userA_node_params.velocity = [0 0 0];
+userA_node_params.controllerFcn = @HD_UserA_Controller;
+userA_node_params.modules = [hd_tx_mod hd_rx_mod];
+
+userB_node_params.name = 'HD_UserB';
+userB_node_params.location = [100 0 2];
+userB_node_params.velocity = [0 0 0];
+userB_node_params.controllerFcn = @HD_UserB_Controller;
+userB_node_params.modules = [hd_tx_mod hd_rx_mod];
+
+userA_node = node(userA_node_params);
+userB_node = node(userB_node_params);
+
+
+\end{lstlisting}
+
+The code block above creates two node objects.  It is similar in
+structure to the code used to create the module objects. The first
+parts assigns properties in a struct.  The last two lines call the
+node class constructor.
+
+The node name must be unique within a scenario.  The node location
+is specified in rectangular coordinates in meters.  The node
+velocity is in meters/second.  The property \verb+controllerFcn+ is
+a function handle. In this case, node \verb+HD_UserA+ is using the
+controller function defined by \verb+HD_UserA_Controller.m+.
+
+The \verb+modules+ property should be an array of module objects.
+This example uses the two modules defined earlier in the build
+function: \verb+hd_tx_mod+ and \verb+hd_rx_mod+.
+
+The next block of code in the file sets user-defined parameters in
+the node objects.
+
+\begin{lstlisting}[name=hdBuildNodes]
+% Set user parameters
+
+userParams.power = 10; % (Watts)
+userParams.dataLen = 800;
+userParams.trainingLen = 200;
+userParams.nOversamp = 2;
+userParams.bitLen = userParams.dataLen+userParams.trainingLen;
+userParams.blockLen = userParams.nOversamp*userParams.bitLen;
+
+userParams.trainingSeq = rand(1,userParams.trainingLen)>.5;
+
+userParams.nBlocksToSim = 15;
+userParams.receivedBlocks = 0;
+userParams.transmittedBlocks = 0;
+
+userParams.txBits = zeros(userParams.nBlocksToSim,...
+                          userParams.bitLen,'uint8');
+userParams.rxBits = zeros(userParams.nBlocksToSim,...
+                          userParams.bitLen,'uint8');
+
+userParams.equalizerLen = 21;
+userParams.equalizerDelay = 10;
+
+userA_node = SetUserParams(userA_node,userParams);
+userB_node = SetUserParams(userB_node,userParams);
+
+
+\end{lstlisting}
+
+User parameters are a special part of the node.  These parameters,
+which consist of anything that can be put into a single MATLAB
+structure, can be written and read at the user's discretion.  This
+area is useful for storing information that a physical radio would
+have in its EEPROM, such as a training sequence, packet length, or
+initial transmit power.  The user parameters are also useful for
+passing information between the controller function and the
+transmit/receive functions.  In fact, \emph{this is the only method
+of communication between the modules and the controller function}.
+
+The user parameters are stored within a node, so they are accessed
+using class methods:  \verb+SetUserParams()+ and
+\verb+GetUserParams()+. This example sets the power, defines the
+data block structure, and sets aside memory to hold transmitted and
+received bits.  (This works since this is a small example.  Larger
+examples such as LL MIMO store the bits to file.)  The last two
+lines call \verb+SetUserParams()+ to store the structure into the
+node object.
+
+\begin{lstlisting}[name=hdBuildNodes]
+% Put user nodes into array
+hdNodes = [userA_node userB_node];
+\end{lstlisting}
+
+Finally, the last line of the function returns the two newly created
+half-duplex nodes in a 1x2 array.
+
+\subsubsection{BPSK\_Transmit.m and BPSK\_Receive.m}
+
+As mentioned in the previous sections, \verb+BPSK_Transmit.m+ and
+\verb+BPSK_Receive.m+ define the physical layer of the example
+half-duplex radios.  Code from \verb+BPSK_Transmit.m+ is listed
+below.
+
+\begin{lstlisting}[name=bpskTx]
+function [nodeobj,sig] = BPSK_Transmit(nodeobj,modname,blockLen)
+
+% Function BPSK_Transmit.m:
+% This is an example of a user-written callback function for a module
+% object.  It generates or loads data to transmit. The output signal 
+% should be analog baseband, and can be multichannel.
+%
+% This example is a single-channel BPSK transmitter.  2x oversampled.
+% There is no filtering or pulse shaping, so the signal is full bandwidth.
+%
+% USAGE: [nodeobj,sig] = BPSK_Transmit(nodeobj,modname,blockLen)
+%
+% Input arguments:
+%  nodeobj    (node obj) Parent node object
+%  modname    (string) The name of the module that has activated this
+%              callback function
+%  blockLen   (int) The block length of the analog signal expected
+%              by the arbitrator
+%
+% Output arguments:
+%  nodeobj    (node obj) Modified copy of the node object
+%  sig        (NxblockLen) Analog baseband signal for N channels
+%
+% See also: BPSK_Receive.m
+\end{lstlisting}
+
+Transmit and receive callback functions must use these exact input
+and output arguments.  This is required to properly interface to the
+simulator's arbitrator function.  \verb+BPSK_Transmit()+ takes in a
+node object, the module name, and the block length of the signal to
+be transmitted.  It returns a modified node object (the user
+properties will be modified) and a single segment of complex
+baseband signal at the simulator's universal baseband sample rate.
+
+The function starts by retrieving the user parameters.  User
+parameters are stored in the node object and must be retrieved using
+\verb+GetUserParams()+.  This is shown in the following block of
+code.
+
+\begin{lstlisting}[firstnumber=31, name=bpskTx]
+% Load user parameters
+p = GetUserParams(nodeobj);
+
+\end{lstlisting}
+
+In the example, data is randomly generated.  This is shown in the
+code fragment below.  The code produces random $\pm 1$'s and
+attaches the fixed training sequence.  The data is then duplicated
+using \verb+repmat+ to give an effect data rate of \verb+fs/2+.
+\verb+fs+ is the universal simulation sample rate set in
+\verb+InitGlobals.m+. It is set by default to 12.5 MHz.
+
+\begin{lstlisting}[name=bpskTx]
+% Make some random data and attach training sequence
+randdata = rand(1,p.dataLen)>.5;
+bits = [p.trainingSeq randdata];
+sig = -(bits*2-1);
+
+% Upsample by duplicating bits
+sig = repmat(sig,p.nOversamp,1);
+sig = sig(:).';
+
+\end{lstlisting}
+
+It is also possible to read data from file or generate it in the
+controller function and then pass the data block to the transmit
+function.  In order keep the distinction between physical layer and
+link layer as sharp as possible, it is preferable to build the data
+block in the controller function if memory constraints allow.  This
+is done in the LL MIMO example (\S\ref{sec:llmimoNodes}).
+
+\begin{lstlisting}[name=bpskTx]
+% Calculate signal power (Watts)
+filePow = var(sig);
+
+% Set the transmitted signal power
+sig = sqrt(p.power/(filePow))*sig;
+
+\end{lstlisting}
+
+The power of the transmitted signal is adjusted.  The units of
+\verb+sig+ are volts.  The units of power are watts.  Power is
+calculated by assuming a 1$\Omega$ load.  This convention is
+followed throughout the simulation.
+
+\begin{lstlisting}[name=bpskTx]
+% Check blockLen
+if size(sig,2) ~= blockLen
+    error('Block length of Tx data is wrong.');
+end
+
+
+
+\end{lstlisting}
+
+The value of \verb+blockLen+ is set by the controller function.  It
+is passed into the transmit function by the arbitrator.  This block
+of code does a quick check to make sure that the final block length
+of the transmit signal is correct.
+
+\begin{lstlisting}[name=bpskTx]
+% Save txbits
+p.transmittedBlocks = p.transmittedBlocks+1;
+p.txBits(p.transmittedBlocks,:) = bits;
+
+% Save user params
+nodeobj = SetUserParams(nodeobj,p);
+\end{lstlisting}
+
+Finally, \verb+SetUserParams()+ must be used to save the transmitted
+bits into the user parameters.  The values are later used to
+calculate the bit error rate.
+
+\verb+BPSK_Receive.m+ is very similar to \verb+BPSK_Transmit.m+. The
+difference is that it receives and demodulates the bits.  The code
+for \verb+BPSK_Receive+ is included below for comparison.
+
+\begin{lstlisting}[name=bpskRx]
+function nodeobj = BPSK_Receive(nodeobj,modname,sig)
+
+% Function BPSK_Receive.m:
+% This is an example of a user-written callback function for a 
+% receive module.  This example demodulates an analog, BPSK signal.
+%
+% This example is designed to work with BPSK_Transmit
+%
+% USAGE: nodeobj = BPSK_Receive(nodeobj,modname,sig)
+%
+% Input arguments:
+%  nodeobj    (node obj) Parent node object
+%  modname    (string) The name of the module that has activated this
+%              callback function
+%  sig        (NxblockLen) Analog baseband signal for N channels
+%
+% Output arguments:
+%  nodeobj    (node obj) Modified copy of the node object
+%
+% See also: BPSK_Transmit.m
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Copyright (c) 2006-2013 Massachusetts Institute of Technology %
+% All rights reserved.   See software license below.            %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Load user parameters
+p = GetUserParams(nodeobj);
+
+% Downsample
+sig = sig(1:p.nOversamp:end);
+
+% Demod
+nSamps = length(sig);
+nTrain = p.trainingLen;
+sTrain = -(p.trainingSeq*2- 1);
+
+% adapt equalizer
+eqLen = p.equalizerLen;
+eqDelay = p.equalizerDelay;
+R = toeplitz([sig(1) zeros(1,eqLen-1)], sig(1:nTrain));
+Sd = [zeros(1,eqDelay),sTrain(1:nTrain-eqDelay)];
+f = Sd*R'*inv(R*R');
+
+% equalize and extract bit estimates 
+nBits = p.bitLen;
+sHat = conv(sig,f);
+bits = real(sHat(eqDelay+1:nBits+eqDelay))<0;
+
+% Save rx bits
+p.receivedBlocks = p.receivedBlocks+1;
+p.rxBits(p.receivedBlocks,:) = bits;
+
+% Save user params
+nodeobj = SetUserParams(nodeobj,p);
+\end{lstlisting}
+
+\subsubsection{HD\_UserA\_Controller.m and HD\_UserB\_Controller.m}
+
+The structure for any controller function can be described as a
+finite state machine.  All the examples were developed by first
+drawing the state diagram.  Figure \ref{fig:hdState} shows the state
+diagrams for the \verb+HD_UserA+ controller and the \verb+HD_UserB+
+controller. The outputs are shown in blue, and the inputs are shown
+in green.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=5in]{"figs/HD State Diagram"}
+\caption{State diagrams for half-duplex controller functions}
+\label{fig:hdState}
+\end{figure}
+
+In order to transmit or receive, a request must be made to the
+arbitrator.  During each iteration of the simulation loop, the
+controller checks the status of the node's modules to see if the
+requests are complete.  Once complete, the controller moves on to
+the next state.  Otherwise, it continues to wait.  Note that it is
+possible to write a controller so that the simulation stalls.  The
+arbitrator is designed to detect such a state and abort the
+simulation.  This will be discussed in more detail in
+Section~\ref{sec:simExecution}.
+
+Implementing the state machines shown in Figure \ref{fig:hdState} is
+relatively straight-forward.  The code for
+\verb+HD_UserA_Controller+ is examined in the listing below.
+
+\begin{lstlisting}[name=hdState]
+function [nodeobj,status] = HD_UserA_Controller(nodeobj)
+
+% Function HD_UserA_Controller.m:
+% Controller state machine for example Half-Duplex radio.  
+% These controllers assume that the user nodes are already synchronized.  
+% The UserA and UserB controllers are identical except that UserA starts 
+% by sending a block and UserB starts by receiving a block.  
+% The controller switches to the done state after receiving/sending a set 
+% number of blocks.
+%
+% USAGE: [nodeobj,status] = HD_UserA_Controller(nodeobj)
+%
+% Input arguments:
+%  nodeobj    (node obj) Parent node object.  
+%
+% Output arguments:
+%  nodeobj    (node obj) Modified copy of node object
+%  status     (string) Either 'running' or 'done'
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Copyright (c) 2006-2013 Massachusetts Institute of Technology %
+% All rights reserved.   See software license below.            %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+status = 'running';  % Default status
+
+\end{lstlisting}
+
+The function headers for all controller functions need to have the
+same input and outputs.  The controller function takes in a node
+object and returns a modified node object and a status string.  The
+status string is used to detect when a simulation is finished.  On
+line 21, the status is set to \verb+'running'+.  When the controller
+reaches the \verb+done+ state, the status is set to \verb+'done'+
+(line 69).
+
+The user parameters and current state are stored within the node
+object.  They are extracted using the functions
+\verb+GetUserParams()+ and \verb+GetNodeState()+.  This is shown
+below.
+
+\begin{lstlisting}[name=hdState]
+% Load user parameters
+p = GetUserParams(nodeobj);
+
+% Get current node state
+currState = GetNodeState(nodeobj);
+
+\end{lstlisting}
+
+The next code block implements the state machine shown in Figure
+\ref{fig:hdState}.  When a module needs to do something, it raises a
+request flag that the simulation arbitrator sees.  Requests are set
+using the function \verb+SetModuleRequest()+.  A request consists of
+the node object, the module name, a job (\verb+wait+,
+\verb+transmit+, \verb+receive+, or \verb+done+), and a block
+length. The block length tells the arbitrator how many samples are
+in the segment of signal to be processed.  The arbitrator uses this
+information to determine the execution order of the simulation.
+
+\begin{lstlisting}[name=hdState]
+% State machine next-state and output "logic"
+switch currState
+    case 'start'
+        % Set up module for transmission of 1 block
+        nodeobj = SetModuleRequest(nodeobj,'hd_tx','transmit',p.blockLen);
+        nodeobj = SetModuleRequest(nodeobj,'hd_rx','wait',p.blockLen);
+        nextState = 'transmit_wait';
+        
+    case 'transmit_wait'
+        requests = CheckRequestFlags(nodeobj);
+        if requests==0
+            % Transmission done, receive
+            nodeobj = SetModuleRequest(nodeobj,'hd_tx','wait',p.blockLen);
+            nodeobj = SetModuleRequest(nodeobj,'hd_rx','receive',p.blockLen);
+            nextState = 'receive_wait';
+        else
+            % All requests not satisfied, wait
+            nextState = 'transmit_wait';
+        end
+
+    case 'receive_wait'
+        requests = CheckRequestFlags(nodeobj);
+        if requests==0 
+            if  p.receivedBlocks>=p.nBlocksToSim
+                % Goto done
+                nodeobj = SetModuleRequest(nodeobj,'hd_tx','done');
+                nodeobj = SetModuleRequest(nodeobj,'hd_rx','done');
+                nextState = 'done';
+            else
+                % Receive done, go back to transmit
+                nodeobj = SetModuleRequest(nodeobj,'hd_tx','transmit',p.blockLen);
+                nodeobj = SetModuleRequest(nodeobj,'hd_rx','wait',p.blockLen);
+                nextState = 'transmit_wait';
+            end
+        else
+            % Requests pending, wait
+            nextState = 'receive_wait';
+        end
+        
+    case 'done'
+        % Done!
+        nextState = 'done';
+        status = 'done';
+                
+    otherwise
+        error(sprintf('Unknown state: %s',currState));
+end
+
+\end{lstlisting}
+
+As the simulation runs, the arbitrator lowers request flags that
+have been satisfied.  \verb+CheckRequestFlags()+ checks to see if
+requests for all modules within the node have been satisfied.
+
+For every sample in the simulation, each module must be
+transmitting, receiving, or waiting.  If this rule is not followed,
+the simulation will stall.  The only exception is the \verb+done+
+job. Once a module is marked as \verb+done+, it is ignored by the
+arbitrator.
+
+Finally, the state and the user parameters are stored using
+\verb+SetNodeState()+ and \verb+SetUserParams()+ in the code block
+listed below.  This saves the state and user parameters so that they
+can be loaded the next time the controller function is run.
+
+\begin{lstlisting}[name=hdState]
+% Set next state
+nodeobj = SetNodeState(nodeobj,nextState);
+
+% Store possibly modified user params
+nodeobj = SetUserParams(nodeobj,p);
+\end{lstlisting}
+
+
+\subsubsection{HD\_CalculateBER.m}
+
+The bit error rate (BER) is a commonly calculated metric for
+communication simulations.  The following function demonstrates how
+to calculate the BER in a simple simulation where the sent and
+received bits are stored within the user parameters.
+
+\begin{lstlisting}[name=ber]
+function ber = HD_CalculateBER(nodes)
+
+% Function HD_CalculateBER.m:
+% Calculates the Bit-Error Rate for each of the two user nodes.
+%
+% USAGE:  ber = HD_CalculateBER(nodes)
+%
+% Input arguments:
+%  nodes     (node obj array, 1xN) Node objects
+%
+% Output arguments:
+%  ber       (1x2) HD_UserA->HD_UserB and HD_UserB->HD_UserA BER
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Copyright (c) 2006-2013 Massachusetts Institute of Technology %
+% All rights reserved.   See software license below.            %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% Extract user parameters
+UA = GetUserParams(FindNode(nodes,'HD_UserA'));
+UB = GetUserParams(FindNode(nodes,'HD_UserB'));
+
+% Calculate BER
+errAB = find(xor(UA.txBits,UB.rxBits));
+errBA = find(xor(UB.txBits,UA.rxBits));
+
+berAB = length(errAB)/prod(size(UA.txBits));
+berBA = length(errBA)/prod(size(UB.txBits));
+
+ber(1) = berAB;
+ber(2) = berBA;
+
+% Print results to screen
+fprintf('HD_UserA->HD_UserB BER: %f\n',berAB);
+fprintf('HD_UserB->HD_UserA BER: %f\n',berBA);
+\end{lstlisting}
+
+This function is designed to be run from the top level of the
+simulation.  It has access to all nodes in the simulator.  The
+relevant node is found using \verb+FindNode()+.  The transmitted and
+received bits are extracted using \verb+GetUserParams()+.  The bits
+are compared, and the results are printed to screen.
+
+\subsection{The Full-Duplex Radios}
+
+The full-duplex radio example is very similar to the half-duplex
+example.  The difference is that the transmit and receive modules
+operate at different frequencies, and the controller function
+activates both transmit and receive modules simultaneously.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=3.5in]{"figs/FD Example"}
+\caption{Example full-duplex nodes} \label{fig:fdNodes}
+\end{figure}
+
+Figure \ref{fig:fdNodes} illustrates the object construction that is
+required to implement this example.  As before, we will look at the
+relevant portions of code that were required to implement this
+example.  This time, however, we will concentrate mainly on the
+differences between this example and the half-duplex example.
+
+\subsubsection{FD\_BuildNodes.m}
+
+In the half-duplex example from \S\ref{sec:hdExample}, we built two
+modules and used copies of the two in each node. In the full-duplex
+example, however, we need to build four nodes since the transmit and
+receive frequencies are different.
+
+The following fragments of code from
+\verb+user/examples/FD_BuildNodes.m+ illustrate the important
+differences between the half-duplex example and this example.  (Some
+code has been snipped for clarity).
+
+\begin{lstlisting}[name=fdBuildNodes]
+function fdNodes = FD_BuildNodes
+
+% Define transmit/recieve modules
+
+fd1_tx_mod_params.name = 'fd1_tx';
+fd1_tx_mod_params.callbackFcn = @BPSK_Transmit;
+fd1_tx_mod_params.fc = 2495e6;
+fd1_tx_mod_params.type = 'transmitter';
+...
+
+fd1_rx_mod_params.name = 'fd1_rx';
+fd1_rx_mod_params.callbackFcn = @BPSK_Receive;
+fd1_rx_mod_params.fc = 2495e6;
+fd1_rx_mod_params.type = 'receiver';
+...
+
+fd2_tx_mod_params.name = 'fd2_tx';
+fd2_tx_mod_params.callbackFcn = @BPSK_Transmit;
+fd2_tx_mod_params.fc = 1500e6;
+fd2_tx_mod_params.type = 'transmitter';
+...
+
+fd2_rx_mod_params.name = 'fd2_rx';
+fd2_rx_mod_params.callbackFcn = @BPSK_Receive;
+fd2_rx_mod_params.fc = 1500e6;
+fd2_rx_mod_params.type = 'receiver';
+...
+
+fd1_tx_mod = module(fd1_tx_mod_params);
+fd1_rx_mod = module(fd1_rx_mod_params);
+fd2_tx_mod = module(fd2_tx_mod_params);
+fd2_rx_mod = module(fd2_rx_mod_params);
+
+\end{lstlisting}
+
+The code block above builds the four modules used in this example.
+Note that these four modules have unique names.  The center
+frequencies are set at 2495 MHz and 1500 MHz.  Also, the BPSK
+receive and transmit functions were reused for this example.  The
+next block of code in the file constructs the node objects.
+
+\begin{lstlisting}[name=fdBuildNodes]
+% Define nodes
+
+FD_userA_node_params.name = 'FD_UserA';
+FD_userA_node_params.location = [0 100 2];
+FD_userA_node_params.velocity = [0 0 0];
+FD_userA_node_params.controllerFcn = @FD_UserA_Controller;
+FD_userA_node_params.modules = [fd1_tx_mod fd2_rx_mod];
+
+FD_userB_node_params.name = 'FD_UserB';
+FD_userB_node_params.location = [200 100 2];
+FD_userB_node_params.velocity = [0 0 0];
+FD_userB_node_params.controllerFcn = @FD_UserB_Controller;
+FD_userB_node_params.modules = [fd2_tx_mod fd1_rx_mod];
+
+FD_userA_node = node(FD_userA_node_params);
+FD_userB_node = node(FD_userB_node_params);
+\end{lstlisting}
+
+The user parameters (shown below) are similar to the half-duplex
+example.  For fun, \verb+nOversamp+ was increased to 3.  This
+property is used within \verb+BPSK_Receive()+ and
+\verb+BPSK_Transmit()+. Increasing \verb+nOversamp+ has the effect
+of increasing the number of samples per bit for the full-duplex
+transceivers.
+
+\begin{lstlisting}[name=fdBuildNodes]
+% Set user parameters
+
+userParams.power = 10; % (Watts)
+userParams.dataLen = 1800;
+userParams.trainingLen = 200;
+userParams.nOversamp = 3;
+userParams.bitLen = userParams.dataLen+userParams.trainingLen;
+userParams.blockLen = userParams.nOversamp*userParams.bitLen;
+
+userParams.trainingSeq = rand(1,userParams.trainingLen)>.5;
+
+userParams.nBlocksToSim = 10;
+userParams.receivedBlocks = 0;
+userParams.transmittedBlocks = 0;
+
+userParams.txBits = zeros(userParams.nBlocksToSim,...
+                          userParams.bitLen,'uint8');
+userParams.rxBits = zeros(userParams.nBlocksToSim+1,...
+                          userParams.bitLen,'uint8');
+
+userParams.equalizerLen = 21;
+userParams.equalizerDelay = 10;
+
+userA_node = SetUserParams(FD_userA_node,userParams);
+userB_node = SetUserParams(FD_userB_node,userParams);
+
+
+% Put nodes into output array
+fdNodes = [userA_node userB_node];
+\end{lstlisting}
+
+At the end of \verb+FD_BuildNodes.m+, the user parameters are saved
+into the node object, and the nodes are returned in a 1x2 array.
+
+\subsubsection{FD\_UserA\_Controller.m}
+
+This section discusses the controller function for the full-duplex
+node \verb+UserA+ (the controller for \verb+UserB+ is almost
+identical).  This controller is noticeably different from the
+controllers for the half-duplex examples.  In this example, nodes
+both transmit and receive at the same time.  There are also some
+additional states added for listening before the start of
+communication.  In a more complicated example, this listening period
+might be used to listen for a synchronization sequence or for
+transmissions from possible interference sources.  Figure
+\ref{fig:fdState} shows the state diagram for the controller.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=5in]{"figs/FD State Diagram"}
+\caption{State diagram for full-duplex controller function}
+\label{fig:fdState}
+\end{figure}
+
+The corresponding MATLAB code for the state machine is shown in the
+following listing.
+
+\begin{lstlisting}[name=fdController]
+function [nodeobj,status] = FD_UserA_Controller(nodeobj)
+...
+
+status = 'running';  % Default status
+
+% Load user parameters
+p = GetUserParams(nodeobj);
+
+% Get current node state
+currState = GetNodeState(nodeobj);
+
+% State machine next-state and output "logic"
+switch currState
+    case 'start'
+        % Listen for awhile
+        nodeobj = SetModuleRequest(nodeobj,'fd2_rx','receive',p.blockLen);
+        nodeobj = SetModuleRequest(nodeobj,'fd1_tx','wait',p.blockLen);
+        nextState = 'listen_wait';
+        
+    case 'listen_wait'
+        requests = CheckRequestFlags(nodeobj);
+        if requests==0 
+            % Pause for awhile
+            nodeobj = SetModuleRequest(nodeobj,'fd2_rx','wait',250);
+            nodeobj = SetModuleRequest(nodeobj,'fd1_tx','wait',250);
+            
+            nextState = 'pause_wait';
+        else
+            % Requests pending, wait
+            nextState = 'listen_wait';
+        end
+
+    case 'pause_wait'
+        requests = CheckRequestFlags(nodeobj);
+        if requests==0
+            % Start tx/rx
+            nodeobj = SetModuleRequest(nodeobj,'fd2_rx',...
+                                       'receive',p.blockLen);
+            nodeobj = SetModuleRequest(nodeobj,'fd1_tx',...
+                                       'transmit',p.blockLen);
+            nextState = 'txrx_wait';
+        else
+            % All requests not satisfied, wait
+            nextState = 'pause_wait';
+        end
+        
+    case 'txrx_wait'
+        requests = CheckRequestFlags(nodeobj);
+        if requests==0
+            if p.transmittedBlocks >= p.nBlocksToSim
+                % Goto done
+                nextState = 'done';
+                nodeobj = SetModuleRequest(nodeobj,'fd2_rx','done');
+                nodeobj = SetModuleRequest(nodeobj,'fd1_tx','done');
+            else
+                % Tx/Rx again
+                nodeobj = SetModuleRequest(nodeobj,'fd2_rx',...
+                                                'receive',p.blockLen);
+                nodeobj = SetModuleRequest(nodeobj,'fd1_tx',...
+                                                'transmit',p.blockLen);
+                nextState = 'txrx_wait';
+            end
+        else
+            % All requests not satisfied, wait
+            nextState = 'txrx_wait';
+        end
+        
+    case 'done'
+        % Done!
+        nextState = 'done';
+        status = 'done';
+                
+    otherwise
+        error(sprintf('Unknown state: %s',currState));
+end
+
+% Set next state
+nodeobj = SetNodeState(nodeobj,nextState);
+
+% Store possibly modified user params
+nodeobj = SetUserParams(nodeobj,p);
+\end{lstlisting}
+
+The structure of the code is similar to the previous half-duplex
+example.  The state machine is implemented as a large switch
+statement.  The state and user parameters are loaded at the
+beginning of the function, and saved at the end.  This general
+structure should be flexible enough to implement any controller
+function.
+
+\subsection{The Interference Sources}
+\label{sec:interference_source}
+The example scenario includes two interference sources: one in the
+FM radio band (99.5 MHz), and one in the ISM band (2495 MHz). The FM
+interferer transmits complex colored gaussian noise. The ISM
+interferer transmits complex white gaussian noise. Interference
+sources are transmit-only, so contain only a transmit module. Figure
+\ref{fig:interfNodes} shows a diagram of the example interference
+nodes.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=3.5in]{"figs/Interf Example"}
+\caption{Example interference nodes} \label{fig:interfNodes}
+\end{figure}
+
+These interference sources are constructed in
+\verb+examples/Ex_BuildInterferenc.m+.  \verb+CCGN_Controller.m+ and
+\verb+CWGN_Controller.m+ define the controller functions.
+\verb+CWGN_Transmit.m+ and \verb+CCGN_Transmit.m+ define the
+transmit functions. It is left to the interested reader to examine
+the source code on her own.
+
+One thing to note within the controller functions is that the
+modules are never marked as ``done'' (by using
+\verb+SetModuleRequest(...,'done')+). This is so that the simulation
+will stall if there are not enough interference samples created.
+
+\subsection{The LL MIMO Nodes}\label{sec:llmimoNodes}
+
+The final nodes included in the canonical example are the Lincoln
+Laboratory MIMO nodes.  These demonstrate the simulation of a very
+basic MIMO (Multiple Input Multiple Output) communication system.
+This example also makes use of the special ``genie'' channel for
+quickly implementing a reverse link, and defines custom plots for
+the timing diagram.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=3.5in]{"figs/LL MIMO Example"}
+\caption{LL MIMO nodes} \label{fig:llmimoNodes}
+\end{figure}
+
+Figure \ref{fig:llmimoNodes} shows the node structure for the LL
+MIMO nodes.% 
+%The nodes are named \verb+DN+ and \verb+AN+ for
+%historical reasons.  These were the names given to the transmitter
+%and receiver, respectively, in Cogcom.  
+\verb+DN+ is an acronym for ``disadvantaged node'', and \verb+AN+ stands for ``advantaged node''.  The genie channel is implemented by including genie
+modules. The genie modules are shown as octagons in the figure.
+
+\subsubsection{LLMimo\_BuildNodes.m}
+
+The LL MIMO nodes are constructed in
+\verb+user/LL/LLMimo_BuildNodes.m+.  The structure of the file
+should be very familiar to anyone who has read the previous sections
+explaining the half-duplex and full-duplex examples.  The only
+differences are the inclusion of the genie modules, and the way the
+user parameters are defined.  Portions of the file are explained below.
+
+\begin{lstlisting}[name=llmimoBuild]
+function LLMimoNodes = LLMimo_BuildNodes(range, envType)
+
+% Function LLMimo_BuildNodes.m:
+% Example function/script for building user nodes with common
+% transmit/receive modules and user parameters.
+% 
+% USAGE: LLMimoNodes = LLMimo_BuildNodes
+%
+% Input arguments:
+%  range        (string) range is 'short', 'short-medium', 'medium', or 'long'
+%  envType      (string) Environment type: 'rural', 'suburban', or 'urban'
+%
+% Output arguments:
+%  LLMimoNodes  (1xN Node obj array) Newly-created user nodes
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Copyright (c) 2006-2013 Massachusetts Institute of Technology %
+% All rights reserved.   See software license below.            %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Define transmit/receive modules
+
+tx_mod_params.name = 'LLmimo_tx';
+tx_mod_params.callbackFcn = @LLMimo_Transmit;
+tx_mod_params.fc = 850e6;
+tx_mod_params.type = 'transmitter';
+tx_mod_params.loError = 0;
+tx_mod_params.antType = {'dipole_halfWavelength'};
+tx_mod_params.antPosition = [0 -5 0;
+                             0 -4 0;
+                             0 -3 0;
+                             0 -2 0;
+                             0 -1 0;
+                             0 0 0;
+                             0 1 0;
+                             0 2 0;
+                             0 3 0;
+                             0 4 0]*3e8/tx_mod_params.fc;
+tx_mod_params.antPolarization = {'v'};
+tx_mod_params.antAzimuth = [0];
+tx_mod_params.antElevation = [0];
+tx_mod_params.exteriorWallMaterial = 'none';
+tx_mod_params.distToExteriorWall = [0];
+tx_mod_params.exteriorBldgAngle = [0];
+tx_mod_params.numInteriorWalls = [0];
+
+
+rx_mod_params.name = 'LLmimo_rx';
+rx_mod_params.callbackFcn = @LLMimo_Receive;
+rx_mod_params.TDCallbackFcn = @LLMimo_Rx_TDCallback;
+rx_mod_params.fc = 850e6;
+rx_mod_params.type = 'receiver';
+rx_mod_params.loError = 0;
+rx_mod_params.noiseFigure = 6; % (dB) noise figure of receiver
+rx_mod_params.antType = {'dipole_halfWavelength'};
+rx_mod_params.antPosition = [0 -4 0;
+                             0 -2 0;
+                             0 0 0;
+                             0 2 0]*3e8/rx_mod_params.fc;
+rx_mod_params.antPolarization = {'v'};
+rx_mod_params.antAzimuth = [0];
+rx_mod_params.antElevation = [0];
+rx_mod_params.exteriorWallMaterial = 'none';
+rx_mod_params.distToExteriorWall = [0];
+rx_mod_params.exteriorBldgAngle = [0];
+rx_mod_params.numInteriorWalls = [0];
+
+
+tx_mod = module(tx_mod_params);
+rx_mod = module(rx_mod_params);
+
+\end{lstlisting}
+
+Module objects are constructed in the normal fashion.  However,
+since this example involves a MIMO transmitter and receiver, the
+antenna position, \verb+antPosition+ (line 11 and 38), is a
+2-dimensional matrix rather than a single vector.\footnote{Please
+refer to the reference section for more details.}  Also,
+\verb+rx_mod_params.TDCallbackFcn+ has been defined on line 32.  The
+function that it points to, \verb+LLMIMO_Rx_TDCallback+ is a custom
+plot for the timing diagram callback.
+
+\begin{lstlisting}[name=llmimoBuild]
+% Create genie modules
+tx_gen.name = 'genie_tx';
+tx_gen.type = 'transmitter';
+
+rx_gen.name = 'genie_rx';
+rx_gen.type = 'receiver';
+
+gen_tx_mod = module(tx_gen,1);
+gen_rx_mod = module(rx_gen,1);
+
+
+\end{lstlisting}
+
+The section above creates the genie receive and transmit modules.
+Genie modules transfer information without actually sending an
+analog signal through the environment.  Instead, data sent from one
+genie module ``magically'' appears at another.  Unlike normal
+modules, no functions need to be written to define the
+modulation/demodulation schemes.  Note that a genie transmit module can multi-cast a message to several genie receive modules.
+
+The genie modules are defined by a name and a type (transmitter or
+receiver). To build a genie module, simply include an extra argument
+in the call to the module constructor (lines 60-61).  This extra
+argument is the ``genie flag''.  It instructs the constructor to
+make a genie module.
+
+\begin{lstlisting}[name=llmimoBuild]
+% Define nodes
+
+DN_node_params.name = 'DN';
+switch lower(range)
+    case 'short'
+        DN_node_params.location = [1.0e3 0 3];
+    case 'short-medium'
+        DN_node_params.location = [2.5e3 0 3];
+    case 'medium'
+        DN_node_params.location = [5.0e3 0 3];
+    case 'long'
+        DN_node_params.location = [1.0e4 0 3];
+    otherwise
+        error('Incorrect range case')
+end
+DN_node_params.velocity = [0 0 0];
+DN_node_params.controllerFcn = @LLMimo_DN_Controller;
+DN_node_params.modules = [tx_mod gen_rx_mod];
+
+AN_node_params.name = 'AN';
+switch lower(envType)
+    case 'rural'
+        AN_node_params.location = [0 0 100];
+    case 'suburban'
+        AN_node_params.location = [0 0 30];
+    case 'urban'
+        AN_node_params.location = [0 0 30];
+    otherwise
+        error('Incorrect environment type!')
+end
+AN_node_params.velocity = [0 0 0];
+AN_node_params.controllerFcn = @LLMimo_AN_Controller;
+AN_node_params.modules = [rx_mod gen_tx_mod];
+
+DN_node = node(DN_node_params);
+AN_node = node(AN_node_params);
+
+
+\end{lstlisting}
+
+The code block above builds the nodes.  The genie module is included
+in the array of modules just like a normal module.  The genie
+modules are used in the controller function similar to a normal
+module, but using different function calls.  This is discussed in
+more detail later.  The DN location is specified by the function input \verb+range+ and the AN location is specified by the function input \verb+envType+.
+
+User parameters are defined by populating a struct with field names
+and values just as before.  In this example, however, one node only
+transmits, while the other only receives.  As a result, some
+parameters, such as the training sequence, are shared, while other
+parameters, such as the transmit bits, are not.
+
+\begin{lstlisting}[name=llmimoBuild]
+% Define shared parameters (packet definition)
+sharedParams.noiseLen = 100;
+sharedParams.hTrainingLen = 100;
+sharedParams.hTrainingSeq = rand(GetNumAnts(tx_mod),...
+    sharedParams.hTrainingLen)>.5;
+sharedParams.trainingLen = 100;
+sharedParams.trainingSeq = rand(1,sharedParams.trainingLen)>.5;
+sharedParams.infoLen = 512;
+sharedParams.spreadRatio = 5;
+sharedParams.nOversamp = 3;
+sharedParams.blockLen = sharedParams.nOversamp*...
+    (sharedParams.noiseLen+sharedParams.hTrainingLen+...
+     sharedParams.trainingLen+sharedParams.spreadRatio...
+     *sharedParams.infoLen);
+sharedParams.nBlocksToSim = 8;
+
+\end{lstlisting}
+
+The shared parameters, shown above, include all the information that
+is required to synchronize between the two radios.  These parameters
+define the packet structure and the training sequences.  The number
+of packets to simulate is also defined here (line 92).
+
+\begin{lstlisting}[name=llmimoBuild]
+% DN-specific (Transmitter) parameters
+dnParams.transmittedBlocks = 0;
+dnParams.txPower = 1; % (Watts)
+dnParams.targDomAtten = 2;
+dnParams.infoSourceFilename = './user/LL/testdata_long.dat';
+dnParams.infoSourceFID = [];
+dnParams.infoBits = [];
+dnParams.txBitsFilename = '';
+dnParams.txBitsFID = [];
+dnParams.getFromRx = [];
+
+\end{lstlisting}
+
+The transmitter (\verb+DN+) in this example does not generate data
+randomly as in previous examples.  Instead, it reads binary data
+from a file.  This file is specified as a parameter named
+\verb+infoSourceFilename+ (line 131).  When running, the controller
+function will read a block of data from file and put it into
+\verb+infoBits+. \verb+LLMimo_Transmit()+ will then modulate this
+data for transmission. The field \verb+infoSourceFID+ will be used
+to hold a pointer to the \verb+testdata_long.dat+ once it is opened.
+
+While it's possible to read the entire datafile and put the bits
+into \verb+infoBits+, this is not suggested.  Doing so will use a
+lot of computer memory and incur a large amount of overhead during
+function calls. The simulation will run slowly.\footnote{MATLAB
+passes a \emph{copy} of the node object during function calls. There
+is no such thing as passing objects by reference.}
+
+\verb+LLMimo_Transmit()+ will save all transmitted bits into the
+file to be specified in the field \verb+txBitsFilename+.  This is
+used later for calculating the BER.  In previous examples, bits were
+stored directly in the node.  However, this example is sufficiently
+large that it is more computationally efficient to write the
+information to file for the same reasons explained above.
+
+The field \verb+getFromRx+ is a struct.  It is used to hold data
+received by the genie receive module.  The information is passed
+from the genie receive module, to the controller, and then to the
+transmit function \verb+LLMimo_Transmit()+ in the transmit module
+\verb+LLMimo_Tx+.  This process can be better understood by seeing
+it in the controller function in the following section.
+
+\begin{lstlisting}[name=llmimoBuild]
+% AN-specific (Receiver) parameters
+anParams.receivedBlocks = 0;
+anParams.epsilon = 10^-5;
+anParams.lagRange = [-50:5];
+anParams.rxBitsFilename = '';
+anParams.rxBitsFID = [];
+anParams.passToTx = [];
+
+\end{lstlisting}
+
+Parameters for the receiver are defined in the fragment of code
+shown above.  \verb+epsilon+ and \verb+lagRange+ define parameters
+that are used by the STAP receiver in \verb+LLMimo_Receive()+.  The
+demodulated bits are stored into the file specified by
+\verb+rxBitsFilename+.
+
+The field \verb+passToTx+ is used to hold information being passed
+back to the \verb+DN+.  Data stored here by \verb+LLMimo_Receive()+
+is copied into the genie transmit module by the AN controller
+function and sent to the DN genie receive module (or to others if multi-cast).
+
+\begin{lstlisting}[name=llmimoBuild]
+% Save parameters within nodes
+dnParams = StructMerge(dnParams,sharedParams);
+DN_node = SetUserParams(DN_node,dnParams);
+
+anParams = StructMerge(anParams,sharedParams);
+AN_node = SetUserParams(AN_node,anParams);
+
+
+% Put user nodes into array
+LLMimoNodes = [DN_node AN_node];
+\end{lstlisting}
+
+\verb+StructMerge()+ is a utility function that merges the fields of
+two different structs into one.  The merged parameters are stored
+into the node objects and the node objects are returned as an array.
+
+\subsubsection{LLMimo\_Transmit.m and LLMIMO\_Receive.m}
+
+The transmit and receive function for the LL MIMO example implement
+a simple MIMO link.  The transmit function uses a very simple
+repetition code, and the signal is BPSK encoded and resampled
+without pulse shaping.  The receiver uses a STAP beamformer. In
+terms of programming, only one line is worth noting.
+
+\begin{lstlisting}[name=llmimoReceive,firstnumber=71]
+% Save received bits to file for comparison with received bits
+[count,fPtr] = WriteBitBlock(p.rxBitsFID,demodBits);
+\end{lstlisting}
+
+The code above from \verb+LLMimo_Receive.m+ shows a call to the
+function \verb+WriteBitBlock()+.  This function saves the
+demodulated bits to file for calculation of the BER.  There is a
+corresponding line of code in \verb+LLMimo_Transmit.m+ that writes
+transmitted bits to file.  The files are initialized at startup by
+the controller function.
+
+\subsubsection{LLMimo\_AN\_Controller.m and LLMimo\_DN\_Controller.m}
+
+The structure of the controller function should be familiar, by now.
+However, since this is the first example that incorporates the use
+of the genie modules, it may be useful to examine the details.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=5in]{"figs/LL MIMO State Diagram"}
+\caption{State diagrams for LL MIMO controllers}
+\label{fig:llmimoState}
+\end{figure}
+
+Figure \ref{fig:llmimoState} shows the state diagrams for the
+controller functions.  Note that neither the LL MIMO transmit module
+nor the LL MIMO receive module are ever placed into a wait state.
+This is because the genie module is special.  It transmits
+information in zero time.  As a result, a separate state is required
+in the controller (as in the half-duplex example), but there is no
+need to instruct the transmit/receive modules to wait.
+
+Requests for genie modules to transmit or receive are made using the
+functions \verb+SetGenieTxRequest()+ and \verb+SetGenieRxRequest()+.
+Data is loaded into or read from the modules using
+\verb+ReadGenieInfo()+ and \verb+WriteGenieInfo()+. The code
+fragment below from \verb+LLMimo_AN_Controller.m+ illustrates how
+the functions are used to initiate a genie transmission.
+
+\begin{lstlisting}[name=llmimoANCon,firstnumber=53]
+   % Put send data into module's genie queue
+   nodeobj = WriteGenieInfo(nodeobj,'genie_tx',p.passToTx);
+
+   % Request send through genie channel to DN's genie receive
+   nodeobj = SetGenieTxRequest(nodeobj,'genie_tx','DN','genie_rx');
+   ...
+\end{lstlisting}
+
+In additional to the node object and module name,
+\verb+SetGenieTxRequest()+ takes the destination node and module
+name.  This is required because it is possible for a genie transmit
+module to send to any genie receive module in a scenario.   To multi-cast to multiple genie modules, the \verb+toNodeName+ and \verb+toModName+ can be (equal sized) cell arrays.  Data is delivered to the genie queue for each specified node/module address.
+
+Similarly, the code snippets below from
+\verb+LLMimo_DN_Controller.m+ show the code required to receive from
+a genie channel.
+
+\begin{lstlisting}[name=llmimoDNCon,firstnumber=62]
+    ...
+    % Transmission done, receive feedback info from genie channel
+    nodeobj = SetGenieRxRequest(nodeobj,'genie_rx');
+\end{lstlisting}
+
+\begin{lstlisting}[name=llmimoDNCon,firstnumber=72]
+    ...
+    requests = CheckRequestFlags(nodeobj);
+    if requests==0
+        % Got feedback, copy received info into user params
+        [nodeobj,p.getFromRx] = ReadGenieInfo(nodeobj,'genie_rx');
+    ...
+\end{lstlisting}
+
+This example provided a very brief overview to how genie channels
+are used. It should be enough information to get started.
+
+\subsubsection{LLMimo\_CalcBER.m}
+
+The LL MIMO example saves the transmitted and received bits to file
+rather than within the node object.  This was done to conserve
+memory (at the expense of disk space).  As a result, calculating the
+BER requires reading data from file.  The code block below from
+\verb+LLMimo_CalcBER.m+ illustrates this process using the functions
+provided with LLAMAComm.  \verb+ReadBitBlock()+ reads bits from
+files that were written by \verb+WriteBitBlock()+ (which is called
+from within \verb+LLMimo_Transmit()+ and \verb+LLMimo_Receive()+).
+
+\begin{lstlisting}[name=llmimoCalcBER]
+function ber = LLMimo_CalcBER(nodes)
+
+% Extract user parameters
+pAN = GetUserParams(FindNode(nodes,'AN'));
+pDN = GetUserParams(FindNode(nodes,'DN'));
+
+% Open saved files for reading
+ANfid = OpenBitFile(pAN.rxBitsFilename);
+DNfid = OpenBitFile(pDN.txBitsFilename);
+
+% Loop through blocks
+ANfPtr = 0;
+DNfPtr = 0;
+errCount = 0;
+bitCount = 0;
+while(1)
+
+    [ANbits,ANfPtr] = ReadBitBlock(ANfid,ANfPtr);
+    [DNbits,DNfPtr] = ReadBitBlock(DNfid,DNfPtr);
+
+    if isempty(ANbits) && isempty(DNbits)
+        % Done with files
+        break;
+
+    elseif ~isempty(ANbits) && ~isempty(DNbits)
+        % Compare data
+        errs = find(xor(ANbits,DNbits));
+
+        % Count errors and bits
+        errCount = errCount+length(errs);
+        bitCount = bitCount+size(ANbits,2);
+
+    else
+        error('Bit files have unequal length!');
+    end
+end
+
+% Calculate BER
+ber = errCount/bitCount;
+
+% Print results to screen
+fprintf('LL MIMO example, DN->AN BER: %f\n',ber);
+
+% Close opened files
+fclose(ANfid);
+fclose(DNfid);
+\end{lstlisting}
+
+
+\subsection{The Example Environment} \label{sec:exampleEnv}
+
+The example simulation is run using an example environment created
+in \verb+user/examples/Ex_Environment.m+.  The code sets some
+properties and builds an environment object.  Details about the environment
+properties can be found in Chapter \ref{chp:reference}.
+
+\begin{lstlisting}[name=exEnv]
+function env = Ex_BuildEnvironment
+
+% Function BuildTestEnvironment.m:
+% Builds an example rural environment object.
+%
+% USAGE: env = BuildTestEnvironment
+%
+% Input args:
+%  -none-
+%
+% Output arguments:
+%  env    (environment object) New environment object
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Copyright (c) 2006-2013 Massachusetts Institute of Technology %
+% All rights reserved.   See software license below.            %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+test_env_params.envType = 'rural';
+test_env_params.propParams.delaySpread = .2e-6;  % sec
+test_env_params.propParams.velocitySpread = 0.1;  % m/s
+test_env_params.propParams.alpha = 0.5;
+test_env_params.propParams.longestCoherBlock = 1;
+test_env_params.propParams.stfcsChannelOversamp = 3;
+test_env_params.propParams.wssusChannelTapSpacing = []; % samples
+test_env_params.propParams.los_dist = 10;             % m
+test_env_params.building.avgRoofHeight = 4;
+env = environment(test_env_params);
+\end{lstlisting}
+
+\subsection{The Start Script}
+
+The start script is responsible for setting up the required paths,
+calling the proper build files, and starting the simulation by
+calling the \verb+Main()+ function.  The contents of the
+\verb+StartExample.m+ script are shown below.
+
+\begin{lstlisting}[name=startExample]
+% Script StartExample.m:
+% The start script sets up the MATLAB path, calls user functions to set up
+% the simulation universe, and starts the simulation.  When the simulation
+% is complete, user-defined functions can be called to analyze the
+% results.
+%
+% This script runs the example described in the documentation:
+%    Easy rural environment
+%    2 Half-duplex nodes transmitting BPSK in the FM band
+%    2 Full-duplex nodes transmitting BPSK in GlobalStar/ISM
+%    1 Complex white gaussian noise interferer in the ISM band
+%    1 complex colored gaussian noise interferer in the FM band
+%    2 LL Mimo nodes (forward link with genie reverse link)
+%
+\end{lstlisting}
+\begin{lstlisting}[name=startExample,firstnumber=21]
+% Add required directories containing simulator functions 
+% to the MATLAB search path
+SetupPaths;
+
+% Paths to user-defined functions
+addpath ./user/examples
+addpath ./user/LL
+
+% Clear old variables
+clear all;
+
+% Initialize global variables
+InitGlobals;
+
+% Start timer to measure simulation time
+tic
+
+% Build example environment
+env = Ex_BuildEnvironment;
+
+% Populate simulation universe with nodes
+nodes = HD_BuildNodes;
+nodes = [nodes FD_BuildNodes];
+nodes = [nodes Ex_BuildInterference];
+nodes = [nodes LLMimo_BuildNodes('short','rural')];
+
+% Make a map of the nodes
+MakeNodeMap(nodes,1);
+
+% Start simulation
+[nodes,env,success] = Main(nodes,env);
+
+% Analyze results
+if success
+    HD_BER = HD_CalculateBER(nodes);
+    FD_BER = FD_CalculateBER(nodes);
+    LL_BER = LLMimo_CalcBER(nodes);
+end
+
+% Stop timer
+toc
+
+% Save workspace variables and timing diagram figure
+save(fullfile(saveDir,'Workspace'));
+if timingDiagramFig
+    saveas(timingDiagramFig,fullfile(saveDir,'TimingDiagram'),'fig');
+end
+\end{lstlisting}
+
+The start script is also responsible for saving all the workspace
+variables and the timing diagram figure.  We suggest that this file
+be used as a template.  Make a copy of this file and modify lines
+36-40 and 50-52 as needed.
+
+\subsection{The Global Variables File}\label{sec:initGlobal}
+
+The last programming file that will be discussed as part of the
+examples is \verb+InitGlobals.m+.  This file holds parameters that
+are shared across the entire simulation.  This file should not be
+modified.  Instead, you should copy it and name it something like \verb+InitGlobals_myname.m+.  {\bf User parameters should not be added to this file! Variables defined here should never be written to while the
+simulation is running.}  For a listing and description of the global variables, see \secref{globals}.
+
+\section{Debugging Tips}
+\label{sec:debugging}
+
+The previous sections covered the implementation of the radios in
+the example scenario.  Most of these examples were developed after
+the core of the simulator had been completed.  During development,
+it was useful to be able to view the properties and variables within
+the objects that are normally hidden.  As a result, some useful
+utilities were developed to aid in debugging.
+
+\subsection{Timing Diagram}
+The timing diagram was the main tool developed for debugging the
+controller functions and program execution order.  If the simulation
+stalls, looking at where the timing diagram ends should give clues
+into which module has misbehaved.  Signal information can be viewed
+by clicking on the segment rectangles on the diagram.
+
+A powerful way to use the timing diagram for debugging the state machine code in the controller function is to color the blocks according to the current state of the state machine.  LLAMAComm checks to see if the field \verb+faceColor+ is present in the user parameters with subfields corresponding to the module names and if so, colors the block accordingly.  To gain insight into this feature, add the following example code to the end of the full-duplex controller function \verb+HD_UserA_Controller.m+ before the user parameters are updated:
+%
+\begin{lstlisting}[numbers=none]
+% Update the timing diagram color for half-duplex user A
+switch nextState
+    case 'start'
+        colorRGB = [0 0 1]; % Blue
+        p.faceColor.hd_tx = colorRGB;
+        p.faceColor.hd_rx = colorRGB;
+    case 'transmit_wait'
+        colorRGB = [1 0 0]; % Red
+        p.faceColor.hd_tx = colorRGB;
+        p.faceColor.hd_rx = colorRGB;
+    case 'receive_wait'
+        colorRGB = [0 1 0]; % Green
+        p.faceColor.hd_tx = colorRGB;
+        p.faceColor.hd_rx = colorRGB;
+    case 'done'
+        colorRGB = [1 0 1]; % Magenta
+        p.faceColor.hd_tx = colorRGB;
+        p.faceColor.hd_rx = colorRGB;
+end
+
+% Store possibly modified user params
+nodeobj = SetUserParams(nodeobj,p);
+\end{lstlisting}
+%
+Also add the following code the end of the full-duplex controller function \verb+HD_UserB_Controller.m+ before the user parameters are updated:
+%
+\begin{lstlisting}[numbers=none]
+% Update the timing diagram color for half-duplex user B
+switch nextState
+    case 'start'
+        colorRGB = [0 0 1]; % Blue
+        p.faceColor.hd_tx = colorRGB;
+        p.faceColor.hd_rx = colorRGB;
+    case 'transmit_wait'
+        colorRGB = [0 1 0]; % Green
+        p.faceColor.hd_tx = colorRGB;
+        p.faceColor.hd_rx = colorRGB;
+    case 'receive_wait'
+        colorRGB = [1 0 0]; % Red
+        p.faceColor.hd_tx = colorRGB;
+        p.faceColor.hd_rx = colorRGB;
+    case 'done'
+        colorRGB = [1 0 1]; % Magenta
+        p.faceColor.hd_tx = colorRGB;
+        p.faceColor.hd_rx = colorRGB;
+end
+
+% Store possibly modified user params
+nodeobj = SetUserParams(nodeobj,p);
+\end{lstlisting}
+%
+You should now see the timing diagram blocks for the half-duplex users colored according to the next state of the state machine.
+
+\subsection{Separating the Received Signals}
+A useful aid for testing algorithms is to have access to individual noise-free received signals from all in-band transmit modules, rather than the superposition of all the received signals.  For example, a receiver could be operated with and without an interference signal present in order to test an interference rejection algorithm.  LLAMAComm provides this capability in the following way.  During node construction, if a field in the user-parameters struct of a given node is named \verb+separateTheReceivedSignals+, and it is set to 1, then during execution of each module's receiver callback function in that node, a struct called \verb+sigSep+ containing the separated signals and noise will be placed as a field in the user-parameters struct.  Each separated signal is labeled by the node and module that produced it; the noise is labeled by \verb+additiveNoise+.
+
+\subsection{Getting the Time-Varying Channel Impulse Response}
+There are two ways one may obtain the time-varying impulse response generated by LLAMAComm.   The first way allows the user to obtain the channel impulse response during run time.  This is described in the following paragraph.
+
+If the user creates a field in the user parameters called \verb+getChannelResponse+ and sets it to 1, LLAMAComm will create a user parameter field called \verb+chanResp+ and populate it with the channel impulse in the middle of the block for each active link in the block.  The channel information is also included and each response is labeled by the node and module that produced it.  The channel impulse response is then available for evaluation when the module's receive callback function is called.  The response has dimensions $[n_R, n_T, n_L]$, defined as the number of receivers, transmitter, and lags, respectively.  If more samples of the impulse response are desired, the user can create a field in the user parameters called "channelResponseTimes" and set it to an array with elements in the range $[0,1]$.  The impulse response will be calculated at:
+%
+\begin{lstlisting}[numbers=none]
+  sampTimes = blockStartSamp + round(channelResponseTimes*blockLen)
+\end{lstlisting}
+%
+ An error is thrown if any element of channelResponseTimes is not in the set $[0,1]$.
+
+
+
+After the simulation has finished, one may also generate the time-varying impulse response of a specified channel by executing the following code:
+
+\begin{lstlisting}[numbers=none]
+>> sampRate = 12.5e6; % (Hz) Simulation sample rate
+>> linkNum = 1; % Choose one of the links to examine
+>> % Sample the channel every millisecond for .1 seconds
+>> time = (0:.001:.1); % (sec)
+>> hTime = GetChannelResponse(env,linkNum,time,sampRate);
+>> % Plot the 1st tap of the channel between the 1st Tx and the 1st Rx
+>> plot(time, squeeze(abs(hTime(1,1,1,:))))
+\end{lstlisting}
+
+
+\subsection{Information in the Workspace}
+After the simulation has finished running, there is also a wealth of
+information in the workspace.  Typing \verb+env+ will list the
+environment properties along with a numbered list of the link
+objects created during the simulation.
+
+\begin{lstlisting}[numbers=none]
+>> env
+
+env = 
+
+            envType: rural
+          propParams.
+           delaySpread: 2e-07 s
+        velocitySpread: 0.1 m/s
+                 alpha: 0.5
+     longestCoherBlock: 1 s
+  stfcsChannelOversamp: 3
+wssusChannelTapSpacing:  samples
+              los_dist: 10 m
+            building.
+         avgRoofHeight: 4 m
+
+           shadow.
+     nodeArray: [1x8 struct]
+    linkMatrix: [8x8 logical]
+          Krho: [25x25 double]
+      corrLoss: [25x1 double]
+     linkNames: {1x25 cell}
+
+Link #        From (node:module) -> To (node:module:fc)
+
+   1.             HD_UserA:hd_tx -> HD_UserB:hd_rx:98.500 MHz
+   2.          Interf_FM:ccgn_tx -> HD_UserB:hd_rx:98.500 MHz
+   3.             HD_UserB:hd_tx -> HD_UserA:hd_rx:98.500 MHz
+   4.          Interf_FM:ccgn_tx -> HD_UserA:hd_rx:98.500 MHz
+   5.         Interf_ISM:cwgn_tx -> FD_UserB:fd1_rx:2495.000 MHz
+   6.               DN:LLmimo_tx -> AN:LLmimo_rx:850.000 MHz 
+   7.            FD_UserB:fd2_tx -> FD_UserA:fd2_rx:1500.000 MHz
+   8.            FD_UserA:fd1_tx -> FD_UserB:fd1_rx:2495.000 MHz
+\end{lstlisting}
+
+One can view information about link number 1 by typing the following:
+
+\begin{lstlisting}[numbers=none]
+>> DisplayLinkParams(env,1)
+
+   'HD_UserA:hd_tx' -> 'HD_UserB:hd_rx:98.50 Mhz'
+
+        channel.
+                    chan: [1x3 double]
+              chanTensor: [4-D double]
+                fakeHpow: 0.9349
+              nDelaySamp: 3
+          nPropDelaySamp: 0
+       longestCoherBlock: 1
+         dopplerSpreadHz: 0.0329
+            nDopplerSamp: 1
+               hOverSamp: 3
+    stfcsChannelOversamp: 3
+            ricePhaseRad: 3.6380
+                freqOffs: 0
+                 phiOffs: 3.4765
+                chanType: 'stfcs'
+
+
+       pathLoss.
+     shadowLinkIndex: 1
+           rangeLoss: 67.5098
+      shadowCorrLoss: -0.0883
+           shadowStd: 5.3631
+          shadowLoss: -0.4738
+       externalNoise: 11.9818
+         noiseFigure: 6
+           antGainTx: 0.6503
+           antGainRx: 0.6503
+       totalPathLoss: 65.7355
+             riceKdB: 0.9450
+          riceMedKdB: 4.7728
+    distBetweenNodes: 101.9853
+
+
+     propParams.
+               delaySpread: 2.0000e-07
+            velocitySpread: 0.1000
+                     alpha: 0.5000
+         longestCoherBlock: 1
+      stfcsChannelOversamp: 3
+    wssusChannelTapSpacing: []
+                  los_dist: 10
+             linkParamFile: []
+                  chanType: 'stfcs'
+\end{lstlisting}
+
+Similarly, information about nodes and modules can be accessed by
+using some provided functions.  The array of all nodes in the
+simulation is available from the MATLAB workspace.  Basic
+information about a single node can be displayed by using the node
+object's built-in display function.
+
+\begin{lstlisting}[numbers=none]
+>> nodes(1)
+
+ans = 
+
+           name: HD_UserA
+       location: [0 20 3]
+       velocity: [0 0 0]
+  controllerFcn: @HD_UserA_Controller
+          state: 'done'
+        modules: 'hd_tx' 'hd_rx'
+
+ User Parameters:
+                power: 10
+              dataLen: 800
+          trainingLen: 200
+            nOversamp: 2
+               bitLen: 1000
+             blockLen: 2000
+          trainingSeq: [1x200 logical]
+         nBlocksToSim: 15
+       receivedBlocks: 15
+    transmittedBlocks: 15
+               txBits: [15x1000 uint8]
+               rxBits: [15x1000 uint8]
+         equalizerLen: 21
+       equalizerDelay: 10
+\end{lstlisting}
+
+\verb+FindNode()+ can be used to find a node by name, and
+\verb+DisplayModule()+ can be used to bring up detailed information
+about the module.  The example below shows the contents of the
+module object after the example simulation was run.  The history
+section is a record of every state the module has been in.  It is
+useful for debugging the controller function.
+
+\begin{lstlisting}[numbers=none]
+>> hd = FindNode(nodes,'HD_UserA');
+>> DisplayModule(hd,'hd_tx')
+
+modobj = 
+
+             name: hd_tx
+               fc: 98500000 Hz
+               fs: 12500000 Hz
+             type: transmitter
+      callbackFcn: @BPSK_Transmit
+          loError: 0 parts
+     loCorrection: 0 parts
+          antType: dipole_halfWavelength
+      antPosition:     0.00     0.00     0.00 
+  antPolarization: v
+       antAzimuth:     0.00 
+     antElevation:     0.00 
+                       0.00 
+     exteriorWallMaterial: none 
+     distToExteriorWall:     0.00 
+     exteriorBldgAngle:     0.00 
+
+                 Request
+              job: 'done'
+      requestFlag: 0
+      blockLength: 
+       blockStart: 60001
+
+                 History
+     Start    Length         Job      fc (MHz)      fs (MHz)      fPtr
+         1      2000    transmit     98.500000     12.500000         0
+      2001      2000        wait     98.500000     12.500000        -1
+      4001      2000    transmit     98.500000     12.500000     16044
+      6001      2000        wait     98.500000     12.500000        -1
+      8001      2000    transmit     98.500000     12.500000     32088
+     10001      2000        wait     98.500000     12.500000        -1
+     12001      2000    transmit     98.500000     12.500000     48132
+     14001      2000        wait     98.500000     12.500000        -1
+     16001      2000    transmit     98.500000     12.500000     64176
+     18001      2000        wait     98.500000     12.500000        -1
+     20001      2000    transmit     98.500000     12.500000     80220
+     22001      2000        wait     98.500000     12.500000        -1
+     24001      2000    transmit     98.500000     12.500000     96264
+     26001      2000        wait     98.500000     12.500000        -1
+     28001      2000    transmit     98.500000     12.500000    112308
+     30001      2000        wait     98.500000     12.500000        -1
+     32001      2000    transmit     98.500000     12.500000    128352
+     34001      2000        wait     98.500000     12.500000        -1
+     36001      2000    transmit     98.500000     12.500000    144396
+     38001      2000        wait     98.500000     12.500000        -1
+     40001      2000    transmit     98.500000     12.500000    160440
+     42001      2000        wait     98.500000     12.500000        -1
+     44001      2000    transmit     98.500000     12.500000    176484
+     46001      2000        wait     98.500000     12.500000        -1
+     48001      2000    transmit     98.500000     12.500000    192528
+     50001      2000        wait     98.500000     12.500000        -1
+     52001      2000    transmit     98.500000     12.500000    208572
+     54001      2000        wait     98.500000     12.500000        -1
+     56001      2000    transmit     98.500000     12.500000    224616
+     58001      2000        wait     98.500000     12.500000        -1
+
+
+                 Save file info
+         filename: './save/20120323T164527/HD_UserA-hd_tx.sig'
+              fid: 
+
+
+>> 
+\end{lstlisting}
+
+
+\subsection{Other Debugging Tips}
+
+Finally, conventional debugging techniques such as setting breakpoints and
+printing debugging output are often very effective.
+
+\section{Example: Building a Receive-only Node}
+\label{sec:adding_observer}
+\newcounter{enumitemp}
+After looking over the example LLAMAComm code, you might not know where to begin building your own code.  In this section, we walk you through the process of modifying the example code to build a simple receiver-only node.  This experience will help you design more complicated nodes and simulations.  Please make the changes exactly as given so the line numbers can be referred to correctly.  In many cases you can copy and paste directly from the electronic version of this document.
+
+To begin, create the directory \verb+\user\observer+ and copy in the following files from \verb+\user\examples+: \verb+BPSK_Receive.m+, \verb+CWGN_Controller.m+, and \verb+Ex_BuildInterference.m+.  Change the file names from \verb+BPSK_Receive.m+, \verb+CWGN_Controller.m+, and \verb+Ex_BuildInterference.m+ to \verb+Observer_Receive.m+, \verb+Observer_Controller.m+, and \verb+Build_Observer.m+, respectively.
+
+\subsection{Receive Callback Function}
+\label{sec:observer_rec}
+
+The receiver you are building is very simple. It measures the power in the received signal \verb+sig+ and passes this measurement, via the user-parameters struct, to the controller callback function.  The waveform amplitude unit in LLAMAComm is Volts, so the average power (across a 1-Ohm resistor) is the mean square of a waveform (see \secref{powermeasurements} for more information on measuring power in LLAMAComm).  The controller callback function is the state machine that determines the functionality of the node.  It will be modified in \secref{observer_controller}.  For now, we'll concentrate on modifying the receiver callback function code.
+Open \verb+Observer_Receive.m+ in the MATLAB editor.  Do the following:
+\begin{enumerate}
+\item Search on \verb+BPSK_Receive+ and replace with \verb+Observer_Receive+ (you should make three replacements).
+
+\item Change the first six lines of the comments section from
+\begin{lstlisting}[numbers=none]
+% Function Observer_Receive.m:
+% This is an example of a user-written callback function for a
+% receive module.  This example demodulates an analog, BPSK signal.
+%
+% This example is designed to work with BPSK_Transmit
+%
+\end{lstlisting}
+%
+to the following:
+%
+\begin{lstlisting}[numbers=none]
+% Function Observer_Receive.m:
+% This is an example of a user-written callback function for a
+% receive module.
+%
+\end{lstlisting}
+%
+\end{enumerate}
+Now that you've updated the header comments, you can start modifying the function's code.
+
+The user-parameters struct is used to pass information between the controller callback function and receiver or transmitter callback functions.  Notice on line 21 that the user-parameters struct is obtained; on line 39, the user-parameters struct is updated---the user parameters are initialized when the node is built (see \secref{build_observer}).
+
+
+To implement the receiver functionality, do the following:
+\setcounter{enumitemp}{\theenumi}
+\begin{enumerate}
+\setcounter{enumi}{\theenumitemp}
+\item Replace lines 23-36 with the following:
+%
+\begin{lstlisting}[firstnumber=23]
+% Compute the block received power (Watts)
+recPow = sum(abs(sig(:)).^2)/length(sig(:));
+
+% Get the current block number (updated in the controller function)
+n = p.observedBlocks;
+
+% Update the received power array in the user parameters
+p.recPow(n) = recPow;
+
+% Make a time plot of the received power (dB Watts) in each block
+figure(2), plot(10*log10(p.recPow),'b*-')
+xlabel('Observed Block Number')
+ylabel('Observed Power (dBW)')
+grid on
+\end{lstlisting}
+%
+\end{enumerate}
+After you've completed the modifications, \verb+Observer_Receive.m+ should look like the following:
+%
+\begin{lstlisting}[firstnumber=1]
+function nodeobj = Observer_Receive(nodeobj,modname,sig)
+
+% Function Observer_Receive .m:
+% This is an example of a user - written callback function for a
+% receive module .
+%
+% USAGE: nodeobj = Observer_Receive(nodeobj,modname,sig)
+%
+% Input arguments:
+%  nodeobj    (node obj) Parent node object
+%  modname    (string) The name of the module that has activated this
+%              callback function
+%  sig        (NxblockLen) Analog baseband signal for N channels
+%
+% Output arguments:
+%  nodeobj    (node obj) Modified copy of the node object
+%
+% See also: BPSK_Transmit.m
+
+% Load user parameters
+p = GetUserParams(nodeobj);
+
+% Compute the block received power ( Watts )
+recPow = sum (abs (sig (:)).^2)/ length (sig (:));
+
+% Get the current block number ( updated in the controller function )
+n = p. observedBlocks ;
+
+% Update the received power array in the user parameters
+p. recPow (n) = recPow ;
+
+% Make a time plot of the received power (dB Watts ) in each block
+figure (2) , plot (10* log10 (p. recPow ),'b*-')
+xlabel ('Observed Block Number')
+ylabel ('Observed Power (dBW)')
+grid on
+
+% Save user params
+nodeobj = SetUserParams(nodeobj,p);
+\end{lstlisting}
+%
+
+Notice on line 27 that we've assumed there is a field in the user-parameters struct called \verb+observedBlocks+.  It counts the number of observed blocks and is incremented by the controller callback function (see \secref{observer_controller}).
+
+You're now done with \verb+Observer_Receive.m+.  Please save the file and congratulate yourself.  Next you will modify the controller callback function.
+
+
+\subsection{Controller Callback Function}
+\label{sec:observer_controller}
+
+The controller callback function is a state machine and in general can be made as complex as you want.  Depending on the node's current state and the status of the node's modules, the controller callback function sends transmit or receive requests for the node's modules to the LLAMAComm arbitrator. The LLAMAComm arbitrator calls the transmit or receive callback functions\footnote{The callback function name is specified as a \module\ property (c.f. \secref{moduleproperties_duringconstruction}).} to In our case, we just want to receive blocks until a specified number has been reached.
+
+Open \verb+Observer_Controller.m+ (remember that you created this file according to the instructions at the beginning of \secref{adding_observer}).  Make the following replacements:
+\begin{enumerate}
+\item Search on \verb+CWGN_Controller+ and replace with \verb+Observer_Controller+ (you should make three replacements).
+
+\item Change the first four lines of the comments section from
+%
+\begin{lstlisting}[numbers=none]
+% Function user/Observer_Controller.m:
+% Controller state machine for an example interference source that
+% transmits complex white gaussian noise in a specified band.
+%
+\end{lstlisting}
+%
+to the following:
+%
+\begin{lstlisting}[numbers=none]
+% Function user/Observer_Controller.m:
+% Controller state machine for a receiver that computes and
+% plots the received power in a specified band.
+%
+\end{lstlisting}
+%
+\end{enumerate}
+You're now ready to begin modifying the code.
+
+As you saw in the receiver callback function, the user-parameters struct is obtained at the beginning (on line 21) and updated at the end (on line 62).  This is how the controller interacts with transmit or receive module callback functions.
+
+Before diving headlong into changing the example code, let's make sure we understand what is already there. Below is a listing of lines 18-62 of the example code before you modify it:
+%
+\begin{lstlisting}[firstnumber=18]
+status = 'running';  % Default status
+
+% Load user parameters
+p = GetUserParams(nodeobj);
+
+% Get current node state
+currState = GetNodeState(nodeobj);
+
+% State machine next-state and output "logic"
+switch currState
+    case 'start'
+        % Set up module for transmission of 1 block
+        nodeobj = SetModuleRequest(nodeobj,'cwgn_tx','transmit',p.blockLen);
+        nextState = 'transmit_wait';
+
+    case 'transmit_wait'
+        requests = CheckRequestFlags(nodeobj);
+        if requests==0
+            if p.transmittedBlocks>=p.nBlocksToTx;
+                % Goto done
+                nextState = 'done';
+            else
+                % Transmission done, transmit again
+                nodeobj = SetModuleRequest(nodeobj,'cwgn_tx','transmit',p.blockLen);
+                nextState = 'transmit_wait';
+            end
+        else
+            % All requests not satisfied, wait
+            nextState = 'transmit_wait';
+        end
+
+    case 'done'
+        % Done!
+        nextState = 'done';
+        status = 'done';
+
+    otherwise
+        error(sprintf('Unknown state: %s',currState));
+end
+
+% Set next state
+nodeobj = SetNodeState(nodeobj,nextState);
+
+% Store possibly modified user params
+nodeobj = SetUserParams(nodeobj,p);
+\end{lstlisting}
+%
+
+
+The node's current state is returned by \verb+GetNodeState()+ on line 24 and used in the switch statement on line 27.  Notice there are three states: `\verb+start+', `\verb+transmit_wait+', and `\verb+done+.'
+
+In the `\verb+start+' state\footnote{The `{\tt start}' state is returned by {\tt GetNodeState()} when the controller callback function is called for the first time.}, the controller requests the module \verb+cwgn_tx+ to transmit a block of length \verb+p.blockLen+. The node's next state is set to `\verb+transmit_wait+' and on line 59, the node state is updated.  The next time the controller callback function is called, the state machine enters the `\verb+transmit_wait+' state.
+
+In the `\verb+transmit_wait+' state, the controller callback function checks if the \verb+cwgn_tx+ module's \verb+transmit+ job has completed by seeing if the request flag has cleared.  The module request flag\footnote{Note that in general, {\tt CheckRequestFlags()} would return an array of request flags---one for each module in the node.} is obtained by calling \verb+CheckRequestFlags()+.  If the transmit job has completed, i.e., \verb+if requests == 0+, then we check if the specified number of blocks have been transmitted, i.e., \verb+if p.transmittedBlocks>=p.nBlocksToTx+---if the specified number is reached, the controller puts the node in the `\verb+done+' state; if not, the controller requests the module \verb+cwgn_tx+ to transmit another block of length \verb+p.blockLen+ and keeps the node in the `\verb+transmit_wait+' state.  If the module request flag has not cleared, i.e., the statement \verb+if requests == 0+ is false, then the controller jumps to the \verb+else+ statement on line 44 and keeps the node in the `\verb+transmit_wait+' state (this is the ``wait'' part of the `\verb+transmit_wait+' state).
+
+In the `\verb+done+' state, the controller callback function perpetually keeps the node in the `\verb+done+' state and sets the status variable to \verb+done+.  Typically, the module would be given a \verb+done+ job to signal to the LLAMAComm arbitrator that the module has no more samples to transmit (see \secref{interference_source} for more details on why this is not done here).
+
+By now, you should anticipate the following obvious changes to the example code:
+\setcounter{enumitemp}{\theenumi}
+\begin{enumerate}
+\setcounter{enumi}{\theenumitemp}
+\item Search on `\verb+transmit_wait+' and replace with `\verb+receive_wait+' (there should be four replacements).
+
+\item Change the comments in lines 29 and 40 to reflect the new functionality (e.g., change \emph{transmission} to \emph{reception} and change \emph{transmit} to \emph{receive}).
+
+\item Change the name of the module from \verb+cwgn_tx+ to \verb+observer_rx+ in lines 30 and 41.
+
+\item Change the \verb+'transmit'+ job request to a \verb+'receive'+ job request in lines 30 and 41.
+
+\item In line 36, change \verb+p.transmittedBlocks+ to \verb+p.observedBlocks+ and change \verb+p.nBlocksToTx+ to \verb+p.nBlocksToObserve+.
+
+\end{enumerate}
+
+%After making these changes, lines 26-56 should look like the following:
+%%
+%\begin{lstlisting}[firstnumber=26]
+%% State machine next-state and output "logic"
+%switch currState
+%    case 'start'
+%        % Set up module for reception of 1 block
+%        nodeobj = SetModuleRequest(nodeobj,'observer_rx','receive',p.blockLen);
+%        nextState = 'receive_wait';
+%
+%    case 'receive_wait'
+%        requests = CheckRequestFlags(nodeobj);
+%        if requests==0
+%            if p.observedBlocks>=p.nBlocksToObserve;
+%                SetModuleRequest(nodeobj,'observer_rx','done');
+%                % Goto done
+%                nextState = 'done';
+%            else
+%                % Reception done, receive again
+%                nodeobj = SetModuleRequest(nodeobj,'observer_rx','receive',p.blockLen);
+%                nextState = 'receive_wait';
+%            end
+%        else
+%            % All requests not satisfied, wait
+%            nextState = 'receive_wait';
+%        end
+%
+%    case 'done'
+%        % Done!
+%        nextState = 'done';
+%        status = 'done';
+%
+%    otherwise
+%        error(sprintf('Unknown state: %s',currState));
+%end
+%\end{lstlisting}
+%%
+
+To finish up, you have to add a few lines of code.  You must increment the \verb+observedBlocks+ counter and send a \verb+done+ job to the receive module.  Please add the following:
+%
+\setcounter{enumitemp}{\theenumi}
+\begin{enumerate}
+\setcounter{enumi}{\theenumitemp}
+\item After the \verb+SetModuleRequest()+ function calls (there are two of them), increment the \verb+observedBlocks+ counter by inserting the following line:
+%
+\begin{lstlisting}[numbers=none]
+p.observedBlocks = p.observedBlocks + 1;
+\end{lstlisting}
+%
+
+\item After the IF statement: if \verb+p.observedBlocks>=p.nBlocksToObserve+, send a \verb+done+ job to the module by inserting the following line:
+%
+\begin{lstlisting}[numbers=none]
+nodeobj = SetModuleRequest(nodeobj,'observer_rx','done');
+\end{lstlisting}
+%
+
+\end{enumerate}
+%
+After making all the changes, lines 26 through 59 of \verb+Observer_Controller.m+ should read:
+%
+\begin{lstlisting}[firstnumber=26]
+% State machine next-state and output "logic"
+switch currState
+    case 'start'
+        % Set up module for reception of 1 block
+        nodeobj = SetModuleRequest(nodeobj,'observer_rx','receive',p.blockLen);
+        p.observedBlocks = p.observedBlocks + 1;
+        nextState = 'receive_wait';
+
+    case 'receive_wait'
+        requests = CheckRequestFlags(nodeobj);
+        if requests==0
+            if p.observedBlocks>=p.nBlocksToObserve;
+                nodeobj = SetModuleRequest(nodeobj,'observer_rx','done');
+                % Goto done
+                nextState = 'done';
+            else
+                % Reception done, receive again
+                nodeobj = SetModuleRequest(nodeobj,'observer_rx','receive',p.blockLen);
+                p.observedBlocks = p.observedBlocks + 1;
+                nextState = 'receive_wait';
+            end
+        else
+            % All requests not satisfied, wait
+            nextState = 'receive_wait';
+        end
+
+    case 'done'
+        % Done!
+        nextState = 'done';
+        status = 'done';
+
+    otherwise
+        error(sprintf('Unknown state: %s',currState));
+end
+\end{lstlisting}
+%
+Please save the changes you have made.
+
+Now that you have a node controller callback function and a receive module callback function you are ready to build the observer node.
+
+\subsection{Building the Observer Node}
+\label{sec:build_observer}
+
+The user-defined build-node function returns one or more nodes to be simulated in the LLAMAComm environment.
+
+Open \verb+Build_Observer.m+ (remember that you created this file according to the instructions at the beginning of \secref{adding_observer}) and begin with the following
+%
+\begin{enumerate}
+ \item Search on \verb+Ex_BuildInterference+ and replace with \verb+Build_Observer+ (you should make three replacements).
+
+ \item Search on \verb+interfNodes+ and replace with \verb+observerNode+ (you should make five replacements).
+
+ \item Change the 14 lines of the header comments from
+%
+\begin{lstlisting}[numbers=none]
+% Function Build_Observer.m:
+% Example function for building interference nodes.
+% This function returns 2 transmit-only nodes:
+%  1. Complex colored gaussian noise in the FM band
+%  2. Complex white gaussian noise in the ISM band
+%
+% USAGE: interfNodes = Build_Observer
+%
+% Input arguments:
+%  -none-
+%
+% Output arguments:
+%  interfNodes  (1xN Node obj array) Newly-created interference nodes
+%
+\end{lstlisting}
+%
+to the following 11 lines:
+%
+\begin{lstlisting}[numbers=none]
+% Function Build_Observer.m:
+% This function returns a receive-only observer node
+%
+% USAGE: observerNode = Build_Observer
+%
+% Input arguments:
+%  -none-
+%
+% Output arguments:
+%  observerNode  (1xN Node obj array) Newly-created observer node
+%
+\end{lstlisting}
+%
+\end{enumerate}
+
+You're now ready to begin modifying the rest of the code.  The changes are numbered below:
+
+\setcounter{enumitemp}{\theenumi}
+\begin{enumerate}
+\setcounter{enumi}{\theenumitemp}
+
+\item You are building only one node, so delete all the lines from 51 to the end of the function.
+
+\item Search on \verb+fm_+ and replace with \verb+observer_+ (you should make thirty replacements).
+
+\item Change the comment on line 16 to read: \verb+% Build observer node+.
+
+\item Change the name of the module on line 18 from \verb+'ccgn_tx'+ to \verb+'observer_rx'+ (in general, you can make the name whatever you want as long as no other module in the node shares the same name).
+
+\item Change the name of the module callback function on line 19 from \verb+@CCGN_Transmit+ to \verb+@Observer_Receive+.
+
+\item Change the module type on line 21 from \verb+'transmitter'+ to \verb+'receiver'+.
+
+\item Change the name of the node on line 35 from \verb+'Interf_FM'+ to \verb+Observer_1+ (in general, a node can have any unique name).
+
+\item Change the node location on line 36 from \verb+[0 -400 30]+ to \verb+[10 -350 50]+. Nodes cannot share the same location.
+
+\item Change the name of the controller callback function on line 38 from \verb+@CCGN_Controller+ to \verb+@Observer_Controller+.
+
+\item Change the struct field name on line 43 from \verb+.transmittedBlocks+ to \verb+.observedBlocks+.
+
+\item Change the struct field name on line 44 from \verb+nBlocksToTx+ to \verb+nBlocksToObserve+.
+
+\item On line 44, reduce the number of blocks to observe from 21 to 15.
+
+\item After line 31, add the following receiver module property:
+%
+\begin{lstlisting}[numbers=none]
+observer_mod_params.noiseFigure = 4; % (dB)
+\end{lstlisting}
+
+\end{enumerate}
+
+Lines 16 to the end should be as follows:
+%
+\begin{lstlisting}[firstnumber = 16]
+% Build observer node
+
+observer_mod_params.name = 'observer_rx';
+observer_mod_params.callbackFcn = @Observer_Receive;
+observer_mod_params.fc = 99.5e6;
+observer_mod_params.type = 'receiver';
+observer_mod_params.loError = 0;
+observer_mod_params.antType = {'dipole_halfWavelength'};
+observer_mod_params.antPosition = [0 0 0];
+observer_mod_params.antPolarization = {'v'};
+observer_mod_params.antAzimuth = [0];
+observer_mod_params.antElevation = [0];
+observer_mod_params.exteriorWallMaterial = 'none';
+observer_mod_params.distToExteriorWall = [0];
+observer_mod_params.exteriorBldgAngle = [0];
+observer_mod_params.numInteriorWalls = [0];
+observer_mod_params.noiseFigure = 4; % (dB)
+
+observer_interf_mod = module(observer_mod_params);
+
+observer_node_params.name = 'Observer_1';
+observer_node_params.location = [10 -350 50];
+observer_node_params.velocity = [0 0 0];
+observer_node_params.controllerFcn = @Observer_Controller;
+observer_node_params.modules = [observer_interf_mod];
+
+observer_interf_node = node(observer_node_params);
+
+observer_user_params.observedBlocks = 0;
+observer_user_params.nBlocksToObserve = 15;
+observer_user_params.blockLen = 3377;
+observer_user_params.power = 1; % (Watts) transmit power
+
+observerNode = SetUserParams(observer_interf_node,observer_user_params);
+\end{lstlisting}
+%
+
+After making the above modifications and saving your changes, you are ready for the last step: including the observer node in the example simulation.
+
+\subsection{Simulating the Observer Node}
+
+New nodes are easily incorporated into existing LLAMAComm simulations.  Open \verb+StartExample.m+ in the MATLAB editor and make the following modifications:
+
+\begin{enumerate}
+\item  Insert the path to the observer node code by adding the following after line 22:
+
+\begin{lstlisting}[numbers=none]
+addpath ./user/observer
+\end{lstlisting}
+
+\item Build the observer node and incorporate it into the node array by adding the following after line 41:
+
+\begin{lstlisting}[numbers=none]
+nodes = [nodes Build_Observer];
+\end{lstlisting}
+
+\end{enumerate}
+Make sure you save the changes when you are finished.
+
+Now it is time to see how well you followed the above instructions!  Change the current MATLAB directory to \verb+/llamacomm/+ and run \verb+StartExample.m+.  If you don't have any bugs, you should see the received power displayed in a MATLAB figure and the observer node should appear at the bottom of the timing diagram.  The observer node will also be present in the node map.

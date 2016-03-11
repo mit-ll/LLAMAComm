@@ -1,0 +1,666 @@
+\chapter{Reference}\label{chp:reference}
+
+The reference chapter defines the global variables and the various MATLAB objects implemented specifically for LLAMAComm.  Descriptions of important properties and method functions are provided.
+
+\section{Global Variables Defined}\label{sec:globals}
+
+The file \verb+InitGlobals.m+ holds parameters that are shared across the entire simulation.  This file should not be modified.  Instead, you should copy it and name it something like \verb+InitGlobals_myname.m+.  {\bf User code should not be added to this file! Variables defined here should never be written to while the simulation is running.}  The global variables are listed and described below:
+
+\begin{description}
+\item[simulationSampleRate] The universal baseband sample rate is defined by this global variable. This value may be modified by the user. However, this value affects all the the signal processing in the simulation, so the value should be changed with care. Although it is possible to read this value within user-defined functions, this is not recommended.  We instead recommend using the function \verb+GetModFs()+, to return the sample rate which is stored within every module object in the scenario.
+
+\item[chanType] This global variable determines the channel propagation model used by LLAMAComm.  Options are `\verb+wssus+' , `\verb+stfcs+', `\verb+los_awgn+', or `\verb+env_awgn+'.  The `\verb+wssus+' channel model generates channel realizations based on a wide-sense stationary uncorrelated-scattering (WSSUS) model with exponential power profile where the space-lag taps are i.i.d. and vary according to Jake's model.  There are no spatial correlations; thus, the `\verb+wssus+' channel model is more appropriate for single antenna simulations.  The `\verb+stfcs+' channel model creates space-time-frequency-correlated channel taps; however, the power profile is not exponential.  The model choice `\verb+los_awgn+' only applies line-of-sight propagation loss and should be used only for debugging.  The channel model `\verb+env_awgn+' is the same as `\verb+los_awgn+' but uses the given environment's median path loss and antenna gains to compute the total path loss.  It removes any effects of shadow loss and Rayleigh fading and ignores delay spread and Doppler settings. The channel models are described more detail in the tutorial powerpoint presentation provided with the LLAMAComm distribution.
+
+\item[includePropagationDelay]  Set this global flag to include propagation delays between transmit and receive modules.  The delay is proportional to the distance between the transmitter and receiver and is rounded to the nearest sample.
+
+\item[includeFractionalDelay] Set this global flag to include fractional-sample delays.  This is done by applying a non-causal, length-63, fraction-delay filter to the signals.
+
+\item[randomDelaySpread] Setting this global variable to 1 makes the delay spread for each link a log-normal random variable paramaterized by the link distance and correlated with the link shadow loss.  (See \verb+/@node/GetDelaySpread.m+ for more details.)  If this global variable is set to 0, then the delay spread for all links in the simulation will be equal to the environment property \verb+env.propParams.delaySpread+.  The random delay spread model is based on environmental parameters and is taken from [Greenstein, IEEE Trans. Veh. Technology, May 1997].
+
+\item[saveRootDir] The save directory for saving simulation results.
+
+\item[savePrecision] The precision of the simulation save files.
+
+\item[timingDiagramFig] The figure number associated with the timing diagram.  If set to zero, the timing diagram is not created.
+
+\item[timingDiagramForceRefresh] Forces the timing diagram to be redrawn after each block.  This allows you to see the blocks displayed as they are calculated, but slows down the simulation significantly.
+
+\item[timingDiagramShowExecOrder]  (true or false) Controls whether or not the execution order is displayed on the blocks in the timing diagram.
+
+\item[addGaussianNoiseFlag]  This flag turns the additive Gaussian noise on/off---used for debugging.
+
+\item[DisplayLLAMACommWarnings] LLAMAComm warnings are printed to the command window if this flag is set.
+
+\end{description}
+
+\section{@node}
+
+The \node\ object is the container for the link-layer radio
+properties and method functions, which are defined in the following.
+
+\subsection{Node Properties}
+
+The \node\ properties describe the top-level aspects of a radio.
+
+\begin{description}
+\item[.name] (string) Name of the node.  Must be unique in the simulation.
+
+\item[.location] (1x3 double array) $[x,y,z]$ (m) Location of the \node's
+local antenna coordinate system.  The local coordinate system axes are a
+translation of the global coordinate system, i.e., the x, y, and z axes in the
+two systems are parallel.
+
+\item[.velocity] (1x3 double array) $[x,y,z]$ (m/s) Velocity vector of the
+node relative to the local coordinate system.
+
+\item[.controllerFcn] (string) Controller callback function handle.  For
+example: \verb+node.controllerFcn = @node_controller+.
+
+\item[.state] (string) Current state of the \node's controller function.
+States names are user-defined.  The first state \emph{must} be named
+\verb+start+.  We recommend that the final state be named
+\verb+done+ or \verb+finished+.
+
+\item[.modules] (1xN module obj array) Array of \module\
+objects associated with the node.
+
+\item[.isCritical] (bool) indicates if the node is critical to the simulation. Note that nodes are critical by default.  If only non-critical nodes are running, the arbitrator forces them into the done state so that the simulation may terminate.  This is useful for interference nodes or other passive nodes that only need to run when other critical nodes are still operating; otherwise, the user must coordinate between the nodes to gracefully terminate the simulation without stalling.
+\end{description}
+
+\subsection{Node Methods}\label{sec:nodemethods}
+
+User functions only have access to the node object. Module objects
+are stored within node objects and not directly accessible. As a
+result, the functions listed here are the only ones that should be
+used to interact with node objects and their modules from within the
+user-defined files.
+
+Please refer to the the help information\footnote{Help is available
+from within MATLAB by typing \tt{help functionname}.} or see the
+actual MATLAB code in \verb+llamacomm/simulator/@node+ for a
+complete description of the input and output arguments.  Note that
+in the function arguments, \verb+nodeobj+ is an actual node object,
+while \verb+modname+ is a string containing the module of interests'
+name.  Methods listed below have been divided by functionality.
+
+\subsubsection{Extracting Basic Properties}
+
+These functions are used to recover basic information about the node
+or module.
+
+\begin{description}
+\item[GetNodeName(nodeobj)] Returns the name of the specified \node\ object.
+
+\item[FindNode(nodearray,nodename)] Given an array of node objects,
+finds and returns the node object with the specified name.
+
+\item[GetNumModAnts(nodeobj,modname)] Returns the number of antennas of the
+named \module\ in the specified \node.
+
+\item[GetModFc(nodeobj,modname)] Returns the named \module's current center
+frequency.
+
+\item[GetModFs(nodeobj,modname)] Returns the global simulation sample rate.
+Note that the simulation sample rate is stored in every module.
+
+\item[GetLoCorrection(nodeobj,modname)] Returns the current local oscillator correction factor (parts) of the named module.
+\end{description}
+
+\subsubsection{Setting Basic Properties}
+
+Only the center frequency and local oscillator correction factor (parts) of the module can be modified during a simulation run.
+
+\begin{description}
+\item[SetModFc(nodobj,modname,newFc)] Sets the center frequency of the
+named \module\ in the specified \node\ to the new value \verb+newFc+
+(Hz).
+\item[SetLoCorrection(nodobj,modname,loCorrection)] Sets the local oscillator correction factor of the named \module\ in the specified \node\ to the new value \verb+loCorrection+ (parts).  For example, to adjust by -0.95 parts per million, let \verb+loCorrection = -0.95e-6+.
+\end{description}
+
+\subsubsection{Controller Function}
+
+These functions deal with controller states and arbitrator requests.
+They are called from within the controller function.
+
+\begin{description}
+\item[GetNodeState(nodeobj)] Returns the current \node\ state.  Used
+at the beginning of the controller function.
+
+\item[SetNodeState(nodeobj,state)] Sets the \node\ state to the
+specified state.  Used at the end of the controller function.
+
+\item[CheckRequestFlags(nodeobj)] Queries all modules within a node
+to see if there are any outstanding requests to the arbitrator.
+
+\item[SetModuleRequest(nodobj,modname,job,blockLen)] Sets request flag high
+for the named \module\ so that its requested function will be
+executed by the simulation arbitrator. The argument \verb+blockLen+
+(number of time samples) is required when the module is not a genie
+module.  (See \S\ref{sec:exampleSection} and
+\S\ref{sec:simExecution} for more information on how this function
+is used.)
+
+\item[SetGenieRxRequest(nodeobj,modname)] Similar to
+\texttt{SetModuleRequest()}, but used for genie modules to receive.
+
+\item[SetGenieTxRequest(nodeobj,modname,toNodeName,toModName)] Similar to
+\texttt{SetModuleRequest()}, but used for genie modules to send.  To multi-cast to multiple genie modules, the \verb+toNodeName+ and \verb+toModName+ can be (equal sized) cell arrays.  Data is delivered to the genie queue for each specified node/module address.
+
+\item[ReadGenieInfo(nodeobj,modname)] Reads \verb+info+
+structure from genie receive queue for the named \module.
+
+\item[WriteGenieInfo(nodeobj,modname,info)] Adds \verb+info+ structure into
+the genie transmit queue for the named \module.
+\end{description}
+
+\subsubsection{User Parameters}
+
+The user-defined parameters are used to store information such as
+the training sequence, packet counters, and anything else that might
+be used within the firmware of a radio.
+
+\begin{description}
+\item[GetUserParams(nodeobj)] Returns the user-defined parameter structure
+contained in the \node\ object.
+
+\item[SetUserParams(nodobj,p)] Saves the user-defined parameter structure,
+\verb+p+, into the node object.
+\end{description}
+
+
+\subsubsection{Debugging Functions}
+
+These functions produce no output to the workspace, but are useful
+for debugging.
+
+\begin{description}
+\item[MakeNodeMap(nodes,mapFig)] Displays a map of the locations of the
+\node\ objects in the array \verb+nodes+.  The optional variable
+\verb+mapFig+ indicates the figure number in which the map will be
+displayed. The default is to create a new figure.  This function is
+called from within the startup file in the examples provided.
+
+\item[DisplayModule(nodeobj,modname)] Prints the contents of the named
+\module\ to screen.  This is used for debugging only.
+\end{description}
+
+
+\section{@module}
+
+The \module\ object simulates the physical layer of the
+communication system. Below, we list the \module\ properties and
+member method functions.
+
+\subsection{Module Properties} The \module\ properties are defined as follows:
+
+\subsubsection{Properties Defined During Object Construction}
+\label{sec:moduleproperties_duringconstruction}
+\begin{description}
+\item[.name] (string) Module name.  Each \module\ in a node must have a
+different name.
+
+\item[.fc] (double) (Hz) Center frequency of the module.
+
+\item[.fs] (double) (Hz) The simulation sample rate is read-only.
+
+\item[.type] (string) Module type: `\verb+transmitter+' or
+`\verb+receiver+'.
+
+\item[.callbackFcn] (string) Module call back function handle name.  For
+example, \verb+mod.callbackFcn = @mod_transmit+.
+
+\item[.loError] (double) (parts) Local oscillator error.  For example, if
+the local oscillator error is -1 part per million, then \verb+loError = -1e-6+.
+
+\item[.loCorrection] (double) (parts)  User defined local oscillator frequency correction factor.  This property can be changed dynamically to correct for the local oscillator errors.  During simulation of a link, the overall frequency offset will be calculated relative to the receiver local oscillator error.  For example, given a nominal receive center frequency of \verb+fr+, the link frequency offset will be: \verb|freqOffset = (loErrorTx + loCorrectionTx - loErrorRx - loCorrectionRx)*fr;|.
+
+\item[.noiseFigure] (double) (dB) The noise figure is only used if the
+module is a receiver.
+
+\item[.antType] (string cell array) The antenna type must have a
+corresponding function in
+\verb+llamacomm/simulator/pathloss/antennas+ with the same name.
+Currently, LLAMAComm requires all antennas to be the same type.
+
+\item[.antPosition] (Nx3 double) $[x,y,z]$ (m) Position of the \module\
+antennas in the \node's local coordinate system.  N is the number of antennas.
+
+\item[.antPolarization] (string) Antenna polarization: `\verb+h+',
+`\verb+v+', `\verb+rhcp+', or `\verb+lhcp+'.
+
+\item[.antAzimuth] (1x1 or 1xN double) (radians) Antenna azimuth look angle
+in the range $(-\pi, \pi]$. Measured in the x-y plane in the counter-clockwise
+direction from the positive x axis.  Currently, LLAMAComm requires all antennas
+to have the same look angle.
+
+\item[.antElevation] (1x1 or 1xN double) (radians) Antenna elevation look
+angle in the range $[-\frac{\pi}{2}, \frac{\pi}{2}]$.  Measured from the x-y
+plane with positive angles in the positive z-axis direction.
+
+\item[.exteriorWallMaterial] (string) Material of the building's exterior
+wall.  Currently, the supported materials are `\verb+concrete+' or
+`\verb+none+'.
+
+\item[.distToExteriorWall] (double) (m) Distance of antennas to exterior
+wall.
+
+\item[.numInteriorWalls] (int) Number of walls separating the \module\ from
+the exterior wall.
+
+\item[.exteriorBldgAngle] (double) (deg) Angle from the face of the
+building.  Currently, LLAMAComm only uses this parameter when the nodes are in
+close proximity.
+
+\item[.TDCallbackFcn] (string) Optional user-defined callback function for producing output when the timing diagram is clicked on for this module.
+Example: \verb+mod.TDCallbackFcn = @mod_TDCallbackFcn;+.  For an example of a user-defined timing diagram callback function see \verb+/user/LL/LLMimo_Rx_TDCallback.m+.
+\end{description}
+
+\subsubsection{Properties Related to Arbitrator Requests}
+\begin{description}
+\item[.job] (string) Specifies what job the module is performing. This parameter
+is one of the following: \verb+wait+, \verb+receive+,
+\verb+transmit+, or \verb+done+.  Once a module is marked as
+\verb+done+, it must always remain done.  Attempting to change the
+job will result in an error.
+
+\item[.requestFlag] (bool) The request flag is set to 1 when there
+is an outstanding request.  It is 0 when there is no request.
+\verb+SetRequest()+ sets this flag high.  \verb+RequestDone()+ sets
+it low.
+
+\item[.blockStart] (int) Sample index of the start of the
+``current'' segment.  This number starts at 1 at the beginning of
+the simulation, and is incremented by the function
+\verb+RequestDone()+ as the simulation runs.
+
+\item[.history]\label{sec:modHistory} (struct array) Structure that maintains a history of
+all signal segments processed for the module.  The history is what
+is queried by the arbitrator to determine if the required data is
+ready during a receive (see \S\ref{sec:runArbitrator}).  The fields
+within each structure of this array are:
+
+\begin{description}
+\item[.start] (int) Sample index for the start of signal segment
+\item[.blockLen] (int) Number of samples in signal segment
+\item[.job] (string) The job performed within this segment
+\item[.fc] (float) Center frequency (Hz)
+\item[.fs] (float) Sample Rate (Hz) This is always the baseband
+sample rate defined by the global simulation sample rate
+\item[.fPtr] (int) Index into the signal file that points to the
+data for this segment of signal.
+\end{description}
+
+\end{description}
+
+\subsubsection{Fields for Storing Data to Disk}
+\begin{description}
+\item[.filename] (string) Full path and filename of the \verb+.sig+ file
+used to store baseband data for a transmit or receive module.
+
+\item[.fid] (file ID) MATLAB file identifier used to read data from
+the file.  This is the argument that is returned by using MATLAB's
+fopen function.
+\end{description}
+
+\subsubsection{Special Fields for Genie Modules}
+\begin{description}
+\item[.isGenie] (bool) Flag set within a module object to mark a
+module as a genie module.  This flag is set during construction of
+the module object.
+
+\item[.genieToNodeName] (string) Genie transmit modules are allowed
+to send to any genie receive module.  This is the name of the node
+containing the genie module that the info is being sent to.  This
+field is filled by SetGenieTxRequest() as part of a request to
+transmit.
+
+\item[.genieToModName] (string) The genie module name to send to.
+This field is also filled by SetGenieTxRequest().
+
+\item[.genieQueue] (struct array) Array of structs for queuing received genie
+messages until they are read by ReadGenieInfo().
+\end{description}
+
+\subsection{Module Methods}
+
+The user does not have access to the \module\ object; hence, the \module\
+method functions cannot directly be called. The user manipulates the \module\
+properties by calling the appropriate \node\ member function (see
+\secref{nodemethods}).
+
+\section{@environment}
+The environment object contains the properties that are applicable to every
+link in the simulation.  It is also the container of the link object array and
+the shadowloss struct.
+
+\subsection{Environment Properties}
+
+The user deals very little with the environment object.  Only the
+class constructor is used to set up the environment properties at
+the beginning of the simulation.
+
+\subsubsection{Required User-Define Properties}
+
+These properties are set using the class constructor
+\verb+environment()+ when setting up the simulation.  (See
+\S\ref{sec:exampleEnv} for an example.)
+
+\begin{description}
+\item[.envType] (string) The environment type can be one of the following:
+`\verb+rural+', `\verb+suburban+', or `\verb+urban+'.
+
+\item[.propParams.delaySpread] (double) (s) Maximum time-difference of arrival of
+reflected signals. This property is ignored if the \verb+randomDelaySpread+ global variable flag is set (see \secref{globals}).
+
+\item[.propParams.velocitySpread] (double) (m/s) Maximum Doppler spread induced by the ambient environment.
+
+\item[.propParams.alpha] (double) Unitless property between 0 and 1 quantifying the
+amount of spatial correlation in the MIMO channels.  Setting $\alpha = 0$
+implies line of sight; setting $\alpha = 1$ implies uncorrelated spatial
+fading.  This property is only used if the `\verb+STFCS+' channel model option has been specified in the \verb+chanType+ global variable.
+
+\item[.propParams.longestCoherBlock] (double) (s) Property used to calculate the channel tensor in \verb+/simulator/channel/GetStfcsChannel()+.  This property is only used if the `\verb+STFCS+' channel model option has been specified in the \verb+chanType+ global variable.
+
+\item[.propParams.stfcsChannelOversamp] (int) Property used to calculate the channel tensor in \verb+@node/GetChannelTensor()+.  This property is only used if the `\verb+STFCS+' channel model option has been specified in the \verb+chanType+ global variable.
+
+\item[.propParams.wssusChannelTapSpacing] (int $N$) Places $N-1$ zeros between the channel taps to decrease the processing complexity.  This is especially useful when the bandwidths of the simulated signals are much less than the simulation sample rate.  A reasonable formula to determine $N$ is as follows:
+%
+\begin{eqnarray}
+    N = \frac{f_s}{8B_{\max}},
+\end{eqnarray}
+%
+where $B_{\max}$ is the largest signal bandwidth and $f_s$ is the simulation sample rate.  Thus, $N$ corresponds to the channel taps spaced at $1/8^{th}$ the symbol rate.  Most of the time, however, one should set $N=1$. This property is only used if the `\verb+wssus+' channel model option has been specified in the \verb+chanType+ global variable.
+
+\item[.los\_dist] (double) (m) Link distance below which the link is considered to be line of sight for propagation loss calculation.
+
+\item[.building.avgRoofHeight] (double) (m) Average building roof height in the simulation.
+\end{description}
+
+\subsubsection{Internal Simulator Properties}
+Most of the properties in the environment object are manipulated by
+the simulator internally.
+
+\begin{description}
+\item[.links] (1xN link obj) Array of \link\ objects created by
+\verb+@link/BuildLink.m+.
+
+\item[.shadow] (struct) Structure of shadowloss properties created by
+\verb+@environment/SetupShadowloss.m+.
+
+\end{description}
+
+\subsection{Environment Methods}\label{sec:envmethods}
+The user does not have access to the \env\ object during
+runtime; hence, the \env\ method functions cannot directly be called.  After
+execution, the following function may be called to investigate the link
+properties:
+
+\begin{description}
+\item[DisplayLinkParams(env,linkIndex)] Displays the properties of the
+\link\ object identified by its link index \verb+linkIndex+.  The link index
+can be obtained by typing \verb+env+ at the command prompt (see
+\secref{debugging}).
+\end{description}
+
+\section{@link}
+The \link\ object is the container for the link properties and the channel
+tensor. Each \link\ is created as needed. For example, if a transmit module and
+receive module have non-overlapping bands, then no \link\ is created between
+them.  All \link\ properties are derived through LLAMAComm's sophisticated
+environment modeling code from the \node, \module, and \env\ object properties.
+
+\subsection{Link Properties}
+\label{sec:linkparams} \noindent The link properties are as follows:
+
+\begin{description}
+\item[.channel] (struct)  Structure containing the channel tensor and
+other channel properties.  Created by
+\verb+@node/GetChannelStruct.m+.
+
+\item[.pathLoss] (struct) Structure containing the pathloss properties.
+Created by \verb+@node/GetPathlossStruct.m+.
+
+\item[.propParams] (struct) Structure containing the propagation
+properties.  Created by \verb+@node/GetPropParamsStruct.m+.
+
+\item[.antialiasTaps] (1xN double array) Filter used to perform anti-alias
+filtering when performing band-matching in
+\verb+tools/ProcessTransmitBlock.m+.
+
+\item[.fromID] (cell array) Transmitting module identifier:
+\verb+{`nodeName',`moduleName'}+.
+
+\item[.toID] (cell array) Receiving module identifier:
+\verb+{`nodeName',`moduleName', fc}+, where \verb+fc+ is the receiving module's
+center frequency.
+
+\end{description}
+
+\subsection{Link Methods}
+
+The user does not have access to the \link\ object during runtime;
+hence, the \link\ method functions cannot directly be called.  After
+execution, the \link\ object properties can be displayed to the
+screen by calling the function
+\verb+@environment/DisplayLinkParams()+ (see \secref{envmethods}).
+
+
+\section{Utility Functions}
+
+Utility functions are bits of code that we found useful when
+developing and testing LLAMAComm.  They are included in
+\verb+llamcomm/simulator/tools+.  A description of some of these
+functions follows.
+
+\begin{description}
+\item[StructMerge(s,f)] Merges the contents of struct \verb+f+ into struct
+\verb+s+.  If a particular field already exists in \verb+s+, it is
+overwritten.  Useful for managing user parameters.
+
+\item[FieldCopy(s,f)] Copies the values from fields in \verb+f+ into the
+corresponding field in \verb+s+.  If the field does not exist in
+\verb+s+, an error is generated.
+
+\item[db10(),db20(),undb10(),undb20()] Converts values to and from dB.
+\end{description}
+
+
+\section{File Input and Output}
+
+To be memory efficient, much of the simulation data is cached to
+file as the simulation runs.  A number of functions have been
+written to facilitate the process of reading and writing data to
+file.  All of these files are located in
+\verb+llamacomm/simulator/fileio/+.  Please refer to the function
+help for input and output arguments.
+
+\subsection{Info Source}
+
+The info source functions open a binary data file for reading and
+use the bits as data to be transmitted during a simulation run. (An
+alternative is to use randomly generated data.)  The LL MIMO example
+in \S\ref{sec:llmimoNodes} uses these functions to load data bits
+for transmission.
+
+\begin{description}
+\item[InitInfoSource()] Opens a binary data file for reading.
+
+\item[ReadInfoBits()] Reads N bits (multiple of 8) from file and returns
+the bits in a 1xN array.
+
+\item[InfoBitsRemaining()] Returns the number of bits remaining in
+the data file that has been opened for reading.
+\end{description}
+
+\subsection{Bits Files, \texttt{.bit}}
+
+The ``data bit'' functions are intended to be used for storing
+transmitted bits and demodulated bits for calculating the bit-error
+rate.  Each bit is stored as a separate byte. This is inefficient,
+but more convenient for reading/writing an arbitrary number of bits.
+Bit blocks may contain multichannel data.
+
+\subsubsection{File Format}
+
+Data bit files have the extension \verb+.bit+.  It is a custom
+block-based file format.  The structure of each block is displayed
+in Table \ref{tab:bitFileFormat}.  The field named \verb+blocksize+
+contains the block size in bytes.  This information is used to
+navigate up and down the file one block at a time.
+
+\renewcommand\arraystretch{1.5}
+\begin{table}[h]
+\caption{\texttt{.bit} file block format} \label{tab:bitFileFormat}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+ Start Index  &   Field Name   &   Format    &   \# Bytes\\
+\hline \hline
+       0      &   [blocksize]  &   uint32    &       4\\
+\hline
+       4      &    nSamps      &   uint32    &       4\\
+\hline
+       8      &    nChannels   &   uint32    &       4\\
+\hline
+       9      &    samples     &   uint8     &     $1 \times nSamps$\\
+\hline
+    $9+nSamps$  &   [blocksize]  &   uint32    &       4\\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\subsubsection{File Functions}
+
+The functions used to read/write to the \verb+.bit+ files are shown
+below.  These functions are also used by the LL MIMO example in
+\S\ref{sec:llmimoNodes}.
+
+\begin{description}
+\item[InitBitFile()] Starts a new \verb+.bit+ file for writing.
+
+\item[OpenBitFile()] Opens an existing \verb+.bit+ file for reading.
+
+\item[ReadBitBlock()] Reads a block of bits from an open file.  Requires
+a file offset that points to the start of a block.
+
+\item[WriteBitBlock()] Writes a block of bits to file.  The block of
+bits may be multichannel (M channels x N samples)
+
+\item[NextBitBlock()] Returns a file offset pointing to the start of the
+next block.
+
+\item[PrevBitBlock()] Returns a file offset pointing to the start of
+the previous block.
+\end{description}
+
+
+\subsection{Signal Files, \texttt{.sig}}\label{sec:sigFiles}
+
+Binary files with the extension \verb+.sig+ are used to store the
+baseband samples for all transmit and receive modules.  These files
+are created automatically by the arbitrator.  When the simulation is
+running, only signal segments being processed are kept in memory.
+Signal segments not in use are stored in the \verb+.sig+ files. (See
+\S{sec:simOutputFiles} for file naming conventions.) These files
+remain when the simulation finishes. The data within is used to
+generate the timing diagram callback plots and can also be used for
+post-analysis.
+
+\subsubsection{File Format}
+
+\verb+.sig+ files are block-based.  The format of each block is
+shown in Table~\ref{tab:sigFileFormat}.  By default, LLAMAComm
+stores data in \verb+.sig+ files as single-precision floating point.
+This can be changed to double-precision by modifying a parameter in
+the \verb+InitGlobals+ file (see \S\ref{sec:initGlobal}).
+
+\renewcommand\arraystretch{1.5}
+\begin{table}[h]
+\caption{\texttt{.sig} file block format} \label{tab:sigFileFormat}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+ Start Index  &   Field Name   &   Format    &   \# Bytes   \\
+\hline \hline
+       0      &   [blocksize]  &   uint32    &       4      \\
+\hline
+       4      &    startIdx    &   uint32    &       4      \\
+\hline
+       8      &    nSamps      &   uint32    &       4      \\
+\hline
+       12     &    nChannels   &   uint32    &       4      \\
+\hline
+       16     &    precision   &   uint32    &       4      \\
+\hline
+       20     &  bytes/sample  &   uint32    &       4      \\
+\hline
+       24     &     fc         &  float64    &       8      \\
+\hline
+       32     &     fs         &  float64    &       8      \\
+\hline
+       40     &    samples     & float32/64  &       $N$      \\
+\hline
+      $40+N$  &   [blocksize]  &   uint32    &       4      \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+The size of the field named \verb+samples+ varies depending on the
+number of samples and the precision.  Single-precision uses 4 bytes
+per sample, whereas double-precision uses 8 bytes per sample.
+
+The number of bytes required to hold the samples, $N$, is calculated
+as shown in Equation~\ref{eq:numBytes}.  The factor of 2 is required
+because the data is complex (real and imaginary).
+
+\begin{eqnarray} \label{eq:numBytes}
+    N = 2 \times nChan\times nSamps\times bytes/sample
+\end{eqnarray}
+
+\subsubsection{File Functions}
+
+The functions used to read/write to the \verb+.sig+ files are shown
+below.  These are used internally by the arbitrator and by the
+timing diagram callback function. It is also possible to use these
+functions to manually read the \verb+.sig+ files for analysis of the
+baseband samples using custom algorithms.
+
+\begin{description}
+\item[OpenSigFile()] Opens a \verb+.sig+ file for reading.
+
+\item[ReadSigBlock(fid,fPtr)] Reads a signal block from file.
+Requires a file offset (or pointer) that points to the start of a
+valid block.
+
+\item[WriteSigBlock()] Appends a signal block to the end of a
+\verb+.sig+ file.  This function should not be used by the user.  It
+is included here for completeness.
+
+\item[NextSigBlock()] Returns the file offset to the next valid
+signal block.
+
+\item[PrevSigBlock()] Returns the file offset to the previous valid
+signal block.
+
+\item[ReadSigBlockAdj()] Returns the requested block of data
+(specified using a file offset) along with the adjacent blocks of
+data before and after.  This function is used by the default timing
+diagram callback function to generate the time domain plot.
+\end{description}
+
+The functions \verb+NextSigBlock()+ and \verb+PrevSigBlock()+ are
+provided to allow simple navigation of the \verb+.sig+ files.
+However, the simulator itself uses the module history records to
+quickly access a block of signal.  Each history entry corresponds to
+a particular segment and contains a file pointer to the
+corresponding block in storage (see \S\ref{sec:modHistory}). The
+history records are used by the arbitrator to determine which
+segments to use. The relevant segments are then read into memory by
+the signal processing functions using the file pointers stored in
+the history record.  It is this caching method that allows LLAMAComm
+run long simulations without using much memory.
+
+\section{Acknowledgements}
+The authors wish to acknowledge Derek P. Young for his contributions to the arbitrator design and the writing of this document.

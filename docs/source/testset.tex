@@ -1,0 +1,158 @@
+\chapter{MIT Lincoln Lab Testset}
+
+The MIT Lincoln Laboratory testset is a predefined set of
+interference nodes, environments, and scenarios used to create more
+realistic interference situations.  Three basic scenarios are
+included in the testset package---one of each type: urban, suburban,
+and rural. Interference nodes in these scenarios broadcast
+pre-recorded radio signals such as analog television, GSM, microwave
+oven, digital television, satellite phone, FM broadcast, and 802.11.
+
+\section{Using the Testset}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=5in]{"figs/Testset"}
+\caption{Diagram of LLAMAComm using LL testset}
+\label{fig:testSetEx}
+\end{figure}
+
+Figure \ref{fig:testSetEx} shows how the LL testset is a simple
+extension of LLAMAComm.  Testset nodes are simply included in the
+scenario just like any other node.  Code for the testset is
+contained in the folder \verb+llamacomm/testset.LL+. The
+interference reference files are distributed separately and should
+be copied to the folder \verb+llamacomm/testset.LL/refFiles12p5/+.
+
+To try the testset, start Matlab and change the current directory to
+\verb+llamacomm/+.  Run \verb+StartLL.m+.  If you get an error, most
+likely you haven't moved the interference reference files into the
+appropriate folder (see the preceding paragraph for instructions).
+
+\section{Test Setup Files}
+The test setup files, \verb+Rural1Test()+, \verb+Suburban1Test()+, or
+\verb+Urban1Test()+, are a shortcut to creating an environment of a given type
+(either rural, suburban, or urban) and populating the node array with
+pre-defined interference nodes.  For example, the pseudocode outline of the
+test setup file \verb+Rural1Test.m+ is as follows.
+
+\begin{verbatim}
+      Define rural environment parameters
+      Instantiate the environment object
+      Set the default interference block length
+      Create the interference nodes
+      Return the environment object and the node object array
+\end{verbatim}
+
+The interference nodes are created by calling
+\verb+testset.LL/interf/BroadcastNode.m+ with the proper parameters.
+This makes it easy to manipulate parameters such as interference
+type, location, center frequency, and transmit power. See Tables
+\ref{tab:rural1test}-\ref{tab:urban1test} for a listing of the
+interference parameters.  Note that the type is obfuscated to make
+the true interference type unknown---Lincoln Laboratory maintains
+the secret decoder ring.  The interference file for each node is
+randomly chosen from the available files for the corresponding
+interference type.  Users of Cogcom should find it is much easier to
+manage the interference parameters in LLAMAComm.
+
+If users want to modify the code, they are advised to copy and paste the
+contents into a new folder in the \verb+/llamacomm/user/+ directory.  That way
+future updates to the testset will not overwrite user code.  One simple
+modification is to comment out the interference sources in the test setup file
+that are outside the bands of interest.
+
+% Insert a table with the interference parameters
+%
+\renewcommand\arraystretch{2.0}
+\begin{table}[htp]
+\begin{center}
+\caption{Interference parameters for {\tt Rural1Test.m}.}
+\begin{tabular}{|c|c|c|c|c|}
+%\multicolumn{1}{c|}{$T_of_o$}&\multicolumn{1}{c|}{$A$}&\multicolumn{1}{c|}{$B$}&\multicolumn{1}{c}{$B/A$}\\
+\hline
+    Name        & Type           & Location (m)         & $f_c$ (Hz)  & Power (Watts)\\
+\hline \hline
+ Norm1\_60MHz&     norm&     [-30e3, 0,      455]&   60e6&       35e2\\
+\hline
+ Fred1\_90MHz&     fred&     [30e3,  0,      450]&   90e6&       1.7e3\\
+\hline
+ Norm1\_450MHz&    norm&     [0,     30e3,   450]&   450e6&      25e2\\
+\hline
+ Norm1\_620MHz&    norm&     [-25e3, 25e3,   455]&   620e6&      25e2\\
+\hline
+ Nola1\_740MHz&    nola&     [0,     -30e3,  455]&   740e6&      25e3\\
+\hline
+ Cecil1\_850MHz&   cecil&    [-10e3, 0,      30]&    850e6&      79\\
+\hline
+ Sophia1\_1600MHz& sophia&   [100,   0,      2]&     1600e6&     3\\
+\hline
+\end{tabular}
+\label{tab:rural1test}
+\end{center}
+\end{table}
+%
+%
+\renewcommand\arraystretch{2.0}
+\begin{table}[htp]
+\begin{center}
+\caption{Interference parameters for {\tt Surburban1Test.m}.}
+\begin{tabular}{|c|c|c|c|c|}
+%\multicolumn{1}{c|}{$T_of_o$}&\multicolumn{1}{c|}{$A$}&\multicolumn{1}{c|}{$B$}&\multicolumn{1}{c}{$B/A$}\\
+\hline
+    Name        & Type           & Location (m)         & $f_c$ (Hz)  & Power (Watts)\\
+\hline \hline
+    Norm1\_60MHz & norm&     [-16e3, 0, 315]& 60e6&       10e2 \\
+\hline
+    Fred1\_90MHz&     fred&     [0,     -16e3,  320]&   90e6& 125e3\\
+\hline
+    Norm1\_450MHz&    norm&     [14e3,  14e3,   315]&   450e6& 30e2\\
+\hline
+    Nola1\_620MHz&    nola&     [16e3,  0,      313]&   620e6&250e3\\
+\hline
+    Ned1\_740MHz&     ned&      [0,     -16e3,  321]&   740e6&20e3\\
+\hline
+    Cecil1\_850MHz&   cecil&    [600,   0,      27]&    850e6&125\\
+\hline
+    Cecil1\_1870MHz&  cecil&    [0,     600,    34]&    1870e6& 251\\
+\hline
+    Isabelle1\_2495MHz&isabelle&[0,     50,     2]&     2495e6& 5\\
+\hline
+\end{tabular}
+\label{tab:surburban1test}
+\end{center}
+\end{table}
+%
+%
+\renewcommand\arraystretch{2.0}
+\begin{table}[htp]
+\begin{center}
+\caption{Interference parameters for {\tt Urban1Test.m}.}
+\begin{tabular}{|c|c|c|c|c|}
+%\multicolumn{1}{c|}{$T_of_o$}&\multicolumn{1}{c|}{$A$}&\multicolumn{1}{c|}{$B$}&\multicolumn{1}{c}{$B/A$}\\
+\hline
+    Name        & Type           & Location (m)         & $f_c$ (Hz)  & Power (Watts)\\
+\hline \hline
+ Nola1\_60MHz&     nola&     [0,     -5e3,   313]&   60e6&       250e3\\
+\hline
+ Fred1\_90MHz&     fred&     [0,     5e3,    320]&   90e6&       125e3\\
+\hline
+ Annette1\_450MHz& annette&  [-5e3,  0,      313]&   450e6&      250e3\\
+\hline
+ Annette1\_620MHz& annette&  [-5e3,  0,      313]&   620e6&      250e3\\
+\hline
+ Ned1\_740MHz&     ned&      [5e3,   0,      321]&   740e6&      20e3\\
+\hline
+ Cecil1\_850MHz&   cecil&    [0,     100,    28]&    850e6&      63\\
+\hline
+ Cecil1\_1870MHz&  cecil&    [100,   0,      28]&    1870e6&     251\\
+\hline
+ Ike1\_2495MHz&     ike&      [50,    0,      10]&    2495e6&     1\\
+\hline
+ Ike1\_5800MHz&     ike&      [-50,   0,      10]&    5800e6&     1\\
+\hline
+\end{tabular}
+\label{tab:urban1test}
+\end{center}
+\end{table}
+%

@@ -1,0 +1,196 @@
+___________________________________________________________________________
+
+ *** November 2012:  LLAMAComm (v. 2.16) (MATLAB R2011a)
+     - Some minor efficiency improvements
+     - Fixed bug in simulator/@module/AllSameTxFc.m that cause the second output
+       argument "ftout" to not be assigned in all circumstances
+     - If called with a single input argument, UpdateTimingDiagram.m is 
+       functionally equivalent to "drawnow"
+     - Removed the unused "user" parameter from DefaultTDCallback. UpdateTimingDiagram
+       was modified to act appropriately *if* a trailing user parameter structure is accepted
+       by the timing diagram callback function.
+     - Modified 'simulator/Main.m' was modified by adding a new global variable 
+       'saveDirIsAvailable'. This is to support running llamacomm on a cluster
+       (e.g. LLGRID). 
+     - Fixed bug in RunArbitrator.m related to genie nodes that caused simulation to stall
+     - Added multicast capability to genie nodes. Genie transmit module 
+       "to Node"/"to Module" may be now be (equal sized) cell arrays. Data is
+       delivered to the genie queue for each specified node/module address.
+___________________________________________________________________________
+
+ *** September 2012:  LLAMAComm (v. 2.15) (MATLAB R2011a)
+     - Modified InitGlobals.m by adding a new global variable 
+       'timingDiagramShowExecOrder' that controls whether or not execution
+       order is displayed in the timing diagram.
+     - Modified simulator/@node/node.m by adding a new property to node 
+       objects: 'isCritical' that indicates if the node is critical to 
+       the simulation. Note that nodes are critical by default. 
+       Also added node methods 'IsCritical' and 'ShutdownNode' 
+       to exploit this functionality.
+     - Modified simulator/@node/RunArbitrator.m to make use of new 'isCritical'
+       node property. If only non-critical nodes are running, they are 
+       shutdown so that the simulation may terminate. Also modified so that
+       timing diagram graphics events are flushed once, rather than with
+       each module.
+     - Modified simulator/@module/UpdateTimingDiagram by adding an extra input
+       parameter 'forceRefresh' that can be used to bypass the global value
+       'timingDiagramForceRefresh'. Also added a special syntax so that,
+       if called with a single argument the graphics events are flushed.
+       This usage was created so that, during profiling, the time to flush 
+       graphics events is properly ascribed to UpdateTimingDiagram rather
+       than some other function. Also modified to make use of the new 
+       global variable 'timingDiagramShowExecOrder'.
+     - Many minor speed, efficiency, and cosmetic improvements
+___________________________________________________________________________
+
+ *** July 2012:  LLAMAComm (v. 2.14) (MATLAB R2011a)
+     - Modified simulator/@node/RunArbitrator.m to prevent runaway transmit
+       jobs.  This happens, for example, when a transmit-only node is
+       present in the simulation.
+___________________________________________________________________________
+
+ *** May 2012:  LLAMAComm (v. 2.14 beta) (MATLAB R2011a)
+     - Modified /@env/BuildLink.m to check for reciprocal links.  If a 
+       reciprocal link exists then the new link is an exact copy of the
+       reciprocal.  This change affects the following functions:
+        simulator/@environment/DoPropagation.m
+        simulator/@environment/BuildLink.m
+        simulator/@node/CombineRxSignals.m
+       The following function was added:
+        simulator/@link/FindReciprocalLink.m
+     - Fixed bug in simulator/tools/ProcessTransmitBlock.m.  In the case of
+       mismatched center frequencies, the blocks were modulated incorrectly
+       and caused phase discontinuites across blocks.  This was pointed 
+       out by Brandon Hombs.
+___________________________________________________________________________
+
+ *** April 2012:  LLAMAComm (v. 2.13) (MATLAB R2011a)
+     - Modified /@module/UpdateTimingDiagram.m to allow users to specify
+       the color of the timing diagram blocks.  This helps debug the
+       state machine by allowing blocks to be colored according to the
+       state of the state machine.  To enable this feature, in the 
+       controller function set a user parameter to be:
+       p.faceColor.<module name> = <rgb color array>
+       where <module name> is the name of the module you would like to
+       change color on the next block and <rgb color array> is a three
+       element color array with entries between 0 and 1 that indicate the 
+       light intensity of the red, blue, and green pixels, respectively.
+     - Added function 'touchFigure.m' to the /simulator/tools/ directory.
+       It replaces the 'figure' command to make the figure current without
+       bringing it to the front.  Also added to /tools is 'figureLayout.m'
+       which can be used to capture and layout figure positions.
+     - Modified /@module/UpdateTimingDiagram.m.  Replaced 'figure' command
+       with 'touchFigure' command described above.
+     - Made speedup improvements throughout llamacomm
+     - Updated the copyright notice to 2012
+     - Forced ricePhaseRad to 0 in channel/getSampledChannel.m.  This 
+       makes it so the rice matrix is not randomly phase modulated.
+     - Added a feature.  If the user creates a field in the user parameters
+       called "getChannelResponse" and sets it to 1, llamacomm will create
+       a user parameter field called "chanResp" and populate it with
+       the channel impulse in the middle of the block for each active link 
+       in the block.  The response has dimensions [nR, nT, nL].  If more
+       samples of the impulse response are desired, the user can create a 
+       field in the user parameters called "channelResponseTimes" and set
+       it to an array with elements in the range [0,1].  The impulse
+       response will be calculated at:
+         sampTimes = startSamp + round(channelResponseTimes*blockLen)
+       An error is thrown if any element of channelResponseTimes is not
+       in the set [0,1].
+     - Added 'llamacommDir.m' in case this is usefule for getting the path
+       to llamacomm.
+     - Fixed display functions for objects so they can display empty 
+       objects
+     - Improved mlint cleanness on several functions
+     - Made speed improvements to the c-code used in the 'wssus' channel
+       and updated the mex functions
+___________________________________________________________________________
+
+ *** March 2012:  LLAMAComm (v. 2.12) (MATLAB R2011a)
+     - Modified ParseLinkParamFile.m to try evaluating the given text in
+       the 'base' workspace first, and if that fails to evaluate the given
+       text in the 'caller' workspace.  This allows the user to modify
+       link parameters based on the currint link parameters.
+     - Modified simulator/channel/GetPowerProfile so that active tap
+       indices in the power profile are randomly chosen with probability 
+       proportional to the power in the given tap.  The distribution is
+       exponentially distributed to match observed channels.
+___________________________________________________________________________
+
+ *** November 2011:  LLAMAComm (v. 2.11) (MATLAB R2011a)
+     - These modifications to LLAMAComm add a new channel model called 
+       'env_awgn.'  It is the same as 'los_awgn' but uses the given 
+       environment's median path loss and antenna gains to compute the 
+       total path loss.  It removes any effects of shadow loss and Rayleigh
+       fading and ignores delay spread and Doppler settings.  These changes
+       affect BuildLink.m, PropagateToReceiver.m, GetWssusChannel.m, and
+       GetPowerProfile.m
+     - Modifed ParseLinkParamFile.m so that if the parameter update fails
+       to execute in the 'base' workspace, it will attempt to execute in 
+       the 'caller' workspace.  This enables the user to incrementally 
+       modify the linkStruct
+___________________________________________________________________________
+
+ *** October 2011:  LLAMAComm (v. 2.10) (MATLAB R2011a)
+     - Added copyright statement to all code files
+___________________________________________________________________________
+
+ *** July 2011:  LLAMAComm (v. 2.9) (MATLAB R2011a)
+     - Bug fix: changed line 18 of /simulator/channel/GammaCdfInv.m.
+       Removed division by gamma(alph) since this is already being
+       done in gammainc.
+___________________________________________________________________________
+
+ *** September 2010:  LLAMAComm (v. 2.5) (MATLAB R2009b)
+     - Bug fix: changed line 66 and 76 of 
+       /simulator/channel/GetWssusChannel.m.  Replaced nR, nT with rLoop,
+       tLoop, respectively.  This bug prevented the WSSUS channel from 
+       being used with MIMO systems
+     - Added mex functions zhengFunLUT.mexmaci64 and TVConv.mexmaci64 for
+       Intel based 64-bit Macintosh machines
+___________________________________________________________________________
+
+ *** August 2010:  LLAMAComm (v. 2.4) (MATLAB R2009b)
+     - Changed /simulator/td/DefaultTDCallback.m: now displays spectrogram 
+       with a default resolution bandwith of 10 kHz.  If insufficient 
+       samples in block, then Welch estimate is displayed. Enforced 
+       spectrogram to be complex to get 2-sided fft's
+     - Removed random phase component of rice matrix when in 'los_awgn' 
+       mode.  Affects simulator/channel/GetWssusChannel.m
+     - Added .loCorrection property to the module object
+     - Added functions /@node/SetLoCorrection.m  and 
+       /@module/SetLoCorrection.m to enable adjusting the local 
+       oscillator by a small amount.
+     - Added functions /@node/GetLoCorrection.m  and 
+       /@module/GetLoCorrection.m to examine the current local
+       oscillator correction factor.
+     - Now use module properties .loError and .loCorrection to offset 
+       link frequency.  See @link/PropagateToReceiver.m and section 3.2.3
+       in the LLAMAComm documentation for more details
+___________________________________________________________________________
+
+ *** July 2010:  LLAMAComm (v. 2.3) (MATLAB R2009b)
+     - Changed Main.m line 32: removed './' from mkdir command to allow
+       non-relative directory structures
+     - StartExample_newLinkParams.m: Changed channelOversamp to 
+       stfcsChannelOversmp on line 39
+___________________________________________________________________________
+
+ *** June 2010:  LLAMAComm (v. 2.2) (MATLAB R2009b)
+     - Added error checking to @node/SetModuleRequest.m.  Throws error if
+       'blockLen' is negative. 
+___________________________________________________________________________
+
+ *** May 2010:  LLAMAComm (v. 2.1) (MATLAB R2009b)
+     - Changes to link/PropagateToReceiver.m and module/AllSameTxFc.m.
+       The center frequency was previously incorrectly retrieved from 
+       saved data when a receive module requested samples from a transmit
+       module across block boundries where the transmit module had changed
+       frequencies. 
+___________________________________________________________________________
+
+ *** Sept 2009:  LLAMAComm (v. 2.0) (MATLAB R2008b)
+     New version of LLAMAComm (previous code is incompatible due to 
+     updates to the globals)
+       - See the documentation for a full overview of the features
+___________________________________________________________________________ 

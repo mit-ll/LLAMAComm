@@ -1,0 +1,112 @@
+\documentclass[12pt,twoside]{report}
+
+\usepackage{graphicx}                  % For including graphics
+\usepackage{subfigure}                 % For multipart figures
+\usepackage{listings}                  % For prettyprinting of source code
+\usepackage{color}                     % Color package
+\usepackage{amsfonts,amsmath,amssymb}  % Math packages
+
+% Configure hyperref package for PDF output
+\usepackage[pdftex,
+        colorlinks=true,
+        urlcolor=rltblue,              % \href{...}{...} external (URL)
+        filecolor=rltgreen,            % \href{...} local file
+        linkcolor=rltblue,             % \ref{...} and \pageref{...}
+        pdftitle={LLAMAComm Documentation},
+        pdfauthor={Derek Young and Adam Margetts},
+        pdfsubject={LLAMAComm Documentation},
+        pdfkeywords={LLAMAComm, MIMO, documentation, frequency scavenging,
+            cognitive, communications},
+        pdfproducer={pdfLaTeX},
+        pagebackref,
+        pdfpagemode=None,
+        bookmarksopen=true]{hyperref}
+\definecolor{rltred}{rgb}{0.75,0,0}
+\definecolor{rltgreen}{rgb}{0,0.5,0}
+\definecolor{rltblue}{rgb}{0,0,0.75}
+
+% Object definitions
+\newcommand{\node}{{\tt node}}
+\newcommand{\module}{{\tt module}}
+\newcommand{\env}{{\tt environment}}
+\newcommand{\link}{{\tt link}}
+
+% Configure listings package
+\lstset{
+    language=matlab,                   % Set default language to MATLAB
+    basicstyle=\footnotesize\tt,       % print whole listing small and fixed font
+    keywordstyle=\color{black},        % control how keywords appear
+    identifierstyle=,                  % formatting for variables
+    commentstyle=,                     % formatting for comments
+    stringstyle=,                      % formatting for strings
+    showstringspaces=false,            % turn off special space characters
+    numbers=left,                      % Formatting for line numbers
+    numberstyle=\tiny,
+    stepnumber=2,
+    numbersep=10pt,
+    backgroundcolor=\color{codegray},  % Puts text into gray box
+    aboveskip=10pt,                    % Add blank space above box
+    belowskip=10pt                     % Add black space below box
+}
+\definecolor{codegray}{rgb}{.9,.9,.9}  % Background color for code blocks
+
+% Change formatting of description label
+% This affects the description lists in the reference section
+\renewcommand{\descriptionlabel}[1]
+{\hspace{\labelsep}\texttt{#1}}
+
+%% Configure the page layout
+\oddsidemargin 0.25in
+\evensidemargin 0in
+\textwidth 6.25in
+
+%% INPUT THE HEADER FILE
+\input{header}
+
+% Start document
+\begin{document}
+
+% Title Page
+\begin{titlepage}
+\begin{figure}[h]
+\includegraphics[height=.75in]{"figs/LLAMAComm Logo"}
+\end{figure}
+\begin{flushleft}
+{\Huge {\bf LLAMAComm:} Lincoln Laboratory} \\
+\vspace{.1in}
+{\Huge Ad-hoc MIMO Adaptive Communications}\\
+\vspace{.5in}
+{\bf Adam R. Margetts, Derek P. Young, Bruce McGuffin, Daniel Bliss, and Glenn Fawcett}\\
+MIT Lincoln Laboratory \\
+\vspace{.25in}
+{\it Document Version: 2.16, 2014-03-12}
+
+{\vspace{80mm}\small Distribution Statement ÒAÓ (Approved for Public Release, Distribution Unlimited) \newlineThis work was sponsored by the Defense Advanced Research Projects Agency under Air Force contract FA8721-05-C-0002.  Opinions, interpretations, conclusions, and recommendations are those of the authors and are not necessarily endorsed by the United States Government.}
+
+\end{flushleft}
+\end{titlepage}
+\thispagestyle{empty}  % Make page behind title blank
+
+% Table of contents and list of figures & tables
+\cleardoublepage
+\setcounter{page}{1} \pagenumbering{roman}
+\tableofcontents
+\listoffigures
+\listoftables
+
+% Start actual document section with page 1 on right odd side
+\cleardoublepage
+\pagenumbering{arabic} \setcounter{page}{1}
+\begin{raggedright}
+\parindent=0.5in
+
+% Document chapters
+\include{introduction}
+\include{tutorial}
+\include{behind}
+\include{reference}
+%\include{testset}
+
+\end{raggedright}
+
+\end{document}
