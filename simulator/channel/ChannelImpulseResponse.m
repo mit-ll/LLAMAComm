@@ -33,7 +33,7 @@ switch lower(channel.chanType)
   case 'wssus'
     [nR, nT] = size(channel.powerProfile);
     [nL]    = channel.longestLag + 1;
-  case 'stfcs'
+  case {'stfcs','wideband_awgn'}
     [nR, nT, nD, nL] = size(channel.chanTensor); %#ok - nD unused
   case {'los_awgn', 'env_awgn'}
     [nR, nT] = size(channel.riceMatrix);
@@ -59,7 +59,7 @@ switch lower(channel.chanType)
       end % END tLoop
     end % END sLoop
     
-  case 'stfcs'
+  case {'stfcs','wideband_awgn'}
     for sLoop = 1:nS
       startSamp = startSamps(sLoop);
       for tLoop = 1:nT
