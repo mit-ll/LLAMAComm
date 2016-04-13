@@ -1,5 +1,9 @@
 ___________________________________________________________________________
 
+ *** April 2016:  LLAMAComm (v. 2.16) (MATLAB R2015b)
+    - Added @module/GetProperties.m method.
+___________________________________________________________________________
+
  *** November 2012:  LLAMAComm (v. 2.16) (MATLAB R2011a)
      - Some minor efficiency improvements
      - Fixed bug in simulator/@module/AllSameTxFc.m that cause the second output
