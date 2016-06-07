@@ -25,9 +25,9 @@
 SetupPaths;
 
 % Paths to user-defined functions
-addpath ./BPSKNodes
-addpath ./MIMONodes
-addpath ./InterferenceNodes
+addpath ./examples/BPSKNodes
+addpath ./examples/MIMONodes
+addpath ./examples/InterferenceNodes
 
 % Clear old variables
 %clear all;
