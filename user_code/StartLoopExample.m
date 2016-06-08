@@ -25,6 +25,7 @@
 SetupPaths;
 
 % Paths to user-defined functions
+addpath ./examples
 addpath ./examples/BPSKNodes
 addpath ./examples/MIMONodes
 addpath ./examples/InterferenceNodes
