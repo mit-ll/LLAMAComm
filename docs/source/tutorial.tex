@@ -2114,12 +2114,12 @@ printing debugging output are often very effective.
 \newcounter{enumitemp}
 After looking over the example LLAMAComm code, you might not know where to begin building your own code.  In this section, we walk you through the process of modifying the example code to build a simple receiver-only node.  This experience will help you design more complicated nodes and simulations.  Please make the changes exactly as given so the line numbers can be referred to correctly.  In many cases you can copy and paste directly from the electronic version of this document.
 
-To begin, create the directory \verb+\user_code\observer+ and copy in the following files from 
-\verb+user_code\examples\InterferenceNodes+: \verb+InterferenceNodes\CWGN_Controller.m+, and \verb+Ex_BuildInterference.m+.  
+To begin, create the directory \verb+user_code\observer+ and copy in the following files from 
+\verb+user_code\examples\InterferenceNodes+: \verb+CWGN_Controller.m+, and \verb+Ex_BuildInterference.m+.  
 In addition copy in the file \verb+BPSK_Receive.m+ from \verb+user_code\examples\BPSKNodes+ directory.
 
-
-Change the file names from \verb+BPSK_Receive.m+, \verb+CWGN_Controller.m+, and \verb+Ex_BuildInterference.m+ to \verb+Observer_Receive.m+, \verb+Observer_Controller.m+, and \verb+Build_Observer.m+, respectively.
+In the \verb+observer+ subdirectory, 
+change the file names from \verb+BPSK_Receive.m+, \verb+CWGN_Controller.m+, and \verb+Ex_BuildInterference.m+ to \verb+Observer_Receive.m+, \verb+Observer_Controller.m+, and \verb+Build_Observer.m+, respectively.
 
 \subsection{Receive Callback Function}
 \label{sec:observer_rec}
@@ -2151,16 +2151,16 @@ to the following:
 \end{enumerate}
 Now that you've updated the header comments, you can start modifying the function's code.
 
-The user-parameters struct is used to pass information between the controller callback function and receiver or transmitter callback functions.  Notice on line 21 that the user-parameters struct is obtained; on line 39, the user-parameters struct is updated---the user parameters are initialized when the node is built (see \secref{build_observer}).
+The user-parameters struct is used to pass information between the controller callback function and receiver or transmitter callback functions.  Notice on line 26 that the user-parameters struct is obtained; on line 48, the user-parameters struct is updated---the user parameters are initialized when the node is built (see \secref{build_observer}).
 
 
 To implement the receiver functionality, do the following:
 \setcounter{enumitemp}{\theenumi}
 \begin{enumerate}
 \setcounter{enumi}{\theenumitemp}
-\item Replace lines 23-36 with the following:
+\item Replace lines 28-50 with the following:
 %
-\begin{lstlisting}[firstnumber=23]
+\begin{lstlisting}[firstnumber=28]
 % Compute the block received power (Watts)
 recPow = sum(abs(sig(:)).^2)/length(sig(:));
 
@@ -2200,6 +2200,11 @@ function nodeobj = Observer_Receive(nodeobj,modname,sig)
 %
 % See also: BPSK_Transmit.m
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Copyright (c) 2006-2012 Massachusetts Institute of Technology %
+% All rights reserved.   See software license below.            %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Load user parameters
 p = GetUserParams(nodeobj);
 
@@ -2223,7 +2228,7 @@ nodeobj = SetUserParams(nodeobj,p);
 \end{lstlisting}
 %
 
-Notice on line 27 that we've assumed there is a field in the user-parameters struct called \verb+observedBlocks+.  It counts the number of observed blocks and is incremented by the controller callback function (see \secref{observer_controller}).
+Notice on line 32 that we've assumed there is a field in the user-parameters struct called \verb+observedBlocks+.  It counts the number of observed blocks and is incremented by the controller callback function (see \secref{observer_controller}).
 
 You're now done with \verb+Observer_Receive.m+.  Please save the file and congratulate yourself.  Next you will modify the controller callback function.
 
@@ -2258,11 +2263,11 @@ to the following:
 \end{enumerate}
 You're now ready to begin modifying the code.
 
-As you saw in the receiver callback function, the user-parameters struct is obtained at the beginning (on line 21) and updated at the end (on line 62).  This is how the controller interacts with transmit or receive module callback functions.
+As you saw in the receiver callback function, the user-parameters struct is obtained at the beginning (on line 26) and updated at the end (on line 67).  This is how the controller interacts with transmit or receive module callback functions.
 
-Before diving headlong into changing the example code, let's make sure we understand what is already there. Below is a listing of lines 18-62 of the example code before you modify it:
+Before diving headlong into changing the example code, let's make sure we understand what is already there. Below is a listing of lines 23-67 of the example code before you modify it:
 %
-\begin{lstlisting}[firstnumber=18]
+\begin{lstlisting}[firstnumber=23][breaklines=true]
 status = 'running';  % Default status
 
 % Load user parameters
@@ -2312,9 +2317,9 @@ nodeobj = SetUserParams(nodeobj,p);
 %
 
 
-The node's current state is returned by \verb+GetNodeState()+ on line 24 and used in the switch statement on line 27.  Notice there are three states: `\verb+start+', `\verb+transmit_wait+', and `\verb+done+.'
+The node's current state is returned by \verb+GetNodeState()+ on line 29 and used in the switch statement on line 32.  Notice there are three states: `\verb+start+', `\verb+transmit_wait+', and `\verb+done+.'
 
-In the `\verb+start+' state\footnote{The `{\tt start}' state is returned by {\tt GetNodeState()} when the controller callback function is called for the first time.}, the controller requests the module \verb+cwgn_tx+ to transmit a block of length \verb+p.blockLen+. The node's next state is set to `\verb+transmit_wait+' and on line 59, the node state is updated.  The next time the controller callback function is called, the state machine enters the `\verb+transmit_wait+' state.
+In the `\verb+start+' state\footnote{The `{\tt start}' state is returned by {\tt GetNodeState()} when the controller callback function is called for the first time.}, the controller requests the module \verb+cwgn_tx+ to transmit a block of length \verb+p.blockLen+. The node's next state is set to `\verb+transmit_wait+' and on line 64, the node state is updated.  The next time the controller callback function is called, the state machine enters the `\verb+transmit_wait+' state.
 
 In the `\verb+transmit_wait+' state, the controller callback function checks if the \verb+cwgn_tx+ module's \verb+transmit+ job has completed by seeing if the request flag has cleared.  The module request flag\footnote{Note that in general, {\tt CheckRequestFlags()} would return an array of request flags---one for each module in the node.} is obtained by calling \verb+CheckRequestFlags()+.  If the transmit job has completed, i.e., \verb+if requests == 0+, then we check if the specified number of blocks have been transmitted, i.e., \verb+if p.transmittedBlocks>=p.nBlocksToTx+---if the specified number is reached, the controller puts the node in the `\verb+done+' state; if not, the controller requests the module \verb+cwgn_tx+ to transmit another block of length \verb+p.blockLen+ and keeps the node in the `\verb+transmit_wait+' state.  If the module request flag has not cleared, i.e., the statement \verb+if requests == 0+ is false, then the controller jumps to the \verb+else+ statement on line 44 and keeps the node in the `\verb+transmit_wait+' state (this is the ``wait'' part of the `\verb+transmit_wait+' state).
 
@@ -2326,13 +2331,13 @@ By now, you should anticipate the following obvious changes to the example code:
 \setcounter{enumi}{\theenumitemp}
 \item Search on `\verb+transmit_wait+' and replace with `\verb+receive_wait+' (there should be four replacements).
 
-\item Change the comments in lines 29 and 40 to reflect the new functionality (e.g., change \emph{transmission} to \emph{reception} and change \emph{transmit} to \emph{receive}).
+\item Change the comments in lines 34 and 45 to reflect the new functionality (e.g., change \emph{transmission} to \emph{reception} and change \emph{transmit} to \emph{receive}).
 
-\item Change the name of the module from \verb+cwgn_tx+ to \verb+observer_rx+ in lines 30 and 41.
+\item Change the name of the module from \verb+cwgn_tx+ to \verb+observer_rx+ in lines 35 and 46.
 
-\item Change the \verb+'transmit'+ job request to a \verb+'receive'+ job request in lines 30 and 41.
+\item Change the \verb+'transmit'+ job request to a \verb+'receive'+ job request in lines 35 and 46.
 
-\item In line 36, change \verb+p.transmittedBlocks+ to \verb+p.observedBlocks+ and change \verb+p.nBlocksToTx+ to \verb+p.nBlocksToObserve+.
+\item In line 41, change \verb+p.transmittedBlocks+ to \verb+p.observedBlocks+ and change \verb+p.nBlocksToTx+ to \verb+p.nBlocksToObserve+.
 
 \end{enumerate}
 
@@ -2395,9 +2400,9 @@ nodeobj = SetModuleRequest(nodeobj,'observer_rx','done');
 
 \end{enumerate}
 %
-After making all the changes, lines 26 through 59 of \verb+Observer_Controller.m+ should read:
+After making all the changes, lines 31 through 64 of \verb+Observer_Controller.m+ should read:
 %
-\begin{lstlisting}[firstnumber=26]
+\begin{lstlisting}[firstnumber=31]
 % State machine next-state and output "logic"
 switch currState
     case 'start'
@@ -2493,31 +2498,31 @@ You're now ready to begin modifying the rest of the code.  The changes are numbe
 \begin{enumerate}
 \setcounter{enumi}{\theenumitemp}
 
-\item You are building only one node, so delete all the lines from 51 to the end of the function.
+\item You are building only one node, so delete all the lines from 56 to the end of the function.
 
 \item Search on \verb+fm_+ and replace with \verb+observer_+ (you should make thirty replacements).
 
-\item Change the comment on line 16 to read: \verb+% Build observer node+.
+\item Change the comment on line 21 to read: \verb+% Build observer node+.
 
-\item Change the name of the module on line 18 from \verb+'ccgn_tx'+ to \verb+'observer_rx'+ (in general, you can make the name whatever you want as long as no other module in the node shares the same name).
+\item Change the name of the module on line 23 from \verb+'ccgn_tx'+ to \verb+'observer_rx'+ (in general, you can make the name whatever you want as long as no other module in the node shares the same name).
 
-\item Change the name of the module callback function on line 19 from \verb+@CCGN_Transmit+ to \verb+@Observer_Receive+.
+\item Change the name of the module callback function on line 24 from \verb+@CCGN_Transmit+ to \verb+@Observer_Receive+.
 
-\item Change the module type on line 21 from \verb+'transmitter'+ to \verb+'receiver'+.
+\item Change the module type on line 26 from \verb+'transmitter'+ to \verb+'receiver'+.
 
-\item Change the name of the node on line 35 from \verb+'Interf_FM'+ to \verb+Observer_1+ (in general, a node can have any unique name).
+\item Change the name of the node on line 40 from \verb+'Interf_FM'+ to \verb+Observer_1+ (in general, a node can have any unique name).
 
-\item Change the node location on line 36 from \verb+[0 -400 30]+ to \verb+[10 -350 50]+. Nodes cannot share the same location.
+\item Change the node location on line 41 from \verb+[0 -400 30]+ to \verb+[10 -350 50]+. Nodes cannot share the same location.
 
-\item Change the name of the controller callback function on line 38 from \verb+@CCGN_Controller+ to \verb+@Observer_Controller+.
+\item Change the name of the controller callback function on line 43 from \verb+@CCGN_Controller+ to \verb+@Observer_Controller+.
 
-\item Change the struct field name on line 43 from \verb+.transmittedBlocks+ to \verb+.observedBlocks+.
+\item Change the struct field name on line 48 from \verb+.transmittedBlocks+ to \verb+.observedBlocks+.
 
-\item Change the struct field name on line 44 from \verb+nBlocksToTx+ to \verb+nBlocksToObserve+.
+\item Change the struct field name on line 49 from \verb+nBlocksToTx+ to \verb+nBlocksToObserve+.
 
-\item On line 44, reduce the number of blocks to observe from 21 to 15.
+\item On line 49, reduce the number of blocks to observe from 21 to 15.
 
-\item After line 31, add the following receiver module property:
+\item After line 36, add the following receiver module property:
 %
 \begin{lstlisting}[numbers=none]
 observer_mod_params.noiseFigure = 4; % (dB)
@@ -2525,9 +2530,9 @@ observer_mod_params.noiseFigure = 4; % (dB)
 
 \end{enumerate}
 
-Lines 16 to the end should be as follows:
+Lines 21 to the end should be as follows:
 %
-\begin{lstlisting}[firstnumber = 16]
+\begin{lstlisting}[firstnumber = 21]
 % Build observer node
 
 observer_mod_params.name = 'observer_rx';
@@ -2572,13 +2577,13 @@ After making the above modifications and saving your changes, you are ready for 
 New nodes are easily incorporated into existing LLAMAComm simulations.  Open \verb+StartExample.m+ in the MATLAB editor and make the following modifications:
 
 \begin{enumerate}
-\item  Insert the path to the observer node code by adding the following after line 22:
+\item  Insert the path to the observer node code by adding the following after line 29:
 
 \begin{lstlisting}[numbers=none]
-addpath ./user_code/observer
+addpath ./observer
 \end{lstlisting}
 
-\item Build the observer node and incorporate it into the node array by adding the following after line 41:
+\item Build the observer node and incorporate it into the node array by adding the following after line 48:
 
 \begin{lstlisting}[numbers=none]
 nodes = [nodes Build_Observer];

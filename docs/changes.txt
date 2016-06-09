@@ -1,5 +1,17 @@
 ___________________________________________________________________________
 
+ *** June 2016:  LLAMAComm (v. 2.17) (MATLAB R2015b)
+    - Renamed "user" directory to "user_code". Created "examples" subdirectory
+      under "user_code"
+    - Moved "BPSKNodes" "InterferenceNodes" and "MIMONodes" directories from
+      user_code into user_code/examples/. Also moved "Ex_BuildEnvironment.m" 
+      into user_code/examples/
+    - Updated example code to reflect new locations with the llamacomm 
+      directory tree
+    - Updated documentation to reflect changes made to user_code directory
+      structure and files
+___________________________________________________________________________
+
  *** April 2016:  LLAMAComm (v. 2.16) (MATLAB R2015b)
     - Added @module/GetProperties.m method.
 ___________________________________________________________________________
