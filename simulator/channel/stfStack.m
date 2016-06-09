@@ -8,7 +8,7 @@ function zStf = stfStack(z, nDelay, nFreq, tSampTMaxRatio, freqOverSamp)
 %  zSTF      - stf channel matrix 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Copyright (c) 2006-2012 Massachusetts Institute of Technology %
+% Copyright (c) 2006-2016 Massachusetts Institute of Technology %
 % All rights reserved.   See software license below.            %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -24,7 +24,7 @@ for idx = 1:nFreq
               nRows, 1) .* zST;
 end
 
-% Copyright (c) 2006-2012, Massachusetts Institute of Technology All rights
+% Copyright (c) 2006-2016, Massachusetts Institute of Technology All rights
 % reserved.
 %
 % Redistribution and use in source and binary forms, with or without

@@ -25,14 +25,14 @@ function [hTime,linkInfo] = GetChannelResponse(linkobj,startSamps)
 %  >> plot(startSamps/fs, squeeze(abs(hTime(1,1,1,:))))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Copyright (c) 2006-2012 Massachusetts Institute of Technology %
+% Copyright (c) 2006-2016 Massachusetts Institute of Technology %
 % All rights reserved.   See software license below.            %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 hTime = ChannelImpulseResponse(linkobj.channel,startSamps);
 linkInfo = struct(linkobj);
 
-% Copyright (c) 2006-2012, Massachusetts Institute of Technology All rights
+% Copyright (c) 2006-2016, Massachusetts Institute of Technology All rights
 % reserved.
 %
 % Redistribution and use in source and binary forms, with or without

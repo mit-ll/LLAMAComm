@@ -15,7 +15,7 @@ function samples = ReadInt16Block(fid, nSamp, nChan)
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Copyright (c) 2006-2012 Massachusetts Institute of Technology %
+% Copyright (c) 2006-2016 Massachusetts Institute of Technology %
 % All rights reserved.   See software license below.            %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -36,7 +36,7 @@ samples = complex(samples(1:2:(2*nChan-1), :), samples(2:2:(2*nChan), :)); % nCh
 
 
 
-% Copyright (c) 2006-2012, Massachusetts Institute of Technology All rights
+% Copyright (c) 2006-2016, Massachusetts Institute of Technology All rights
 % reserved.
 %
 % Redistribution and use in source and binary forms, with or without

@@ -35,7 +35,7 @@ function channel = GetGeometricChannel(nodeTx,modTx,nodeRx,modRx,...
 % The filters used for fractional delay are really only good to about half the Nyquist bandwidth.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Copyright (c) 2006-2015 Massachusetts Institute of Technology %
+% Copyright (c) 2006-2016 Massachusetts Institute of Technology %
 % All rights reserved.   See software license below.            %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -146,7 +146,7 @@ channel.freqOffs          = [0];
 channel.phiOffs           = [0];
 channel.chanType          = propParams.chanType;
 
-% Copyright (c) 2006-2012, Massachusetts Institute of Technology All rights
+% Copyright (c) 2006-2016, Massachusetts Institute of Technology All rights
 % reserved.
 %
 % Redistribution and use in source and binary forms, with or without

@@ -32,7 +32,7 @@ function [hTime] = SampleHtensor(channel, ...
 %  >> hTime = SampleHtensor(channel, propParams, startSamps, sampRate);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Copyright (c) 2006-2012 Massachusetts Institute of Technology %
+% Copyright (c) 2006-2016 Massachusetts Institute of Technology %
 % All rights reserved.   See software license below.            %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -95,7 +95,7 @@ for tLoop = 1:nTimes
 end % end time sample loop
 
 
-  % Copyright (c) 2006-2012, Massachusetts Institute of Technology All rights
+  % Copyright (c) 2006-2016, Massachusetts Institute of Technology All rights
   % reserved.
   %
   % Redistribution and use in source and binary forms, with or without

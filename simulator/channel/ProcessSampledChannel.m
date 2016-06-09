@@ -15,7 +15,7 @@ function rxsig = ProcessSampledChannel(startSamp, channel, source)
 %  rxsig     (nR x N complex) Analog signal received by module. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Copyright (c) 2006-2012 Massachusetts Institute of Technology %
+% Copyright (c) 2006-2016 Massachusetts Institute of Technology %
 % All rights reserved.   See software license below.            %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -130,7 +130,7 @@ switch lower(computationMethod)
     error('Incorrect computation method in propToAn.m: must be either ''fftfilt'' or ''filter''')
 end % END switch over computation method
 
-% Copyright (c) 2006-2012, Massachusetts Institute of Technology All rights
+% Copyright (c) 2006-2016, Massachusetts Institute of Technology All rights
 % reserved.
 %
 % Redistribution and use in source and binary forms, with or without

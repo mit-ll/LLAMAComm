@@ -9,7 +9,7 @@ function GdBi = dipole(phi, ff, ll)
 % Second Edition, Wiley, NY, 1997, eqs. 4-64 and 4-68.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Copyright (c) 2006-2012 Massachusetts Institute of Technology %
+% Copyright (c) 2006-2016 Massachusetts Institute of Technology %
 % All rights reserved.   See software license below.            %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -45,7 +45,7 @@ GdBi(idx0) = db10(2) + db20( abs(FF(idx0)) ) - db10(Q(idx0)); % Balanis eq. 4-75
 % Restore warning messages
 warning(wstate);
 
-% Copyright (c) 2006-2012, Massachusetts Institute of Technology All rights
+% Copyright (c) 2006-2016, Massachusetts Institute of Technology All rights
 % reserved.
 %
 % Redistribution and use in source and binary forms, with or without

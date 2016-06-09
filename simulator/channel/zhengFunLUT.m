@@ -4,7 +4,7 @@ function h = zhengFunLUT(f, t, chanstates)
 %
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Copyright (c) 2006-2012 Massachusetts Institute of Technology %
+% Copyright (c) 2006-2016 Massachusetts Institute of Technology %
 % All rights reserved.   See software license below.            %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -25,7 +25,7 @@ sphi = repmat(chanstates.sphi, size(t));
 
 h = (2/sqrt(4*m))*sum(complex(cos(2*pi*f*cos(chanstates.alph)*t+ phi), cos(2*pi*f*sin(chanstates.alph)*t + sphi)));
 
-% Copyright (c) 2006-2012, Massachusetts Institute of Technology All rights
+% Copyright (c) 2006-2016, Massachusetts Institute of Technology All rights
 % reserved.
 %
 % Redistribution and use in source and binary forms, with or without

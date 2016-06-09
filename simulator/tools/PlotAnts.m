@@ -2,7 +2,7 @@ function PlotAnts(txnode,rxnode,thetatxdiff,phitxdiff,thetarxdiff,phirxdiff)
 % Make a 4x4 plot showing antenna look directions
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Copyright (c) 2006-2012 Massachusetts Institute of Technology %
+% Copyright (c) 2006-2016 Massachusetts Institute of Technology %
 % All rights reserved.   See software license below.            %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -149,7 +149,7 @@ function arrowPlot2(theta,len,plotParams)
     plot(locRot(1,:),locRot(2,:),plotParams)
     hold off
 
-% Copyright (c) 2006-2012, Massachusetts Institute of Technology All rights
+% Copyright (c) 2006-2016, Massachusetts Institute of Technology All rights
 % reserved.
 %
 % Redistribution and use in source and binary forms, with or without

@@ -21,7 +21,7 @@ function [Krho, linkNames] = GetShadowlossCorrMatrix(nodeArray,linkMatrix)
 %                             e.g., linkNames{1} = {'nodeA','nodeB'};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Copyright (c) 2006-2012 Massachusetts Institute of Technology %
+% Copyright (c) 2006-2016 Massachusetts Institute of Technology %
 % All rights reserved.   See software license below.            %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -189,7 +189,7 @@ psi = 180/pi * atan2(loc2(2)-loc1(2),loc2(1)-loc1(1));
 psi = mod(psi,360);
 
 
-% Copyright (c) 2006-2012, Massachusetts Institute of Technology All rights
+% Copyright (c) 2006-2016, Massachusetts Institute of Technology All rights
 % reserved.
 %
 % Redistribution and use in source and binary forms, with or without
