@@ -23,31 +23,34 @@ directory structure:
      llamacomm/
          docs/
          simulator/
-         user/
+         user_code/
              examples/
-             LL/
-         InitGlobals.m
-         SetupPaths.m
-         StartExample.m
+                  BPSKNodes/
+                  InterferenceNodes/
+                  MIMONodes/
 \end{verbatim}
+%             InitGlobals.m
+%             SetupPaths.m
+%             StartExample.m
 
 The directory \verb+docs/+ contains LLAMAComm documentation (this
 file), \verb+simulator/+ contains the MATLAB code that implements
-LLAMAComm, and \verb+user/+ contains user-defined radios.  The
-installation archive ships with several examples in \verb+examples/+
-and \verb+LL/+.
+LLAMAComm, and \verb+user_code/+ contains user-defined radios.  The
+installation archive ships with several examples in \verb+user_code/examples/+.
 
 When developing radios for simulation in LLAMAComm, user code should
-be confined to a folder within \verb+user/+. (e.g.
-\verb+user/newradio/+)  The only exception is the startup script
-which must be located in \verb+llamacomm/+.  Code within
+be confined to a folder within \verb+user_code/+. (e.g.
+\verb+user_code/newradio/+).  
+%The only exception is the startup script
+%which must be located in \verb+llamacomm/+.  
+Code within
 \verb+simulator/+ should never be modified.
 
 \section{Running the Example}
 
 LLAMAComm is set up by default to run the example simulation.  Start
 MATLAB and change the working directory to
-\verb+installdir/llamacomm/+. Run \verb+StartExample.m+. The example
+\verb+installdir/llamacomm/user_code+. Run \verb+StartExample.m+. The example
 simulation should finish without error in about 30 seconds.
 
 \begin{figure}[h]
@@ -201,7 +204,7 @@ for analyzing the results.  These files include records of all
 transmitted/received signals, transmitted/received bits, the timing
 diagram figure, and workspace-level variables (including all
 objects).  By default, the save directory is
-\verb+llamacom/save/timestamp+, where \verb+timestamp+ is generated
+\verb+llamacom/user_code/save/timestamp+, where \verb+timestamp+ is generated
 based on the clock.  Each run of the simulation will produce a new
 folder in the \verb+save/+ subdirectory with a different timestamp.
 
@@ -214,7 +217,7 @@ folder in the \verb+save/+ subdirectory with a different timestamp.
 
 Figure \ref{fig:saveFiles} shows the output produced by running the
 example scenario.  These files are located in
-\verb+llamacomm/save/20060406T132616+ because the simulation was
+\verb+llamacomm/user_code/save/20060406T132616+ because the simulation was
 started at 1:26:16 pm on April 6, 2006.
 
 Files with the extension \verb+.sig+ are saved automatically by
@@ -325,7 +328,8 @@ transmission scheme. The two controller functions are very similar;
 they are different only in that one controller starts in a transmit
 state while the other starts in a receive state.
 
-There are six files in the \verb+user/examples+ directory that are
+There are six files in the \verb+user_code/examples/BPSKNodes+ directory 
+that are
 used to implement the half-duplex radios: \verb+HD_BuildNodes.m+,
 \verb+BPSK_Receive.m+, \verb+BPSK_Transmit.m+,
 \verb+HD_UserA_Controller.m+, \verb+HD_UserB_Controller.m+,
@@ -348,7 +352,8 @@ all the example radios provided, these steps are incorporated into a
 \end{enumerate}
 
 Code to construct the half-duplex nodes is found in
-\verb+llamacomm/user/examples/HD_BuildNodes.m+.  Let us walk through
+\verb+llamacomm/user_code/examples/BPSKNodes/HD_BuildNodes.m+.  
+Let us walk through
 the file.  The block of code listed below is the function header and
 help comments. The build functions return an array of completed node
 objects.
@@ -356,10 +361,10 @@ objects.
 \begin{lstlisting}[name=hdBuildNodes]
 function hdNodes = HD_BuildNodes
 
+
 % Function HD_BuildNodes.m:
-% Example function for building example half-duplex
-% nodes with common transmit/receive modules and user
-% parameters.
+% Example function/script for building example half-duplex nodes with
+% common transmit/receive modules and user parameters.
 %
 % USAGE: hdNodes = BuildUserNodes
 %
@@ -961,12 +966,13 @@ example, however, we need to build four nodes since the transmit and
 receive frequencies are different.
 
 The following fragments of code from
-\verb+user/examples/FD_BuildNodes.m+ illustrate the important
+\verb+user_code/examples/BPSKNodes/FD_BuildNodes.m+ illustrate the important
 differences between the half-duplex example and this example.  (Some
 code has been snipped for clarity).
 
-\begin{lstlisting}[name=fdBuildNodes]
+\begin{lstlisting}[name=fdBuildNodes][numbers=none]
 function fdNodes = FD_BuildNodes
+...
 
 % Define transmit/recieve modules
 
@@ -1091,7 +1097,7 @@ transmissions from possible interference sources.  Figure
 The corresponding MATLAB code for the state machine is shown in the
 following listing.
 
-\begin{lstlisting}[name=fdController]
+\begin{lstlisting}[name=fdController][numbers=none]
 function [nodeobj,status] = FD_UserA_Controller(nodeobj)
 ...
 
@@ -1198,8 +1204,9 @@ nodes.
 \caption{Example interference nodes} \label{fig:interfNodes}
 \end{figure}
 
-These interference sources are constructed in
-\verb+examples/Ex_BuildInterferenc.m+.  \verb+CCGN_Controller.m+ and
+There are five files in the \verb+user_code/examples/InterferenceNodes+
+directory. The interference sources are constructed in
+\verb+Ex_BuildInterference.m+.  \verb+CCGN_Controller.m+ and
 \verb+CWGN_Controller.m+ define the controller functions.
 \verb+CWGN_Transmit.m+ and \verb+CCGN_Transmit.m+ define the
 transmit functions. It is left to the interested reader to examine
@@ -1214,7 +1221,9 @@ will stall if there are not enough interference samples created.
 
 The final nodes included in the canonical example are the Lincoln
 Laboratory MIMO nodes.  These demonstrate the simulation of a very
-basic MIMO (Multiple Input Multiple Output) communication system.
+basic MIMO (Multiple Input Multiple Output) communication system
+Files related to these nodes can be found in the 
+\verb+user_code/examples/MIMONodes+ directory.
 This example also makes use of the special ``genie'' channel for
 quickly implementing a reverse link, and defines custom plots for
 the timing diagram.
@@ -1236,7 +1245,7 @@ modules. The genie modules are shown as octagons in the figure.
 \subsubsection{LLMimo\_BuildNodes.m}
 
 The LL MIMO nodes are constructed in
-\verb+user/LL/LLMimo_BuildNodes.m+.  The structure of the file
+\verb+LLMimo_BuildNodes.m+.  The structure of the file
 should be very familiar to anyone who has read the previous sections
 explaining the half-duplex and full-duplex examples.  The only
 differences are the inclusion of the genie modules, and the way the
@@ -1435,7 +1444,7 @@ of packets to simulate is also defined here (line 92).
 dnParams.transmittedBlocks = 0;
 dnParams.txPower = 1; % (Watts)
 dnParams.targDomAtten = 2;
-dnParams.infoSourceFilename = './user/LL/testdata_long.dat';
+dnParams.infoSourceFilename = './user_code/examples/MIMONodes/testdata_long.dat';
 dnParams.infoSourceFID = [];
 dnParams.infoBits = [];
 dnParams.txBitsFilename = '';
@@ -1661,17 +1670,17 @@ fclose(DNfid);
 \subsection{The Example Environment} \label{sec:exampleEnv}
 
 The example simulation is run using an example environment created
-in \verb+user/examples/Ex_Environment.m+.  The code sets some
+in \verb+user_code/examples/Ex_BuildEnvironment.m+.  The code sets some
 properties and builds an environment object.  Details about the environment
 properties can be found in Chapter \ref{chp:reference}.
 
 \begin{lstlisting}[name=exEnv]
 function env = Ex_BuildEnvironment
 
-% Function BuildTestEnvironment.m:
+% Function Ex_BuildEnvironment.m:
 % Builds an example rural environment object.
 %
-% USAGE: env = BuildTestEnvironment
+% USAGE: env = Ex_BuildEnvironment
 %
 % Input args:
 %  -none-
@@ -1726,11 +1735,13 @@ calling the \verb+Main()+ function.  The contents of the
 SetupPaths;
 
 % Paths to user-defined functions
-addpath ./user/examples
-addpath ./user/LL
+addpath ./examples
+addpath ./examples/BPSKNodes
+addpath ./examples/MIMONodes
+addpath ./examples/InterferenceNodes
 
 % Clear old variables
-clear all;
+%clear all;
 
 % Initialize global variables
 InitGlobals;
@@ -2103,7 +2114,12 @@ printing debugging output are often very effective.
 \newcounter{enumitemp}
 After looking over the example LLAMAComm code, you might not know where to begin building your own code.  In this section, we walk you through the process of modifying the example code to build a simple receiver-only node.  This experience will help you design more complicated nodes and simulations.  Please make the changes exactly as given so the line numbers can be referred to correctly.  In many cases you can copy and paste directly from the electronic version of this document.
 
-To begin, create the directory \verb+\user\observer+ and copy in the following files from \verb+\user\examples+: \verb+BPSK_Receive.m+, \verb+CWGN_Controller.m+, and \verb+Ex_BuildInterference.m+.  Change the file names from \verb+BPSK_Receive.m+, \verb+CWGN_Controller.m+, and \verb+Ex_BuildInterference.m+ to \verb+Observer_Receive.m+, \verb+Observer_Controller.m+, and \verb+Build_Observer.m+, respectively.
+To begin, create the directory \verb+\user_code\observer+ and copy in the following files from 
+\verb+user_code\examples\InterferenceNodes+: \verb+InterferenceNodes\CWGN_Controller.m+, and \verb+Ex_BuildInterference.m+.  
+In addition copy in the file \verb+BPSK_Receive.m+ from \verb+user_code\examples\BPSKNodes+ directory.
+
+
+Change the file names from \verb+BPSK_Receive.m+, \verb+CWGN_Controller.m+, and \verb+Ex_BuildInterference.m+ to \verb+Observer_Receive.m+, \verb+Observer_Controller.m+, and \verb+Build_Observer.m+, respectively.
 
 \subsection{Receive Callback Function}
 \label{sec:observer_rec}
@@ -2167,7 +2183,7 @@ After you've completed the modifications, \verb+Observer_Receive.m+ should look 
 \begin{lstlisting}[firstnumber=1]
 function nodeobj = Observer_Receive(nodeobj,modname,sig)
 
-% Function Observer_Receive .m:
+% Function Observer_Receive.m:
 % This is an example of a user - written callback function for a
 % receive module .
 %
@@ -2224,7 +2240,7 @@ Open \verb+Observer_Controller.m+ (remember that you created this file according
 \item Change the first four lines of the comments section from
 %
 \begin{lstlisting}[numbers=none]
-% Function user/Observer_Controller.m:
+% Function user_code/Observer_Controller.m:
 % Controller state machine for an example interference source that
 % transmits complex white gaussian noise in a specified band.
 %
@@ -2233,7 +2249,7 @@ Open \verb+Observer_Controller.m+ (remember that you created this file according
 to the following:
 %
 \begin{lstlisting}[numbers=none]
-% Function user/Observer_Controller.m:
+% Function user_code/Observer_Controller.m:
 % Controller state machine for a receiver that computes and
 % plots the received power in a specified band.
 %
@@ -2559,7 +2575,7 @@ New nodes are easily incorporated into existing LLAMAComm simulations.  Open \ve
 \item  Insert the path to the observer node code by adding the following after line 22:
 
 \begin{lstlisting}[numbers=none]
-addpath ./user/observer
+addpath ./user_code/observer
 \end{lstlisting}
 
 \item Build the observer node and incorporate it into the node array by adding the following after line 41:
@@ -2571,4 +2587,4 @@ nodes = [nodes Build_Observer];
 \end{enumerate}
 Make sure you save the changes when you are finished.
 
-Now it is time to see how well you followed the above instructions!  Change the current MATLAB directory to \verb+/llamacomm/+ and run \verb+StartExample.m+.  If you don't have any bugs, you should see the received power displayed in a MATLAB figure and the observer node should appear at the bottom of the timing diagram.  The observer node will also be present in the node map.
+Now it is time to see how well you followed the above instructions!  Change the current MATLAB directory to \verb+/llamacomm/user_code/examples+ and run \verb+StartExample.m+.  If you don't have any bugs, you should see the received power displayed in a MATLAB figure and the observer node should appear at the bottom of the timing diagram.  The observer node will also be present in the node map.

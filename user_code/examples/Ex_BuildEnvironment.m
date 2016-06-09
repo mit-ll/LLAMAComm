@@ -1,9 +1,9 @@
 function env = Ex_BuildEnvironment
 
-% Function BuildTestEnvironment.m:
+% Function Ex_BuildEnvironment.m:
 % Builds an example rural environment object.
 %
-% USAGE: env = BuildTestEnvironment
+% USAGE: env = Ex_BuildEnvironmentt
 %
 % Input args:
 %  -none-
