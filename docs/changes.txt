@@ -10,6 +10,7 @@ ___________________________________________________________________________
       directory tree
     - Updated documentation to reflect changes made to user_code directory
       structure and files
+    - Updated all copyright notices
 ___________________________________________________________________________
 
  *** April 2016:  LLAMAComm (v. 2.16) (MATLAB R2015b)
