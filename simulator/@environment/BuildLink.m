@@ -93,8 +93,13 @@ else
   % Generate Pathloss 
   switch lower(chanType)
     case {'los_awgn','wideband_awgn'}
-      % Line of sight pathloss
-      pathLoss.totalPathLoss = Line_of_sight_loss(nodeTx, modTx, nodeRx, modRx);
+      % Line of sight pathloss 
+      %losLoss = Line_of_sight_loss(nodeTx, modTx, nodeRx, modRx);
+      %pathLoss.totalPathLoss = Line_of_sight_loss(nodeTx, modTx, nodeRx, modRx);
+
+      temp = GetPathlossStruct(nodeTx, modTx, nodeRx, modRx, envParams);
+      antGain = (temp.antGainTx + temp.antGainRx);
+      pathLoss.totalPathLoss = losLoss - antGain;
       pathLoss.shadowCorrLoss     = 0;
       pathLoss.shadowStd          = 0;
       pathLoss.shadowLoss         = 0;
