@@ -26,7 +26,7 @@ function [linkobj] = FindReciprocalLink(links, nodeTx, modTx, nodeRx, modRx, nod
 linkobj = [];
 linkCount = 0;
 
-if length(links)>0
+if ~isempty(links)
   nodeTxName     = GetNodeName(nodeTx);
   nodeRxName     = GetNodeName(nodeRx);
   frequency      = GetFc(modRx);
