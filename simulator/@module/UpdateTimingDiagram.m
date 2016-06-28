@@ -48,17 +48,17 @@ activateCallback = true;
 drawTickEnable = true;
 rectThickness = .3;
 tickThickness = .4;
-if 0 % Original frequency range
-    minFreq = 50e6;
-    maxFreq = 2500e6;
+if ~true % Original frequency range
+  minFreq = 50e6;
+  maxFreq = 2500e6;
 else % Link 16 frequency range
-    minFreq = 969e6;
-    maxFreq = 1206e6;
+  minFreq = 969e6;
+  maxFreq = 1206e6;
 end
 lineWidth = 1;
 lineColor = [0 0 0];
-execOrderYOffset = .05; %#ok if unused
-execOrderFontSize = 8; %#ok if unused
+execOrderYOffset = .05; 
+execOrderFontSize = 8; 
 if isempty(timingDiagramShowExecOrder)
   showExecOrder = true;
 else
@@ -208,7 +208,6 @@ end
 
 % Draw execution order above where rectangle would be
 if showExecOrder
-  1; %#ok if this line is unreachable
   x = block.start;
   y = yaxisdb.ypos-.5*rectThickness;
   text(x, y-execOrderYOffset, 0, ...
