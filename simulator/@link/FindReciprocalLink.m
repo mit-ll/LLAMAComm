@@ -25,47 +25,48 @@ function [linkobj] = FindReciprocalLink(links, nodeTx, modTx, nodeRx, modRx, nod
 
 linkobj = [];
 linkCount = 0;
-% Check to see if the channel is reciprocal (same antenna locations and
-% types
-for I = 1:length(links)
 
-    linkNodeTxName = links(I).fromID{1};
-    linkNodeRxName = links(I).toID{1};
-    linkFrequency  = links(I).toID{3};
-    
-    nodeTxName     = GetNodeName(nodeTx);
-    nodeRxName     = GetNodeName(nodeRx);
-    frequency      = GetFc(modRx);
+if length(links)>0
+  nodeTxName     = GetNodeName(nodeTx);
+  nodeRxName     = GetNodeName(nodeRx);
+  frequency      = GetFc(modRx);
+  linkNodeTx = FindNode(nodes, nodeRxName);
+  linkNodeTxStruct = struct(linkNodeTx);
+
+  linkNodeRx = FindNode(nodes, nodeTxName);
+  linkNodeRxStruct = struct(linkNodeRx);
+
+  for linkIndx = 1:length(links)
+
+    linkNodeTxName = links(linkIndx).fromID{1};
+    linkNodeRxName = links(linkIndx).toID{1};
+    linkFrequency  = links(linkIndx).toID{3};
     
     % Check to see if the fromNode and toNode and center frequency are reciprocal
-    if isequal({linkNodeTxName,linkNodeRxName,linkFrequency},...
-               {    nodeRxName,    nodeTxName,    frequency})
-           
-        linkNodeTx = FindNode(nodes,linkNodeTxName);
-        txModNum   = GetModNum(linkNodeTx,links(I).fromID{2});
-        linkNodeTx = struct(linkNodeTx);
-        linkModTx  = linkNodeTx.modules(txModNum);
-        
-        linkNodeRx = FindNode(nodes,linkNodeRxName);
-        rxModNum   = GetModNum(linkNodeRx,links(I).fromID{2});
-        linkNodeRx = struct(linkNodeRx);
-        linkModRx  = linkNodeRx.modules(rxModNum);
-        
-        % Check to see if the tx and rx modules in each node have the same
-        % antenna properties
-        if isequal(GetAntennaParams(modTx),GetAntennaParams(linkModRx)) && ...
-           isequal(GetAntennaParams(modRx),GetAntennaParams(linkModTx))
+    if isequal({linkNodeTxName, linkNodeRxName, linkFrequency},...
+               {    nodeRxName,     nodeTxName,     frequency})
+      
+      txModNum   = GetModNum(linkNodeTx,links(linkIndx).fromID{2});
+      linkModTx  = linkNodeTxStruct.modules(txModNum);
+      
+      rxModNum   = GetModNum(linkNodeRx,links(linkIndx).toID{2});
+      linkModRx  = linkNodeRxStruct.modules(rxModNum);
+      
+      % Check to see if the tx and rx modules in each node have the same
+      % antenna properties
+      if isequal(GetAntennaParams(modTx), GetAntennaParams(linkModRx)) && ...
+            isequal(GetAntennaParams(modRx), GetAntennaParams(linkModTx))
 
-            linkobj = links(I);
-            linkCount = linkCount + 1;
-        end
+        linkobj = links(linkIndx);
+        linkCount = linkCount + 1;
+      end
     end
 
-end
-if linkCount > 1
+  end
+  if linkCount > 1
     error('More than on reciprocal link in link object array!')
+  end
 end
-
 
 
 
