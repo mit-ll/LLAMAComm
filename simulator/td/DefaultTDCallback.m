@@ -6,7 +6,7 @@ function DefaultTDCallback(src, ...
                            nodename, ...
                            modname, ...
                            fc, ...
-                           fs);
+                           fs); %#ok - some inputs are unused
 
 % Function td/DefaultTDCallback.m:
 % Callback function for rectangles drawn in the timing diagram figure.
@@ -20,7 +20,7 @@ function DefaultTDCallback(src, ...
 %                    modname, fc, fs, user})
 %
 % Input arguments:
-%  src       (obj handle) Handle to object that triggered callback
+%  src       (obj handle) Handle to object that triggered callback (unsed)
 %  evt       (not used, but required)
 %  filename  (string) Path and filename to .cog file
 %  fPointer  (int) File offset.  Points to start of a signal block
