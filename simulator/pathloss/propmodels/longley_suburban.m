@@ -17,7 +17,7 @@ function SFdb = longley_suburban(dkm, fmhz)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-[ dd ff ] = matsize(dkm, fmhz);
+[dd, ff] = matsize(dkm, fmhz);
 if isnan(dd)
   error('Non-scalar inputs must be same size');
 end

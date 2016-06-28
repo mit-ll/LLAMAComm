@@ -5,7 +5,7 @@
 % All rights reserved.   See software license below.            %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-[ scenario ] = loadScenario('urban1');
+scenario = loadScenario('urban1');
 scenario.name = 'rural';
 
 % Build DN
@@ -41,7 +41,7 @@ env.scenarioType = scenario.name;
 env.building.roofHeight = 30;
 
 % Test pathloss
-[ Ldb Fext ] = getPathloss(txnode, rxnode, env);
+[Ldb, Fext] = getPathloss(txnode, rxnode, env);
 
 
 % Copyright (c) 2006-2016, Massachusetts Institute of Technology All rights

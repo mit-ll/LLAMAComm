@@ -13,7 +13,7 @@ function Ls = shadowloss(an,dn,env)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % get correlation matrix and standard deviation vector
-[ RR ss ] = getshadowcorr(an,dn,env);
+[RR, ss] = getshadowcorr(an,dn,env);
 
 % fill in missing correlation matrix entries
 NN = size(RR,1);

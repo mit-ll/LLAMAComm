@@ -56,7 +56,7 @@ for ii = 1:Ne
   L10 = los(rr10, fmhz(ii)); % LOS pathloss at 10 m ground range
 
   % longley-rice loss at 1 km
-  [ L1000 sigmadb1000 ] = ...
+  [L1000, sigmadb1000] = ...
       longley_rice(1, fmhz(ii), [ hbm(ii) hmm(ii) ], delh(ii), pol);
 
   rr = sqrt( dm(ii)^2 + (hbm(ii)-hmm(ii))^2 ); % need for continuity at 10 m

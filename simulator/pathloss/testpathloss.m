@@ -50,7 +50,7 @@ if length(txnodelocation)>1 % Test pathloss at different ranges
   stdLdb = zeros(size(txnodelocation));      % pathloss standard deviation, dB
   for ii=1:length(txnodelocation)
     txnode.location(1) = txnodelocation(ii);
-    [ medLdb(ii) stdLdb(ii) ] = getPathloss(txnode,rxnode,envParams);
+    [medLdb(ii), stdLdb(ii)] = getPathloss(txnode,rxnode,envParams);
   end;
 
   clf;
@@ -91,7 +91,7 @@ elseif length(rxnodeheight)>1 % test pathloss at different Rx heights
   stdLdb = zeros(size(rxnodeheight));      % pathloss standard deviation, dB
   for ii=1:length(rxnodeheight)
     rxnode.location(3) = rxnodeheight(ii);
-    [ medLdb(ii) stdLdb(ii) ] = getPathloss(txnode,rxnode,envParams);
+    [medLdb(ii), stdLdb(ii)] = getPathloss(txnode,rxnode,envParams);
   end;
 
   clf;

@@ -14,7 +14,7 @@ function GdBi = dipole(phi, ff, ll)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % check input vector sizes
-[ phi ff ll ] = matsize(phi, ff, ll);
+[phi, ff, ll] = matsize(phi, ff, ll);
 if isnan(phi);
   error('All non-scalar arguments must have same dimension, function dipole');
 end

@@ -26,19 +26,21 @@ function L = mean2pathflat(dk, h1, h2, ff, pol, epsr, sigma)
 if nargin<5 || isempty(pol)
   pol = 'v'; 
 end
-if nargin<4; error('Minimum four input variables'); end
+if nargin<4
+  error('Minimum four input variables'); 
+end
 if any(dk<0) || any(h1<0) || any(h2<0);
   warning('mean2pathflat:negativeVars', 'Negative input variables, who knows what will happen');
 end
 % convert all numerical inputs to equal sized matrices
-[ dk h1 h2 ff ] = matsize(dk, h1, h2, ff); 
+[dk, h1, h2, ff] = matsize(dk, h1, h2, ff); 
 if any([isnan(dk), isnan(h1), isnan(h2), isnan(ff) ])
   error('All non-scaler input variables must be equal sized');
 end
 if nargin<7 || isempty(epsr) || isempty(sigma); 
   rhoflag = -1;
 else 
-  [ epsr sigma ] = matsize(dk, epsr, sigma);
+  [epsr, sigma] = matsize(dk, epsr, sigma);
   if any( [ isnan(epsr) isnan(sigma) ]);
     error('All non-scaler input variables must be equal sized');
   end

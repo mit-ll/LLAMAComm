@@ -144,19 +144,19 @@ kwxlrprop = zeros(size(dkm));
 kwxmedL = zeros(size(dkm));
 kwx1sigma =  zeros(size(dkm));
 for ii=1:length(dkm);
-  [ Llrprop(ii) kwxlrprop(ii) ] = lrprop(1000*dkm(ii));
+  [Llrprop(ii), kwxlrprop(ii)] = lrprop(1000*dkm(ii));
   %   if kwxlrprop(ii)>1;
   %      error(['error, kwx = ' int2str(kwxlrprop(ii)) ...
   %             ', function lrprop in function longley_rice at range ' ...
   %             num2str(dkm(ii)) ' km']);
   %      end;
-  [ medLdb(ii) kwxmedL(ii) ] = avar(0, 0, 0);
+  [medLdb(ii), kwxmedL(ii)] = avar(0, 0, 0);
   %   if kwxmedL(ii)>1;
   %      error(['error, kwx = ' int2str(kwxmedL(ii)) ...
   %             ', function avar in function longley_rice at range ' ...
   %             num2str(dkm(ii)) ' km']);
   %      end;
-  [ Ldb1sigma  kwx1sigma(ii) ] = avar(1, 0, 0);
+  [Ldb1sigma, kwx1sigma(ii)] = avar(1, 0, 0);
   %if kwx1sigma(ii)>1;
   %      error(['error, kwx = ' int2str(kwx1sigma(ii)) ...
   %             ', function avar in function longley_rice at range ' ...

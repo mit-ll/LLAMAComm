@@ -27,7 +27,7 @@ function [Krho, linkNames] = GetShadowlossCorrMatrix(nodeArray,linkMatrix)
 
 % If ther are no links, then quit gracefully with an error message
 if ~sum(sum(linkMatrix))
-    error('  LLAMAComm is quitting because there are no links to simulate')
+  error('  LLAMAComm is quitting because there are no links to simulate')
 end
 
 nNodes = length(nodeArray);
@@ -43,13 +43,13 @@ linkMatrix = linkMatrix - diag(diag(linkMatrix));
 % matrix
 nLinks = 0;
 for ii=1:nNodes
-   for jj=ii+1:nNodes
-      if linkMatrix(ii,jj)>0
-         nLinks = nLinks+1;
-         linkMatrix(ii,jj) = nLinks;
-         linkMatrix(jj,ii) = nLinks;
-      end;
-   end;
+  for jj=ii+1:nNodes
+    if linkMatrix(ii,jj)>0
+      nLinks = nLinks+1;
+      linkMatrix(ii,jj) = nLinks;
+      linkMatrix(jj,ii) = nLinks;
+    end;
+  end;
 end;
 
 
@@ -57,26 +57,26 @@ end;
 Krho = eye(nLinks);
 linkNames = cell(1, nLinks);
 for ii=1:nLinks
-  [ nodei1 nodei2 ] = ind2sub(size(linkMatrix), ...
-                              find(linkMatrix==ii,1,'first'));
-   linkNames{ii} = {nodeArray(nodei1).name, nodeArray(nodei2).name};
-   
-   % There may be problems if the nodes share the same x and y coordinates
-   if nodeArray(nodei1).location(1:2) == nodeArray(nodei2).location(1:2)
-       warning(['llamacomn:pathloss:',mfilename,':ColocatedNodes'], ...
-               [nodeArray(nodei1).name,' and ',nodeArray(nodei2).name,...
-                ' share the same x and y coordinates!!  This may cause problems!!'])
-   end      
-   
-   for jj = ii+1:nLinks
-      [ nodej1 nodej2 ] = ind2sub(size(linkMatrix), ...
-                                  find(linkMatrix==jj,1, 'first'));
-      Krho(ii,jj) = shadowCorrUncommon([ nodeArray(nodei1).location; ...
-                                         nodeArray(nodei2).location ], ...
-                                       [ nodeArray(nodej1).location; ...
-                                         nodeArray(nodej2).location ]);
-      Krho(jj,ii) = Krho(ii,jj);
-   end;
+  [nodei1, nodei2] = ind2sub(size(linkMatrix), ...
+                             find(linkMatrix==ii,1,'first'));
+  linkNames{ii} = {nodeArray(nodei1).name, nodeArray(nodei2).name};
+  
+  % There may be problems if the nodes share the same x and y coordinates
+  if nodeArray(nodei1).location(1:2) == nodeArray(nodei2).location(1:2)
+    warning(['llamacomn:pathloss:',mfilename,':ColocatedNodes'], ...
+            [nodeArray(nodei1).name,' and ',nodeArray(nodei2).name,...
+             ' share the same x and y coordinates!!  This may cause problems!!'])
+  end      
+  
+  for jj = ii+1:nLinks
+    [nodej1, nodej2] = ind2sub(size(linkMatrix), ...
+                               find(linkMatrix==jj,1, 'first'));
+    Krho(ii,jj) = shadowCorrUncommon([ nodeArray(nodei1).location; ...
+                        nodeArray(nodei2).location ], ...
+                                     [ nodeArray(nodej1).location; ...
+                        nodeArray(nodej2).location ]);
+    Krho(jj,ii) = Krho(ii,jj);
+  end;
 end;
 
 % if required, diagonal load Krho to make positive definite
@@ -84,9 +84,9 @@ RR = Krho;
 lambda = eig(RR);
 delta = 0.0;
 while min(lambda)<=0
-   delta = delta+0.05;
-   RR = ( RR + delta*eye(nLinks) )./(1+delta);
-   lambda = eig(RR);
+  delta = delta+0.05;
+  RR = ( RR + delta*eye(nLinks) )./(1+delta);
+  lambda = eig(RR);
 end;
 Krho = RR;
 
@@ -103,40 +103,40 @@ function rho = shadowCorrUncommon(nodes1,nodes2)
 
 % verify input arguments
 if nargin<2   
-   error('Too few arguments, function shadowCorrUncommon');
+  error('Too few arguments, function shadowCorrUncommon');
 end;
 if (size(nodes1,1)<2 || size(nodes2,1)<2)
-   error('Input arguments too short, function shadowCorrUncommon');
+  error('Input arguments too short, function shadowCorrUncommon');
 end;
 if (size(nodes1,2)<2 || size(nodes2,2)<2)
-   error('Input arguments too short, function shadowCorrUncommon');
+  error('Input arguments too short, function shadowCorrUncommon');
 end;
 
 % check for common node in two links, treat as special case
 if all(nodes1(1,1:2)==nodes2(1,1:2))
-     rho = shadowCorrFromLoc(nodes1(1,:),nodes1(2,:),nodes2(2,:));
-     return;
+  rho = shadowCorrFromLoc(nodes1(1,:),nodes1(2,:),nodes2(2,:));
+  return;
 elseif all(nodes1(1,1:2)==nodes2(2,1:2))     
-     rho = shadowCorrFromLoc(nodes1(1,:),nodes1(2,:),nodes2(1,:));
-     return;
+  rho = shadowCorrFromLoc(nodes1(1,:),nodes1(2,:),nodes2(1,:));
+  return;
 elseif all(nodes1(2,1:2)==nodes2(1,1:2))     
-     rho = shadowCorrFromLoc(nodes1(2,:),nodes1(1,:),nodes2(2,:));
-     return;
+  rho = shadowCorrFromLoc(nodes1(2,:),nodes1(1,:),nodes2(2,:));
+  return;
 elseif all(nodes1(2,1:2)==nodes2(2,1:2))     
-     rho = shadowCorrFromLoc(nodes1(2,:),nodes1(1,:),nodes2(1,:));
-     return;
+  rho = shadowCorrFromLoc(nodes1(2,:),nodes1(1,:),nodes2(1,:));
+  return;
 end;
 
 % general case: no common node => average possible connecting links
 rho = (  shadowCorrFromLoc(nodes1(1,:),nodes1(2,:),nodes2(1,:))* ...
          shadowCorrFromLoc(nodes2(1,:),nodes2(2,:),nodes1(1,:))  ...
-       + shadowCorrFromLoc(nodes1(2,:),nodes1(1,:),nodes2(2,:))* ...
+         + shadowCorrFromLoc(nodes1(2,:),nodes1(1,:),nodes2(2,:))* ...
          shadowCorrFromLoc(nodes2(2,:),nodes2(1,:),nodes1(2,:))  ...
-       + shadowCorrFromLoc(nodes1(1,:),nodes1(2,:),nodes2(2,:))* ...
+         + shadowCorrFromLoc(nodes1(1,:),nodes1(2,:),nodes2(2,:))* ...
          shadowCorrFromLoc(nodes2(2,:),nodes2(1,:),nodes1(1,:))  ...
-       + shadowCorrFromLoc(nodes1(2,:),nodes1(1,:),nodes2(1,:))* ...
+         + shadowCorrFromLoc(nodes1(2,:),nodes1(1,:),nodes2(1,:))* ...
          shadowCorrFromLoc(nodes2(1,:),nodes2(2,:),nodes1(2,:))  ...
-      )/4;
+         )/4;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function rho = shadowCorrFromLoc(commonNode,endNode1,endNode2)
@@ -154,10 +154,10 @@ function rho = shadowCorrFromLoc(commonNode,endNode1,endNode2)
 % output: rho      = shadowing cross-correlation
 
 if nargin<3
-   error('Too few arguments, function shadowCorrFromLoc');
+  error('Too few arguments, function shadowCorrFromLoc');
 end;
 if length(commonNode)<2 || length(endNode1)<2 || length(endNode2)<2
-   error('Input arguments too short, function shadowCorrFromLoc');
+  error('Input arguments too short, function shadowCorrFromLoc');
 end;
 
 % get bearing angles from common to end nodes, in degrees
@@ -181,8 +181,8 @@ function psi = getbearing(loc1,loc2)
 % towards second. Bearing angle is measured CCL from east, in degrees
 
 if all(loc1(1:2)==loc2(1:2));
-   psi = nan;
-   return;
+  psi = nan;
+  return;
 end;
 
 psi = 180/pi * atan2(loc2(2)-loc1(2),loc2(1)-loc1(1));
