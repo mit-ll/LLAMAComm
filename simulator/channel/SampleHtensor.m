@@ -48,7 +48,7 @@ freqOffs        = channel.freqOffs;
 % overSamp        = channel.channelOversamp;
 
 % Get the dimensions of the channel
-[nR nT nDop nDelay] = size(hTensor);
+[nR, nT, nDop, nDelay] = size(hTensor);
 
 % tSampTMaxRatio = 1/(sampRate*tMax);
 % freqOffs = (-((nDop-1)/2):((nDop-1)/2) )*tSampTMaxRatio/overSamp;

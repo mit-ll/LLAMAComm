@@ -142,8 +142,8 @@ channel.nDopplerSamp      = 1;
 %channel.hOverSamp         = overSamp; % ignored
 %channel.stfcsChannelOversamp   = propParams.stfcsChannelOversamp; % ignored
 %channel.ricePhaseRad      = ricePhaseRad; % unused
-channel.freqOffs          = [0];
-channel.phiOffs           = [0];
+channel.freqOffs          = 0; % Can be an array
+channel.phiOffs           = 0; % Can be an array
 channel.chanType          = propParams.chanType;
 
 % Copyright (c) 2006-2016, Massachusetts Institute of Technology All rights
