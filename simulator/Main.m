@@ -99,7 +99,7 @@ end
 % Simulation loop
 while(1)
     
-    if 0 % 1 if want to display node state information
+    if ~true % 1 if want to display node state information
         for n = 1:length(nodes)
             p = GetUserParams(nodes(n));
             disp(' ')

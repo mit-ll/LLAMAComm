@@ -45,7 +45,7 @@ mucond = mu(1:Nnew) + R12*R22inv*(vin-mu(Nnew+1:end)); %#ok - using inv(R22)
 Rcond  = R11 - R12*R22inv*R12'; %#ok - using inv(R22)
 
 % find matrix to transform independent rv's to correlated rv's
-[ QQ DD ] = eig(Rcond); 
+[QQ, DD] = eig(Rcond); 
 QQ = QQ*sqrtm(DD); % matrix transforms uncorrelated rv's to correlated
 
 
