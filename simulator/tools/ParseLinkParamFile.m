@@ -43,13 +43,14 @@ for I = 1:size(data, 1)% Look through the user-specified link parameter file
       if ~isempty(data{I, ind1})
         
         % Build the struct field referencing
-        locs = [0, regexp(data{I, ind1}, '\.'), length(data{I, ind1})+1];
-
-        str = [];
-        for K = 1:length(locs)-1
-          str = [str, '.(''', data{I, ind1}(locs(K)+1:locs(K+1)-1), ''')'];
-        end
-
+        %locs = [0, regexp(data{I, ind1}, '\.'), length(data{I, ind1})+1];
+        %str = [];
+        %for K = 1:length(locs)-1
+        %  str = [str, '.(''', data{I, ind1}(locs(K)+1:locs(K+1)-1), ''')'];
+        %end
+        match = regexp(slice,'[^\.]*','match');
+        str = sprintf('.(''%s'')', match{:});
+            
         if ischar(data{I, ind2})
           try
             eval(['linkStruct', str, ' = evalin(''base'', data{I, ind2});']);
