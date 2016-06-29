@@ -48,7 +48,7 @@ for I = 1:size(data, 1)% Look through the user-specified link parameter file
         %for K = 1:length(locs)-1
         %  str = [str, '.(''', data{I, ind1}(locs(K)+1:locs(K+1)-1), ''')'];
         %end
-        match = regexp(slice,'[^\.]*','match');
+        match = regexp(data{I, ind1},'[^\.]*','match');
         str = sprintf('.(''%s'')', match{:});
             
         if ischar(data{I, ind2})
