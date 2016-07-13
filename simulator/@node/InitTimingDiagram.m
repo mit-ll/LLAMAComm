@@ -66,53 +66,53 @@ for n = 1:length(nodes)
 end
 
 % Check if figure already exists, if it does, don't move or resize
-figlist = findobj(get(0, 'children'), 'flat', 'type', 'figure');
-% FIXME hack to try to solve handle vs figure number issues, read figure handle here instead of elsewhere APW 2015-05-07
-fh = figure(timingDiagramFig);
-if ismember(figlist, fh)
+figList = get(0, 'Children');
+if ~isnumeric(figList)
+  % In newer Matlabs, figList returned above is an array of figure handles
+  figList = [figList.Number];
+end
+
+if ismember(figList, timingDiagramFig)
   % Clear existing figure
-  clf(fh);
-  ah = axes;
+  clf(timingDiagramFig);
+  ah = axes('Parent', timingDiagramFig);
 else
-  % Open new figure
-  clf(fh);
-  ah = axes;
-  
-  % Set figure title and hide figure number
-  set(fh, 'NumberTitle', 'off');
-  set(fh, 'Name', 'LLamaComm: Timing Diagram');
-  
+   
   % Configure figure size/position
   screensize = get(0, 'screensize');
   pixW = screensize(3)-100;
   pixH = max(yposition*20+100, 400);
   pixY = screensize(4)-pixH-100;
   pixX = 50;
+
+  % Open new figure
+  figure(timingDiagramFig);
+  ah = axes('Parent', timingDiagramFig);
   
-  set(fh, 'Position', [pixX pixY pixW pixH]);
+  % Set figure title and hide figure number
+  set(timingDiagramFig, ...
+      'NumberTitle', 'off', ...
+      'Name', 'LLamaComm: Timing Diagram', ...
+      'Position', [pixX pixY pixW pixH]);
 end
 
 % Make timing diagram un-closable
-set(fh, 'CloseRequestFcn', 'TDCloseConfirm');
+set(timingDiagramFig, 'CloseRequestFcn', 'TDCloseConfirm');
 
 % Set y-axis params
-set(ah, 'YDir', 'reverse');
-set(ah, 'YTickMode', 'manual');
-set(ah, 'YTickLabelMode', 'manual');
-set(ah, 'YLimMode', 'manual');
-
-% Set y-axis label
-set(ah, 'YTick', YTick);
-set(ah, 'YTickLabel', YTickLabel, 'fontSize', 12);
-
-% Set y-axis
-set(ah, 'YLim', [-1 yposition-1]);
+set(ah, ...
+    'YDir', 'reverse', ...
+    'YTickMode', 'manual', ...
+    'YTickLabelMode', 'manual', ...
+    'YLimMode', 'manual', ...
+    'YTick', YTick, ...
+    'YTickLabel', YTickLabel, ...
+    'FontSize', 12, ...
+    'YLim', [-1 yposition-1], ...
+    'NextPlot', 'add');
 
 % Set x-axis label
 xlabel(ah, 'Samples');
-
-% Preserve axes properties
-hold(ah, 'on');
 
 % Set colormap
 cmap = colormap('jet');
