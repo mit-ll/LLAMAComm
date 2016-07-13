@@ -12,6 +12,7 @@ function gamma = ITUspecificAtten(f, T, p, rho)
 %   f   - Frequency (in GHz). Must be in the range 0 <= f <=1000
 %   T   - Atmosphereic tempurature (in Kelvin. Typical value 300 K)
 %   p   - Total Pressure (dry+wet), in hPa. (Note: Typical vale 1013 hPa )
+%         (Note: 1 mbar == 1 hPa )
 %   rho - Water vapor density (in g/cm^3. Typical value 7.5 g/cm^3)
 %
 % Output arguments:

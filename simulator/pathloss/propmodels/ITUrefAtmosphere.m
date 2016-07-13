@@ -19,6 +19,7 @@ function [tt, pp, rho] = ITUrefAtmosphere(hh, varargin)
 % OUTPUTS:
 %          tt  - Temperature at each input height, K
 %          pp  - Total air pressure (dry+wet), in hPa
+%                (Note: 1 mbar == 1 hPa )
 %          rho - Water-vapor density, in g/m^3
 %
 % Note vapor pressure = rho*tt/216.7
