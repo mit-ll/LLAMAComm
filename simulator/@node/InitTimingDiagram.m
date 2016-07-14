@@ -110,6 +110,10 @@ set(ah, ...
     'FontSize', 12, ...
     'YLim', [-1 yposition-1], ...
     'NextPlot', 'add');
+if ~isnumeric(ah)  
+  % Newer matlab graphics engine will mangle labels
+  set(ah, 'TickLabelInterpreter', 'none');
+end
 
 % Set x-axis label
 xlabel(ah, 'Samples');
