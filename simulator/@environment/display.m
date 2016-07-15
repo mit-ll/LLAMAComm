@@ -24,8 +24,12 @@ else
   fprintf('  stfcsChannelOversamp: %s\n', num2str(env.propParams.stfcsChannelOversamp));
   fprintf('wssusChannelTapSpacing: %s samples\n', num2str(env.propParams.wssusChannelTapSpacing));
   fprintf('              los_dist: %s m\n', num2str(env.propParams.los_dist));
-  fprintf('            building.\n');
-  fprintf('         avgRoofHeight: %s m\n', num2str(env.building.avgRoofHeight));
+  if isempty(env.building)
+    fprintf('            building: []\n');
+  else
+    fprintf('            building.\n');
+    fprintf('         avgRoofHeight: %s m\n', num2str(env.building.avgRoofHeight));
+  end
   if isempty(env.shadow)
     fprintf('\n           shadow: []\n');
   else

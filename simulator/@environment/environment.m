@@ -16,15 +16,22 @@ elseif isstruct(a)
     env = emptyEnvironment;
 
     env.envType = a.envType;
-    env.propParams = FieldCopy(env.propParams,a.propParams);
-    env.building = FieldCopy(env.building,a.building);
+    env.propParams = FieldCopy(env.propParams, a.propParams);
 
-    if isfield(a,'shadow')
-        env.shadow = a.shadow;
+    if isfield(a, 'building')
+      env.building = FieldCopy(env.building, a.building);      
     end
     
-    if isfield(a,'links')
-        env.links = a.links;
+    if isfield(a, 'shadow')
+      env.shadow = a.shadow;
+    end
+    
+    if isfield(a, 'links')
+      env.links = a.links;
+    end
+
+    if isfield(a, 'atmosphere')
+      env.atmosphere = FieldCopy(env.atmosphere, a.atmosphere);
     end
     
     env = class(env,'environment');
@@ -47,13 +54,20 @@ env.propParams.wssusChannelTapSpacing = []; % samples
 env.propParams.los_dist = 50;             % m
 env.propParams.linkParamFile = [];        % string
 
-env.building.avgRoofHeight = [];          % m
+
+%
+env.building.avgRoofHeight = [];          % m      
 
 % Database of links built as-needed
 env.links = [];
 
 % Shadowloss parameters, created in Main.m
 env.shadow = [];
+
+% Atmospheric parameters
+env.atmosphere.latd = [];
+env.atmosphere.season = [];
+
 
 
 

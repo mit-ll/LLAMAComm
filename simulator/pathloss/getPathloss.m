@@ -57,55 +57,61 @@ rxbuilding = rxnode.building;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % extract parameters used by propagation models
 
-fmhz = rxnode.fc/1e6 ;        % (MHz) Center frequency of receiver
-htx = txnode.location(3);     % tx height above mean ground level
-hrx = rxnode.location(3);     % rx height above mean ground level
-dm  = sqrt( (rxnode.location(1) - txnode.location(1))^2 + ...
-            (rxnode.location(2) - txnode.location(2))^2 ); % ground range, m
-if dm == 0
-  error('getPathloss doesn''t work on co-located nodes');
-end
+switch(env.scenarioType)
+  case {'urban', 'suburban', 'rural'}
+    % Common parameters for urban, suburban and rural modes
+    fmhz = rxnode.fc/1e6 ;        % (MHz) Center frequency of receiver
+    
+    dm = sqrt( (rxnode.location(1) - txnode.location(1))^2 + ...
+               (rxnode.location(2) - txnode.location(2))^2 ); % ground range, m
+    if dm == 0
+      error('getPathloss doesn''t work on co-located nodes');
+    end
+    htx = txnode.location(3);     % tx height above mean ground level
+    hrx = rxnode.location(3);     % rx height above mean ground level
+    hhn = max(htx, hrx);          % high node height
+    hln = min(htx, hrx);          % low node height 
+    
+    pol = txnode.polarize(1, :);   % assumes all antennas have same pol
+    if strcmp(pol, 'h') 
+      tpol = 'h'; 
+    else 
+      tpol = 'v';
+    end
 
-pol = txnode.polarize(1, :);   % assumes all antennas have same pol
-if strcmp(pol, 'h') 
-  tpol = 'h'; 
-else 
-  tpol = 'v';
+    hrm = env.building.roofHeight; % avg. roof height, m
+    los_dist = env.los_dist;
+    
+    if ~strcmp(txbuilding.extwallmat, 'none');  % tx is indoors
+      description = [description, 'tx is indoors'];
+      ddtx = txbuilding.intdist;       % shortest in-building path length
+      niwallstx = txbuilding.intwalls; % number of interior walls in path
+    else 
+      description = [description, 'tx is outdoors'];
+      ddtx = 0;
+    end
+    if ~strcmp(rxbuilding.extwallmat, 'none')   % rx is indoors
+      description = [description, 'rx is indoors'];
+      ddrx = rxbuilding.intdist;     % shortest in-building path length
+      niwallsrx = rxbuilding.intwalls; % number of interior walls in path
+    else 
+      description = [description, 'rx is outdoors'];
+      ddrx = 0; % Rx is outdoors
+    end
+         
 end
-
-hhn = max(htx, hrx); % high node height
-hln = min(htx, hrx); % low node height 
-hrm = env.building.roofHeight; % avg. roof height, m
-los_dist = env.los_dist;
-if ~strcmp(txbuilding.extwallmat, 'none');  % tx is indoors
-  description = [description, 'tx is indoors'];
-  ddtx = txbuilding.intdist;       % shortest in-building path length
-  niwallstx = txbuilding.intwalls; % number of interior walls in path
-else 
-  description = [description, 'tx is outdoors'];
-  ddtx = 0;
-end
-if ~strcmp(rxbuilding.extwallmat, 'none')   % rx is indoors
-  description = [description, 'rx is indoors'];
-  ddrx = rxbuilding.intdist;     % shortest in-building path length
-  niwallsrx = rxbuilding.intwalls; % number of interior walls in path
-else 
-  description = [description, 'rx is outdoors'];
-  ddrx = 0; % Rx is outdoors
-end
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% urban propagation model with both nodes outdoors
+
 
 switch(env.scenarioType)
   
   case 'urban'
     branchLineNums = [branchLineNums, currentLineNum-1];
-    decisionTree = [decisionTree, 'urban', 'ddrx==0', 'ddtx==0'];
-    description = [description, 'urban'];
+    decisionTree = [decisionTree, env.scenarioType, 'ddrx==0', 'ddtx==0'];
+    description = [description, env.scenarioType];
     
-    if ddrx==0 && ddtx==0 
+    if ddrx==0 && ddtx==0 % urban propagation model with both nodes outdoors
       branchLineNums = [branchLineNums, currentLineNum-1];
       decisionTree = [decisionTree, 'ddrx==0', 'ddtx==0'];
           
@@ -431,10 +437,17 @@ switch(env.scenarioType)
 
     end; % urban, both indoor nodes
 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % finish up - shadowing and external noise
     
+    % get external noise figure
+    Llos = los(dm, fmhz);        % check that median plus shadowing
+    Ldb = max(Ldb, Llos);        % is not lower than LOS loss
+    Fext = max(0, manmade(fmhz, 'bus'));
+        
   case 'suburban'
     branchLineNums = [branchLineNums, currentLineNum-1];
-    decisionTree = [decisionTree, 'suburban'];
+    decisionTree = [decisionTree, env.scenarioType];
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % suburban propagation model with both nodes outdoors
@@ -472,7 +485,7 @@ switch(env.scenarioType)
 
         Lbelow = cost231(dm/1000, fmhz, hln, hhn, hrm, [], [], [], 0);
         Labove = groundtotower(dm, fmhz, hln, hhn, hrm, tpol, 'S', los_dist);
-        Ldb    = ( (hhn-hrm)*Labove + (hrm+deltran-hhn)*Lbelow)/deltran;
+        Ldb   = ( (hhn-hrm)*Labove + (hrm+deltran-hhn)*Lbelow)/deltran;
         sigmadb = okumura_sigma(fmhz, 'S');
 
       else
@@ -761,17 +774,24 @@ switch(env.scenarioType)
       end; % distance decision
 
     end; % suburban, both indoors
-
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % finish up - shadowing and external noise
+    
+    % get external noise figure
+    Llos = los(dm, fmhz);        % check that median plus shadowing
+    Ldb = max(Ldb, Llos);        % is not lower than LOS loss  
+    Fext = max(0, manmade(fmhz, 'res'));  % suburban
+    
   case 'rural'
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % rural propagation model with both nodes outdoors
     branchLineNums = [branchLineNums, currentLineNum-3];
-    decisionTree = [decisionTree, 'rural'];
+    decisionTree = [decisionTree, env.scenarioType];
+    description = [description, env.scenarioType];
     
     if ddtx==0 && ddrx == 0% rural, all outdoors
       branchLineNums = [branchLineNums, currentLineNum-1];
-      decisionTree = [decisionTree, 'rural'];
-      description = [description, 'rural'];
+      decisionTree = [decisionTree, 'ddtx==0', 'ddrx==0'];
       
       if dm<10 % currently no good model in this range
         branchLineNums = [branchLineNums, currentLineNum-1];
@@ -958,7 +978,7 @@ switch(env.scenarioType)
           end
           Llos = los(sqrt((hout-href)^2 + dm^2 ), fmhz); % LOS loss
           [Lobs, sigout] = longley_rice(dpn/1000, fmhz, [hpn href], 90, tpol);
-          Lex  = Lobs - los(sqrt((hpn-href)^2 + dpn^2 ), fmhz);
+          Lex = Lobs - los(sqrt((hpn-href)^2 + dpn^2 ), fmhz);
           Lout = Llos + Lex;
 
         end; % antenna height selection
@@ -1020,28 +1040,68 @@ switch(env.scenarioType)
       end; % distance decision
 
     end; % rural propagation, both nodes indoors
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % finish up - shadowing and external noise
+    
+    % get external noise figure
+    Llos = los(dm, fmhz);        % check that median plus shadowing
+    Ldb = max(Ldb, Llos);        % is not lower than LOS loss  
+    Fext = max(0, manmade(fmhz, 'rur'));
+    
+  case 'airborne'
+    branchLineNums = [branchLineNums, currentLineNum-1];
+    decisionTree = [decisionTree, env.scenarioType];
+    description = [description, env.scenarioType];
 
+    %
+    % Note: Refraction is not currently modelled
+    %
+    
+    % Airborne parameters   
+    hg = 0; % Height of the ground
+    Re = 6371.0088e6; % Earth radius, m (IUGG)
+    dL = 100; % Approximate along-line spacing
+    
+    fmhz = rxnode.fc/1e6 ;        % (MHz) Center frequency of receiver
+    dm = sqrt( (rxnode.location(1) - txnode.location(1))^2 + ...
+               (rxnode.location(2) - txnode.location(2))^2 ); % tangent plane, m
+    ztx = txnode.location(3);     % tx height above mean ground level
+    zrx = rxnode.location(3);     % rx height above mean ground level
 
+    dz = abs(ztx - zrx);
+    L = hypot(dm, dz); % Arc length, meters
+    if L == 0
+      error('getPathloss doesn''t work on co-located nodes');
+    end
+           
+    nPts = 3+2*floor(L/dL/2); % Odd number, >= 3
+    
+    s = linspace(0, L, nPts); % Distance along the line 
+    z = (dz/L) *s; % z along the line (meters)
+    x = (dm/L) *s; % x along the line (meters)
+    hi_km = (hypot(x, z+hg+Re) - Re)*0.001; % Altitude
+
+    [temperature, pressure, rho] = ITUrefAtmosphere(hi_km, env.atmosphere.latd, env.atmosphere.season); 
+    gamma = ITUspecificAtten(fmhz*0.001, temperature, pressure, rho); % dB/km
+    ds_km = s/1000/(nPts-1);
+
+    % Integrate via Simpons rule:
+    hh = ds_km/3;  
+    Latm = hh*(gamma(1)+gamme(nPts)) + sum(4*hh*gamma(2:2:nPts-1)) + sum(2*hh*gamma(3:2:nPts-1));
+        
+    %
+    Llos = los(sqrt((ztx-zrx)^2 + dm^2 ), fmhz); % LOS loss
+    Ldb = Llos + Latm;
+
+    sigmadb = 0;
+    Fext = 0;
+    
   otherwise
     
     error('Unrecognized scenarioType: %s', env.scenarioType);
     
 end; % env.scenarioType switch
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% finish up - shadowing and external noise
-
-Llos = los(dm, fmhz);        % check that median plus shadowing
-Ldb = max(Ldb, Llos);        % is not lower than LOS loss
-
-% get external noise figure
-if strncmp(env.scenarioType, 'urban', 5);
-  Fext = max(0, manmade(fmhz, 'bus'));
-elseif strncmp(env.scenarioType, 'suburban', 5);
-  Fext = max(0, manmade(fmhz, 'res'));  % suburban
-elseif strncmp(env.scenarioType, 'rural', 5);
-  Fext = max(0, manmade(fmhz, 'rur'));
-end
 
 % Build modelInfo structure if needed
 if nargout > 3
@@ -1062,13 +1122,13 @@ function [ Lgt, siggt ] = groundtotower(dm, fmhz, hln, hhn, hrm, pol, env, los_d
 % find path loss over a wide range of frequencies, when one antenna
 % is below roof height, and the other is above. Assumed maximum
 % antenna height is 200 m, maximum ground range is 20 km
-% inputs: dm   = ground range in m, 1 m to 20 km
+% inputs: dm  = ground range in m, 1 m to 20 km
 %         fmhz = frequency, MHz, 20 MHz to 2 GHz
-%         hlm  = lower antenna height, m, must be below roof height
-%         hhm  = higher antenna height, m, must be above roof, below 200 m
-%         hrm  = roof height, m
-%         pol  = polarization, 'v' or 'h'
-%         env  = environment, 'U' = urban, 'S' = suburban
+%         hlm = lower antenna height, m, must be below roof height
+%         hhm = higher antenna height, m, must be above roof, below 200 m
+%         hrm = roof height, m
+%         pol = polarization, 'v' or 'h'
+%         env = environment, 'U' = urban, 'S' = suburban
 %         los_dist = line-of-sight distance, m
 
 if strcmp(env, 'U');  
