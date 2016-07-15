@@ -46,12 +46,14 @@ if nargin>=2 % there are arguments specifying model to use
   if length(cellArgs)>=2; 
     season = cellArgs{2}; % season is required if latitude exceeds 22 degrees
   end
-
+else
+  latd = [];
+  season = [];
 end
 
-if nargin==1  % use reference standard atmosphere, averaged over
+if isempty(latd)  % use reference standard atmosphere, averaged over
               % globe (and season?), Section 1.1
-
+  
   tt = nan(size(hh));              % temperature, K
   pp = nan(size(hh));              % air pressure, hPa
   
@@ -298,6 +300,12 @@ elseif abs(latd)<=90  % high latitudes
 else 
   error(['Argmument latitude outside range. Latitude = ' num2str(latd) ]);
 end
+
+% Outside the atmisphere
+tt(hh>85) = 4.7;  % Anything >0
+pp(hh>85) = 0;
+rho(hh>85) = 0;
+
 
 % get water-vapor partial pressure
 %ee = rho .* tt / 216.7;
