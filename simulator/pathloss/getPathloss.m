@@ -57,7 +57,7 @@ rxbuilding = rxnode.building;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % extract parameters used by propagation models
 
-switch(env.scenarioType)
+switch(env.envType)
   case {'urban', 'suburban', 'rural'}
     % Common parameters for urban, suburban and rural modes
     fmhz = rxnode.fc/1e6 ;        % (MHz) Center frequency of receiver
@@ -80,7 +80,7 @@ switch(env.scenarioType)
     end
 
     hrm = env.building.roofHeight; % avg. roof height, m
-    los_dist = env.los_dist;
+    los_dist = env.propParams.los_dist;
     
     if ~strcmp(txbuilding.extwallmat, 'none');  % tx is indoors
       description = [description, 'tx is indoors'];
@@ -104,12 +104,12 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-switch(env.scenarioType)
+switch(env.envType)
   
   case 'urban'
     branchLineNums = [branchLineNums, currentLineNum-1];
-    decisionTree = [decisionTree, env.scenarioType, 'ddrx==0', 'ddtx==0'];
-    description = [description, env.scenarioType];
+    decisionTree = [decisionTree, env.envType, 'ddrx==0', 'ddtx==0'];
+    description = [description, env.envType];
     
     if ddrx==0 && ddtx==0 % urban propagation model with both nodes outdoors
       branchLineNums = [branchLineNums, currentLineNum-1];
@@ -447,7 +447,7 @@ switch(env.scenarioType)
         
   case 'suburban'
     branchLineNums = [branchLineNums, currentLineNum-1];
-    decisionTree = [decisionTree, env.scenarioType];
+    decisionTree = [decisionTree, env.envType];
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % suburban propagation model with both nodes outdoors
@@ -786,8 +786,8 @@ switch(env.scenarioType)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % rural propagation model with both nodes outdoors
     branchLineNums = [branchLineNums, currentLineNum-3];
-    decisionTree = [decisionTree, env.scenarioType];
-    description = [description, env.scenarioType];
+    decisionTree = [decisionTree, env.envType];
+    description = [description, env.envType];
     
     if ddtx==0 && ddrx == 0% rural, all outdoors
       branchLineNums = [branchLineNums, currentLineNum-1];
@@ -1050,57 +1050,58 @@ switch(env.scenarioType)
     
   case 'airborne'
     branchLineNums = [branchLineNums, currentLineNum-1];
-    decisionTree = [decisionTree, env.scenarioType];
-    description = [description, env.scenarioType];
+    decisionTree = [decisionTree, env.envType];
+    description = [description, env.envType];
 
     %
     % Note: Refraction is not currently modelled
     %
     
     % Airborne parameters   
-    hg = 0; % Height of the ground
-    Re = 6371.0088e6; % Earth radius, m (IUGG)
-    dL = 100; % Approximate along-line spacing
+    Re = 6371.0088e3; % Earth radius, m (IUGG)
+    ds = 100; % Approximate along-line spacing (meters)
     
     fmhz = rxnode.fc/1e6 ;        % (MHz) Center frequency of receiver
-    dm = sqrt( (rxnode.location(1) - txnode.location(1))^2 + ...
-               (rxnode.location(2) - txnode.location(2))^2 ); % tangent plane, m
-    ztx = txnode.location(3);     % tx height above mean ground level
-    zrx = rxnode.location(3);     % rx height above mean ground level
-
-    dz = abs(ztx - zrx);
-    L = hypot(dm, dz); % Arc length, meters
-    if L == 0
+              
+    tx_xyz = (txnode.location).'; 
+    rx_xyz = (rxnode.location).';
+    nodeDist = norm(rx_xyz - tx_xyz);
+    if nodeDist == 0
       error('getPathloss doesn''t work on co-located nodes');
     end
-           
-    nPts = 3+2*floor(L/dL/2); % Odd number, >= 3
+
+    nPts = 3 + 2*floor(nodeDist/ds/2);      % Odd number, >= 3        
+    u = (rx_xyz - tx_xyz)/nodeDist;         % Unit vector on straight line path
+    s = linspace(0, nodeDist, nPts);        % Along-path distances (m)
+    xyz = tx_xyz*ones(1,nPts) + u*s;        % XYZ of points on the path
     
-    s = linspace(0, L, nPts); % Distance along the line 
-    z = (dz/L) *s; % z along the line (meters)
-    x = (dm/L) *s; % x along the line (meters)
-    hi_km = (hypot(x, z+hg+Re) - Re)*0.001; % Altitude
+    % This altitude calculation could be replaced with 
+    % something mode sophisticated:
+    earthCenter = [0;0;-Re];
+    hi_km = (sqrt(sum((xyz-earthCenter*ones(1,nPts)).^2))-Re)*0.001; % Altitude (km)(spherical earth)
+    ds_km = nodeDist*0.001/(nPts-1);   % Distance between points (km);
 
     [temperature, pressure, rho] = ITUrefAtmosphere(hi_km, env.atmosphere.latd, env.atmosphere.season); 
     gamma = ITUspecificAtten(fmhz*0.001, temperature, pressure, rho); % dB/km
-    ds_km = s/1000/(nPts-1);
 
-    % Integrate via Simpons rule:
+    % Integrate via Simpons rule (this is why nPts was an odd number):
     hh = ds_km/3;  
-    Latm = hh*(gamma(1)+gamme(nPts)) + sum(4*hh*gamma(2:2:nPts-1)) + sum(2*hh*gamma(3:2:nPts-1));
-        
-    %
-    Llos = los(sqrt((ztx-zrx)^2 + dm^2 ), fmhz); % LOS loss
+    Latm = hh*(gamma(1)+gamma(nPts)) + sum(4*hh*gamma(2:2:nPts-1)) + sum(2*hh*gamma(3:2:nPts-1));
+  
+    % Find total loss
+    Llos = los(nodeDist, fmhz); % LOS loss
     Ldb = Llos + Latm;
 
+    %
     sigmadb = 0;
     Fext = 0;
+
     
   otherwise
     
-    error('Unrecognized scenarioType: %s', env.scenarioType);
+    error('Unrecognized scenarioType: %s', env.envType);
     
-end; % env.scenarioType switch
+end; % env.envType switch
 
 
 % Build modelInfo structure if needed

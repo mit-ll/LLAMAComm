@@ -34,11 +34,10 @@ elseif isstruct(a)
       env.atmosphere = FieldCopy(env.atmosphere, a.atmosphere);
     end
     
-    env = class(env,'environment');
+    env = class(env, 'environment');
 else
     error('Bad input argument to ENVIRONMENT constructor.');
 end
-
 
 function env = emptyEnvironment()
 
@@ -67,10 +66,6 @@ env.shadow = [];
 % Atmospheric parameters
 env.atmosphere.latd = [];
 env.atmosphere.season = [];
-
-
-
-
 
 
 

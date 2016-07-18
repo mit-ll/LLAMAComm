@@ -30,12 +30,17 @@ req = GetRequest(modRx);
 blockLength = req.blockLength;
 
 % get external noise figure
-if strncmp(env.envType,'urban',5);              % Urban
-   Fext = max(0,manmade(fmhz,'bus'));
-elseif strncmp(env.envType,'suburban',5);       % Suburban
-   Fext = max(0,manmade(fmhz,'res'));           
-elseif strncmp(env.envType,'rural',5);          % Rural
-Fext = max(0,manmade(fmhz,'rur'));
+switch(env.envType)
+  case 'urban'              
+    Fext = max(0,manmade(fmhz,'bus'));
+  case 'suburban'              
+   Fext = max(0,manmade(fmhz, 'res'));           
+  case 'rural'
+    Fext = max(0,manmade(fmhz,'rur'));
+  case 'airborne'
+    Fext = 0;
+  otherwise
+    error('Unknown environment type: %s', env.envType)    
 end;
 
 if addGaussianNoiseFlag

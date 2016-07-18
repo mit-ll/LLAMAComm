@@ -124,16 +124,20 @@ d = norm(nodTx.location - nodRx.location)/1000;
 
 % Get the median rms delay spread at 1 km link separation
 switch envParams.envType
-    case 'rural'
-        T1 = 0.1e-6;  % (s)
-    case 'suburban'
-        T1 = 0.3e-6;  % (s)
-    case 'urban'
-        if d < 1000  % urban microcell
-            T1 = 0.4e-6;
-        else
-            T1 = 1.0e-6;
-        end
+  case 'rural'
+    T1 = 0.1e-6;  % (s)
+  case 'suburban'
+    T1 = 0.3e-6;  % (s)
+  case 'urban'
+    if d < 1000  % urban microcell
+      T1 = 0.4e-6;
+    else
+      T1 = 1.0e-6;
+    end
+  case 'airborne'
+    T1 = 0; %@ToDo: This is a placeholder
+  otherwise
+    error('Unrecognized environment type: %s', envParams.envType);
 end
 
 % Get the distance exponent (suggested as 0.5 in [1])

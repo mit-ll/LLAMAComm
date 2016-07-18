@@ -85,10 +85,13 @@ else
   % Modules are located in different nodes
   
   % Extract pertinent environment parameters
-  envParams.scenarioType = env.envType;
-  envParams.building.roofHeight = env.building.avgRoofHeight;
-  envParams.shadow = env.shadow;
-  envParams.los_dist = env.propParams.los_dist;
+  %envParams.scenarioType = env.envType;
+  %envParams.building.roofHeight = env.building.avgRoofHeight;
+  %envParams.shadow = env.shadow;
+  %envParams.los_dist = env.propParams.los_dist;
+  %envParams.atmosphere = env.atmosphere;
+  
+  envParams = struct(env);
   
   % Generate Pathloss 
   switch lower(chanType)
