@@ -51,6 +51,20 @@ else
   season = [];
 end
 
+if ~isempty(latd) && ~isempty(season) && isnumeric(season)
+  % Ad-hoc seasonal interpolation (0 = winter, 1 = summer)
+  [tt0, pp0, rho0] = ITUrefAtmosphere(hh, latd, 'winter');
+  [tt1, pp1, rho1] = ITUrefAtmosphere(hh, latd, 'summer');
+
+  season = real(season(1));
+  Wwinter = cos(pi*season/2).^2;  
+  Wsummer = sin(pi*season/2).^2; 
+  tt = tt0*Wwinter + tt1*Wsummer;
+  pp = pp0*Wwinter + pp1*Wsummer;
+  rho = rho0*Wwinter + rho1*Wsummer;
+  return;
+end
+
 if isempty(latd)  % use reference standard atmosphere, averaged over
               % globe (and season?), Section 1.1
   
@@ -126,7 +140,7 @@ elseif abs(latd)<=22; % tropical region, seasons don't matter
 
 elseif abs(latd)<=45; % mid-latitudes, summer and winter models
 
-  if strcmp(season, 'summer')
+  if strcmpi(season, 'summer')
 
     tt = nan(size(hh));
   
@@ -167,7 +181,7 @@ elseif abs(latd)<=45; % mid-latitudes, summer and winter models
     idx = (hh>15);
     rho(idx) = 0;
 
-  elseif strcmp(season, 'winter')
+  elseif strcmpi(season, 'winter')
 
     tt = nan(size(hh));
     
@@ -213,7 +227,7 @@ elseif abs(latd)<=45; % mid-latitudes, summer and winter models
 
 elseif abs(latd)<=90  % high latitudes
 
-  if strcmp(season, 'summer')
+  if strcmpi(season, 'summer')
 
     tt = nan(size(hh));
 
@@ -254,7 +268,7 @@ elseif abs(latd)<=90  % high latitudes
     idx = (hh>15);
     rho(idx) = 0;
 
-  elseif strcmp(season, 'winter')
+  elseif strcmpi(season, 'winter')
 
     tt = nan(size(hh));
 
@@ -294,11 +308,11 @@ elseif abs(latd)<=90  % high latitudes
     rho(idx) = 0;
 
   else % oops
-    error(['Argument SEASON unknown value: ' season ]);
+    error(['Argument SEASON unknown value: ', season ]);
   end
 
 else 
-  error(['Argmument latitude outside range. Latitude = ' num2str(latd) ]);
+  error(['Argmument latitude outside range. Latitude = ', num2str(latd) ]);
 end
 
 % Outside the atmisphere
