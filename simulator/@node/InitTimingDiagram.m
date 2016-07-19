@@ -67,14 +67,14 @@ end
 
 % Check if figure already exists, if it does, don't move or resize
 figList = get(0, 'Children');
-switch(lower(class(figList)))  
-  case 'matlab.ui.figure'
-    % In newer Matlabs, figList returned above is an array of figure handles
+if isempty(figList)
+  figList = [];
+elseif ~isnumeric(figList)
+  if all(isprop(figList, 'Number'))
     figList = [figList.Number];
-  
-  case 'matlab.graphicsplaceholder'
-    % Being a different class when empty is kind of stupid
-    figList = [];
+  else
+    error('figure list is of unexpected type: %s', class(figList));
+  end
 end
 
 if ismember(figList, timingDiagramFig)
