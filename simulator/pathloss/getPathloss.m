@@ -79,7 +79,7 @@ switch(env.envType)
       tpol = 'v';
     end
 
-    hrm = env.building.roofHeight; % avg. roof height, m
+    hrm = env.building.avgRoofHeight; % avg. roof height, m
     los_dist = env.propParams.los_dist;
     
     if ~strcmp(txbuilding.extwallmat, 'none');  % tx is indoors

@@ -67,9 +67,14 @@ end
 
 % Check if figure already exists, if it does, don't move or resize
 figList = get(0, 'Children');
-if ~isnumeric(figList)
-  % In newer Matlabs, figList returned above is an array of figure handles
-  figList = [figList.Number];
+switch(lower(class(figList)))  
+  case 'matlab.ui.figure'
+    % In newer Matlabs, figList returned above is an array of figure handles
+    figList = [figList.Number];
+  
+  case 'matlab.graphicsplaceholder'
+    % Being a different class when empty is kind of stupid
+    figList = [];
 end
 
 if ismember(figList, timingDiagramFig)
