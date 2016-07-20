@@ -1,11 +1,35 @@
-function Latm = atmosphericLoss_nofrec(fghz, tx_xyz, rx_xyz, atmosphere)
+function Latm = atmosphericLoss_nofrec(tx_xyz, rx_xyz, fghz, atmosphere, alt0)
+%
+%Usage: 
+%
+%   Latm = atmosphericLoss_nofrec(tx_xyz, rx_xyz, fghz, atmosphere)
+%
+%Inputs:
+%
+%   tx_xyz     - Transmitter location (Cartesian coordiates, in meters)
+%   rx_xyz     - Reciever location (Cartesian coordiates, in meters)
+%   fghz       - Frequency (in GHz)
+%   atmosphere - Structure containing fields
+%                   latd   - Latitude, in degrees
+%                   season - Season. Either "summer" or "winter"
+%
+%   alt0       - Altitude or coordinate system origin, in meters
+%
+%Description:
+%
+%  Computes the atmospheric loss between 2 nodes, given their positions,
+% the frequency of interest and atmospheric modeling information.
+%
+%
 
-if nargin < 4
-  atmosphere = struct('latd',[], 'season', []);
+if nargin < 5
+  alt0 = 0; % Ground height, in meters
+  if nargin < 4
+    atmosphere = struct('latd',[], 'season', []);
+  end
 end
 
 % Airborne parameters   
-hg = 0; % Ground height, in meters
 Re = 6371.0088e3; % Earth radius, in meters (IUGG)
 ds = 100; % Approximate along-line spacing (meters)
 
@@ -21,7 +45,7 @@ xyz = tx_xyz*ones(1,nPts) + u*s;        % XYZ of points on the path
 
 % This altitude calculation could be replaced with 
 % something mode sophisticated:
-earthCenter = [0;0;-Re];
+earthCenter = [0;0;-(Re+alt0)];
 hi_km = (sqrt(sum((xyz-earthCenter*ones(1,nPts)).^2))-Re)*0.001; % Altitude (km)(spherical earth)
 if any(hi_km <0)
   Ldb = Inf; % Below (geometric) horizon

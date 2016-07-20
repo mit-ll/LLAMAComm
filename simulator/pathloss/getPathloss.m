@@ -1053,16 +1053,6 @@ switch(envParams.envType)
     decisionTree = [decisionTree, envParams.envType];
     description = [description, envParams.envType];
     
-    %
-    % Note: Refraction is not currently modeled
-    %
-    
-    % Airborne parameters   
-    hg = 0; % Ground height, in meters
-    Re = 6371.0088e3; % Earth radius, in meters (IUGG)
-    ds = 100; % Approximate along-line spacing (meters)
-    
-              
     tx_xyz = (txnode.location).'; 
     rx_xyz = (rxnode.location).';
     nodeDist = norm(rx_xyz - tx_xyz);    
@@ -1070,10 +1060,12 @@ switch(envParams.envType)
       error('getPathloss doesn''t work on co-located nodes');
     end
     
-    fghz = rxnode.fc*1e-9 ;        % (MHz) Center frequency of receiver
-    Latm = atmosphericLoss_norefrac(fghz, tx_xyz, rx_xyz, envParams.atmosphere);
+
+    % Note: Refraction is not currently modeled
+    fghz = rxnode.fc*1e-9 ;   % (MHz) Center frequency of receiver
+    Latm = atmosphericLoss_norefrac(tx_xyz, rx_xyz, fghz, envParams.atmosphere);
     if isfinite(Latm)
-      fmhz = rxnode.fc*1e-6 ;        % (MHz) Center frequency of receiver
+      fmhz = rxnode.fc*1e-6 ; % (MHz) Center frequency of receiver
       Llos = los(nodeDist, fmhz); % LOS loss    
       Ldb = Latm + Llos;
     else
