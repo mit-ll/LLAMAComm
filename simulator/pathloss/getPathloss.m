@@ -1052,7 +1052,7 @@ switch(envParams.envType)
     branchLineNums = [branchLineNums, currentLineNum-1];
     decisionTree = [decisionTree, envParams.envType];
     description = [description, envParams.envType];
-
+    
     %
     % Note: Refraction is not currently modeled
     %
@@ -1062,45 +1062,27 @@ switch(envParams.envType)
     Re = 6371.0088e3; % Earth radius, in meters (IUGG)
     ds = 100; % Approximate along-line spacing (meters)
     
-    fmhz = rxnode.fc/1e6 ;        % (MHz) Center frequency of receiver
               
     tx_xyz = (txnode.location).'; 
     rx_xyz = (rxnode.location).';
-    nodeDist = norm(rx_xyz - tx_xyz);
+    nodeDist = norm(rx_xyz - tx_xyz);    
     if nodeDist == 0
       error('getPathloss doesn''t work on co-located nodes');
     end
-
-    nPts = 3 + 2*floor(nodeDist/ds/2);      % Odd number, >= 3        
-    u = (rx_xyz - tx_xyz)/nodeDist;         % Unit vector on straight line path
-    s = linspace(0, nodeDist, nPts);        % Along-path distances (m)
-    xyz = tx_xyz*ones(1,nPts) + u*s;        % XYZ of points on the path
     
-    % This altitude calculation could be replaced with 
-    % something mode sophisticated:
-    earthCenter = [0;0;-Re];
-    hi_km = (sqrt(sum((xyz-earthCenter*ones(1,nPts)).^2))-Re)*0.001; % Altitude (km)(spherical earth)
-    if any(hi_km <0)
-      Ldb = Inf; % Below (geometric) horizon
+    fghz = rxnode.fc*1e-9 ;        % (MHz) Center frequency of receiver
+    Latm = atmosphericLoss_norefrac(fghz, tx_xyz, rx_xyz, envParams.atmosphere);
+    if isfinite(Latm)
+      fmhz = rxnode.fc*1e-6 ;        % (MHz) Center frequency of receiver
+      Llos = los(nodeDist, fmhz); % LOS loss    
+      Ldb = Latm + Llos;
     else
-      ds_km = nodeDist*0.001/(nPts-1);   % Distance between points (km);
-      
-      [temperature, pressure, rho] = ITUrefAtmosphere(hi_km, envParams.atmosphere.latd, envParams.atmosphere.season); 
-      gamma = ITUspecificAtten(fmhz*0.001, temperature, pressure, rho); % dB/km
-      
-      % Integrate via Simpsons rule (this is why nPts was an odd number):
-      hh = ds_km/3;  
-      Latm = hh*(gamma(1)+gamma(nPts)) + sum(4*hh*gamma(2:2:nPts-1)) + sum(2*hh*gamma(3:2:nPts-1));
-      
-      % Find total loss
-      Llos = los(nodeDist, fmhz); % LOS loss
-      Ldb = Llos + Latm;
+      Ldb = Latm;
     end
     
     %
     sigmadb = 0;
     Fext = 0;
-
     
   otherwise
     
