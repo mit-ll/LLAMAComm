@@ -1054,7 +1054,7 @@ switch(env.envType)
     description = [description, env.envType];
 
     %
-    % Note: Refraction is not currently modelled
+    % Note: Refraction is not currently modeled
     %
     
     % Airborne parameters   
@@ -1079,19 +1079,23 @@ switch(env.envType)
     % something mode sophisticated:
     earthCenter = [0;0;-Re];
     hi_km = (sqrt(sum((xyz-earthCenter*ones(1,nPts)).^2))-Re)*0.001; % Altitude (km)(spherical earth)
-    ds_km = nodeDist*0.001/(nPts-1);   % Distance between points (km);
-
-    [temperature, pressure, rho] = ITUrefAtmosphere(hi_km, env.atmosphere.latd, env.atmosphere.season); 
-    gamma = ITUspecificAtten(fmhz*0.001, temperature, pressure, rho); % dB/km
-
-    % Integrate via Simpons rule (this is why nPts was an odd number):
-    hh = ds_km/3;  
-    Latm = hh*(gamma(1)+gamma(nPts)) + sum(4*hh*gamma(2:2:nPts-1)) + sum(2*hh*gamma(3:2:nPts-1));
-  
-    % Find total loss
-    Llos = los(nodeDist, fmhz); % LOS loss
-    Ldb = Llos + Latm;
-
+    if any(hi_km <0)
+      Ldb = Inf; % Below (geometric) horizon
+    else
+      ds_km = nodeDist*0.001/(nPts-1);   % Distance between points (km);
+      
+      [temperature, pressure, rho] = ITUrefAtmosphere(hi_km, env.atmosphere.latd, env.atmosphere.season); 
+      gamma = ITUspecificAtten(fmhz*0.001, temperature, pressure, rho); % dB/km
+      
+      % Integrate via Simpons rule (this is why nPts was an odd number):
+      hh = ds_km/3;  
+      Latm = hh*(gamma(1)+gamma(nPts)) + sum(4*hh*gamma(2:2:nPts-1)) + sum(2*hh*gamma(3:2:nPts-1));
+      
+      % Find total loss
+      Llos = los(nodeDist, fmhz); % LOS loss
+      Ldb = Llos + Latm;
+    end
+    
     %
     sigmadb = 0;
     Fext = 0;
