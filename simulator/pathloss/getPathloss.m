@@ -1,16 +1,16 @@
-function [Ldb, sigmadb, Fext, modelInfo] = getPathloss(txnode, rxnode, env)
+function [Ldb, sigmadb, Fext, modelInfo] = getPathloss(txnode, rxnode, envParams)
 
 % function 'getPathloss'
 % Get path loss statistics for link between two nodes, 
 % Returns median pathloss, and standard deviation between terminals
 % also returns external noise figure for link
 %
-% USAGE: [Ldb, sigmadb, Fext] = getPathloss(txnode, rxnode, env)
+% USAGE: [Ldb, sigmadb, Fext] = getPathloss(txnode, rxnode, envParams)
 %
 % Input arguments:
 %  txnode    (node object) Transmitter node
 %  rxnode    (node object) Receiver node
-%  env       (environment object) Environment object
+%  envParams (struct) Structure derived from environment object
 %
 % Output arguments:
 %  Ldb       (scalar) Median pathloss (db)
@@ -57,7 +57,7 @@ rxbuilding = rxnode.building;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % extract parameters used by propagation models
 
-switch(env.envType)
+switch(envParams.envType)
   case {'urban', 'suburban', 'rural'}
     % Common parameters for urban, suburban and rural modes
     fmhz = rxnode.fc/1e6 ;        % (MHz) Center frequency of receiver
@@ -79,8 +79,8 @@ switch(env.envType)
       tpol = 'v';
     end
 
-    hrm = env.building.avgRoofHeight; % avg. roof height, m
-    los_dist = env.propParams.los_dist;
+    hrm = envParams.building.avgRoofHeight; % avg. roof height, m
+    los_dist = envParams.propParams.los_dist;
     
     if ~strcmp(txbuilding.extwallmat, 'none');  % tx is indoors
       description = [description, 'tx is indoors'];
@@ -104,12 +104,12 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-switch(env.envType)
+switch(envParams.envType)
   
   case 'urban'
     branchLineNums = [branchLineNums, currentLineNum-1];
-    decisionTree = [decisionTree, env.envType, 'ddrx==0', 'ddtx==0'];
-    description = [description, env.envType];
+    decisionTree = [decisionTree, envParams.envType, 'ddrx==0', 'ddtx==0'];
+    description = [description, envParams.envType];
     
     if ddrx==0 && ddtx==0 % urban propagation model with both nodes outdoors
       branchLineNums = [branchLineNums, currentLineNum-1];
@@ -447,7 +447,7 @@ switch(env.envType)
         
   case 'suburban'
     branchLineNums = [branchLineNums, currentLineNum-1];
-    decisionTree = [decisionTree, env.envType];
+    decisionTree = [decisionTree, envParams.envType];
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % suburban propagation model with both nodes outdoors
@@ -786,8 +786,8 @@ switch(env.envType)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % rural propagation model with both nodes outdoors
     branchLineNums = [branchLineNums, currentLineNum-3];
-    decisionTree = [decisionTree, env.envType];
-    description = [description, env.envType];
+    decisionTree = [decisionTree, envParams.envType];
+    description = [description, envParams.envType];
     
     if ddtx==0 && ddrx == 0% rural, all outdoors
       branchLineNums = [branchLineNums, currentLineNum-1];
@@ -1050,15 +1050,16 @@ switch(env.envType)
     
   case 'airborne'
     branchLineNums = [branchLineNums, currentLineNum-1];
-    decisionTree = [decisionTree, env.envType];
-    description = [description, env.envType];
+    decisionTree = [decisionTree, envParams.envType];
+    description = [description, envParams.envType];
 
     %
     % Note: Refraction is not currently modeled
     %
     
     % Airborne parameters   
-    Re = 6371.0088e3; % Earth radius, m (IUGG)
+    hg = 0; % Ground height, in meters
+    Re = 6371.0088e3; % Earth radius, in meters (IUGG)
     ds = 100; % Approximate along-line spacing (meters)
     
     fmhz = rxnode.fc/1e6 ;        % (MHz) Center frequency of receiver
@@ -1084,10 +1085,10 @@ switch(env.envType)
     else
       ds_km = nodeDist*0.001/(nPts-1);   % Distance between points (km);
       
-      [temperature, pressure, rho] = ITUrefAtmosphere(hi_km, env.atmosphere.latd, env.atmosphere.season); 
+      [temperature, pressure, rho] = ITUrefAtmosphere(hi_km, envParams.atmosphere.latd, envParams.atmosphere.season); 
       gamma = ITUspecificAtten(fmhz*0.001, temperature, pressure, rho); % dB/km
       
-      % Integrate via Simpons rule (this is why nPts was an odd number):
+      % Integrate via Simpsons rule (this is why nPts was an odd number):
       hh = ds_km/3;  
       Latm = hh*(gamma(1)+gamma(nPts)) + sum(4*hh*gamma(2:2:nPts-1)) + sum(2*hh*gamma(3:2:nPts-1));
       
@@ -1103,9 +1104,9 @@ switch(env.envType)
     
   otherwise
     
-    error('Unrecognized scenarioType: %s', env.envType);
+    error('Unrecognized scenarioType: %s', envParams.envType);
     
-end; % env.envType switch
+end; % envParams.envType switch
 
 
 % Build modelInfo structure if needed
@@ -1114,7 +1115,7 @@ if nargout > 3
   modelInfo.decisionTree = decisionTree;
   modelInfo.branchLineNums = branchLineNums;
   modelInfo.vars = getWorkspaceExcept('modelInfo', ...
-                                      'txnode','rxnode','env', ...
+                                      'txnode','rxnode','envParams', ...
                                       'Ldb', 'sigmadb', 'Fext', ...
                                       'decisionTree', 'description', 'branchLineNums');
 end
@@ -1122,21 +1123,21 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [ Lgt, siggt ] = groundtotower(dm, fmhz, hln, hhn, hrm, pol, env, los_dist)
-% function [ Lgt, siggt ] = groundtotower(dm, fmhz, hln, hhn, hrm, pol, env, los_dist);
+function [ Lgt, siggt ] = groundtotower(dm, fmhz, hln, hhn, hrm, pol, envStr, los_dist)
+% function [ Lgt, siggt ] = groundtotower(dm, fmhz, hln, hhn, hrm, pol, envStr, los_dist);
 % find path loss over a wide range of frequencies, when one antenna
 % is below roof height, and the other is above. Assumed maximum
 % antenna height is 200 m, maximum ground range is 20 km
-% inputs: dm  = ground range in m, 1 m to 20 km
-%         fmhz = frequency, MHz, 20 MHz to 2 GHz
-%         hlm = lower antenna height, m, must be below roof height
-%         hhm = higher antenna height, m, must be above roof, below 200 m
-%         hrm = roof height, m
-%         pol = polarization, 'v' or 'h'
-%         env = environment, 'U' = urban, 'S' = suburban
+% inputs: dm       = ground range in m, 1 m to 20 km
+%         fmhz     = frequency, MHz, 20 MHz to 2 GHz
+%         hlm      = lower antenna height, m, must be below roof height
+%         hhm      = higher antenna height, m, must be above roof, below 200 m
+%         hrm      = roof height, m
+%         pol      = polarization, 'v' or 'h'
+%         envStr   = environment string: 'U' = urban, 'S' = suburban
 %         los_dist = line-of-sight distance, m
 
-if strcmp(env, 'U');  
+if strcmp(envStr, 'U');  
   henv = 'U2'; % hata model environment flags
   cenv = 1;    % cost-231 walfish ikegami flags
   dh   = 30;   % ground variation
@@ -1152,23 +1153,23 @@ if dm<los_dist; % assume LOS
 elseif dm<1000  % NLOS, but too short for Hata
   Lgt = cost231(dm/1000, fmhz, hln, hhn, hrm, [], [], [], cenv);
   Lgt = Lgt - cost231(1, fmhz, hln, hhn, hrm, [], [], [], cenv) ...
-        + groundtotower(1000, fmhz, hln, hhn, hrm, pol, env, los_dist);
-  siggt = okumura_sigma(fmhz, env);
+        + groundtotower(1000, fmhz, hln, hhn, hrm, pol, envStr, los_dist);
+  siggt = okumura_sigma(fmhz, envStr);
 elseif dm>=1000 && fmhz<150 % low frequency: LR sometimes
                             % with Urban Correction
   Lgt = longley_rice(dm/1000, fmhz, [hhn hln], dh, pol);
-  if strcmp(env, 'U')
+  if strcmp(envStr, 'U')
     Lgt = Lgt + longley_urban(dm/1000, fmhz);
-  elseif strcmp(env, 'S') 
+  elseif strcmp(envStr, 'S') 
     Lgt = Lgt + longley_suburban(dm/1000, fmhz);
   end
-  siggt = okumura_sigma(fmhz, env);
+  siggt = okumura_sigma(fmhz, envStr);
 elseif fmhz<=1500 % vanilla Hata
   Lgt = hata(dm/1000, fmhz, hln, hhn, henv);
-  siggt = okumura_sigma(fmhz, env);
+  siggt = okumura_sigma(fmhz, envStr);
 else % Hata-Cost
   Lgt = hata_cost(dm/1000, fmhz, hln, hhn, henv);
-  siggt = okumura_sigma(fmhz, env);
+  siggt = okumura_sigma(fmhz, envStr);
 end
 
 
