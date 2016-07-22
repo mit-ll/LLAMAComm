@@ -1,4 +1,4 @@
-function Latm = atmosphericLoss_nofrec(tx_xyz, rx_xyz, fghz, atmosphere, alt0)
+function Latm = atmosphericLoss_norefrac(tx_xyz, rx_xyz, fghz, atmosphere, alt0)
 %
 %Usage: 
 %
@@ -48,7 +48,7 @@ xyz = tx_xyz*ones(1,nPts) + u*s;        % XYZ of points on the path
 earthCenter = [0;0;-(Re+alt0)];
 hi_km = (sqrt(sum((xyz-earthCenter*ones(1,nPts)).^2))-Re)*0.001; % Altitude (km)(spherical earth)
 if any(hi_km <0)
-  Ldb = Inf; % Below (geometric) horizon
+  Latm = Inf; % Below (geometric) horizon
 else
   ds_km = nodeDist*0.001/(nPts-1);   % Distance between points (km);
   
