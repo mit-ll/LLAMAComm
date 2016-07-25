@@ -45,6 +45,8 @@ if nargin>=2 % there are arguments specifying model to use
   latd = cellArgs{1};
   if length(cellArgs)>=2; 
     season = cellArgs{2}; % season is required if latitude exceeds 22 degrees
+  else
+    season = 'summer';
   end
 else
   latd = [];
