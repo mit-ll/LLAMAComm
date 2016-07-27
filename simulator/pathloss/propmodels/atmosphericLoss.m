@@ -55,7 +55,7 @@ else
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function xyz = calcPath(startPt, endPt, ds, atmosphere, geomInfo)
+function [xyz, info] = calcPath(startPt, endPt, ds, atmosphere, geomInfo)
 %
 %Usage: 
 %
@@ -74,7 +74,9 @@ function xyz = calcPath(startPt, endPt, ds, atmosphere, geomInfo)
 %
 %Description:
 %
-%
+%  Computes a light path berween the two specified points, taking refraction into account.
+% The path is computed by appealing to Fermat's principal. The path returned is found by 
+% an iterative method that solves for the piecewise linear least-time path.
 %
 
 % Handle arguments
@@ -89,11 +91,12 @@ if isempty(atmosphere)
 end
 
 % Internal parameters
-max_nPts = 1001; % Odd number, >= 3
-minIter = 2;
-maxIter = 5;    % Maximum iterations
-thresh = 0.01;  % Cross-track error (meters)
-dv = 1; 
+angleThresh = 1e-4; % (degrees) Closer to vertical that this is treated as vertical
+max_nPts = 1001;    % Odd number, >= 3
+minIter = 2;        % Minimum number of iterations
+maxIter = 5;        % Maximum number of iterations
+thresh = 1e-4;      % (meters) Cross-track error covergence criterion
+dv = 1;             % (meters) Cross-track step used to estimate refractivity derivative
 
 %
 nodeDist = norm(endPt - startPt);
@@ -107,44 +110,63 @@ xyz0 = startPt*ones(1,nPts) + uhat*u;    % XYZ of points on the straight-line pa
 deltau = nodeDist/(nPts-1);             % Along track spacing (m)
 deltau2 = deltau.^2;                    %
 
-vhat = up - (uhat*(uhat'*up));
-vhat = vhat/norm(vhat);                 % Cross-track unit vector
+xyz = xyz0; % Initially just on the straight line path
 
+dotProd = uhat'*up;
+dotProd(dotProd>1)=1; % In case of numerical issues
+vhat = up - (uhat*dotProd);
 
 v = zeros(1,nPts);                     % Cross-track coordinates
-v0 = Inf + v;
-xyz = xyz0; % Initially just on the straight line path
-nIter = 0;
 
-while((nIter < minIter) || ((nIter < maxIter) && max(abs(v-v0)) > thresh))
-  
-  nIter = nIter + 1;
-  L = sqrt(deltau2 + (diff(v).^2));
-  
-  % Estimate index of refraction and cross-track derivatives 
-  hi_km = 1e-3*calcAltitude(xyz, geomInfo);
-  [temperature, pressure, rho] = ITUrefAtmosphere(hi_km, atmosphere.latd, atmosphere.season); 
-  N1 = refractivity(temperature, pressure, rho);
-  
-  hi_km2 = 1e-3*calcAltitude(xyz + (dv*vhat)*ones(1,nPts), geomInfo);
-  [temperature2, pressure2, rho2] = ITUrefAtmosphere(hi_km2, atmosphere.latd, atmosphere.season); 
-  N2 = refractivity(temperature2, pressure2, rho2);  
+if acosd(dotProd) > angleThresh
 
-  dn = 1e-6*(N2-N1)/dv; % Cross-track derivative of index of refraction at each point
-  n = 1 + 1e-6*N1; % Index of refraction at each point
+  vhat = vhat/norm(vhat);                 % Cross-track unit vector
+
+  v0 = Inf + v;
+  nIter = 0;
+  while((nIter < minIter) || ((nIter < maxIter) && max(abs(v-v0)) > thresh))
     
-  v0 = v; % Save
-  
-  % Solve tridiagonal system
-  w = (n(2:nPts)+n(1:nPts-1))./L;
-  D = -(w(1:nPts-2)+w(2:nPts-1)); % Diagonal terms
-  O = w(2:nPts-2); % Off diagonal
-  Q = (L(1:nPts-2) + L(2:nPts-1)).*dn(2:nPts-1); 
-  v(2:nPts-1) = solveTridiag(D, O, O, Q).';
+    nIter = nIter + 1;
+    L = sqrt(deltau2 + (diff(v).^2));
+    
+    % Estimate index of refraction and cross-track derivatives 
+    hi_km = 1e-3*calcAltitude(xyz, geomInfo);
+    [temperature, pressure, rho] = ITUrefAtmosphere(hi_km, atmosphere.latd, atmosphere.season); 
+    N1 = refractivity(temperature, pressure, rho);
+    
+    hi_km2 = 1e-3*calcAltitude(xyz + (dv*vhat)*ones(1,nPts), geomInfo);
+    [temperature2, pressure2, rho2] = ITUrefAtmosphere(hi_km2, atmosphere.latd, atmosphere.season); 
+    N2 = refractivity(temperature2, pressure2, rho2);  
 
-  % Update coordinates
-  xyz = xyz0 + (vhat*v);
+    dn = 1e-6*(N2-N1)/dv; % Cross-track derivative of index of refraction at each point
+    n = 1 + 1e-6*N1; % Index of refraction at each point
+    
+    v0 = v; % Save
+    
+    % Solve tridiagonal system
+    w = (n(2:nPts)+n(1:nPts-1))./L;
+    D = -(w(1:nPts-2)+w(2:nPts-1)); % Diagonal terms
+    O = w(2:nPts-2); % Off diagonal
+    Q = (L(1:nPts-2) + L(2:nPts-1)).*dn(2:nPts-1); 
+    v(2:nPts-1) = solveTridiag(D, O, O, Q).';
+
+    % Update coordinates
+    xyz = xyz0 + (vhat*v);
+  end
+else
+  vhat = zeros(3,1);
 end
+
+if nargout > 1
+  info.u = u;
+  info.v = v;
+  info.uhat = uhat;
+  info.vhat = vhat;
+  info.up = up;
+  info.nPts = nPts;
+  info.nIter = nIter;
+end
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function xyz = calcPath_norefrac(startPt, endPt, ds); %#ok if unused
@@ -166,7 +188,8 @@ function xyz = calcPath_norefrac(startPt, endPt, ds); %#ok if unused
 %
 %Description:
 %
-%
+%  Computes a light path berween the two specified points, neglecting refraction.
+% (This is just  a straight line)
 %
 
 % Handle arguments
@@ -239,6 +262,7 @@ switch(geomInfo.type)
     D = sqrt(sum(fromCenter.^2, 1));
     uhat = fromCenter./(ones(3,1)*D);
 end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function x = solveTridiag(diagonal, upper, below, y)
 %
@@ -249,9 +273,8 @@ function x = solveTridiag(diagonal, upper, below, y)
 %
 %Description:
 %
-% Efficiently solves the tridiagonal system Ax = y where
-% A has a diagonal DIAGONAL, upper diagonal UPPER
-% and below diagonal BELOW
+% Efficiently solves the tridiagonal system Ax = y where A has a diagonal 
+% DIAGONAL, upper diagonal UPPER and below diagonal BELOW
 % 
 
 nDim = numel(y);

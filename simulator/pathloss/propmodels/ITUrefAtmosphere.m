@@ -53,6 +53,9 @@ else
   season = [];
 end
 
+% Force Altitudest to be positive semidefinte:
+hh(hh<0) = 0;
+
 if ~isempty(latd) && ~isempty(season) && isnumeric(season)
   % Ad-hoc seasonal interpolation (0 = winter, 1 = summer)
   [tt0, pp0, rho0] = ITUrefAtmosphere(hh, latd, 'winter');
