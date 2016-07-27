@@ -43,6 +43,7 @@ u = (rx_xyz - tx_xyz)/nodeDist;         % Unit vector on straight line path
 s = linspace(0, nodeDist, nPts);        % Along-path distances (m)
 xyz = tx_xyz*ones(1,nPts) + u*s;        % XYZ of points on the path
 
+
 % This altitude calculation could be replaced with 
 % something mode sophisticated:
 earthCenter = [0;0;-(Re+alt0)];

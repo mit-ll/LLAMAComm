@@ -1063,7 +1063,7 @@ switch(envParams.envType)
 
     % Note: Refraction is not currently modeled
     fghz = rxnode.fc*1e-9 ;   % (MHz) Center frequency of receiver
-    Latm = atmosphericLoss_norefrac(tx_xyz, rx_xyz, fghz, envParams.atmosphere);
+    Latm = atmosphericLoss(tx_xyz, rx_xyz, fghz, envParams.atmosphere);
     if isfinite(Latm)
       fmhz = rxnode.fc*1e-6 ; % (MHz) Center frequency of receiver
       Llos = los(nodeDist, fmhz); % LOS loss    
