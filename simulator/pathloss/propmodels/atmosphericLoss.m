@@ -134,7 +134,8 @@ vhat = up - (uhat*dotProd);
 
 v = zeros(1,nPts);                     % Cross-track coordinates
 
-if acosd(dotProd) > angleThresh
+angle=acosd(dotProd);
+if angle > angleThresh && angle < 180-angleThresh
 
   vhat = vhat/norm(vhat);                 % Cross-track unit vector
   v0 = Inf + v;
