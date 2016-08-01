@@ -87,7 +87,7 @@ if nargin < 6
   end
 end
 if isempty(atmosphere)
-  atmosphere=struct('latd',[], 'season',[]);
+  atmosphere = struct('latd',[], 'season',[]);
 end
 
 % Internal parameters
@@ -99,8 +99,24 @@ thresh = 1e-4;      % (meters) Cross-track error covergence criterion
 dv = 1;             % (meters) Cross-track step used to estimate refractivity derivative
 
 %
+nIter = 0;
+
+%
 nodeDist = norm(endPt - startPt);
 nPts = min(max_nPts, 3 + 2*floor(nodeDist/abs(ds)/2)); % Odd number, >= 3
+if nodeDist==0
+  xyz = repmat(startPt, [1, nPts]);
+  if nargout > 1    
+    info.u = zeros(1, nPts);
+    info.v = zeros(1, nPts);
+    info.uhat = zeros(3,1);
+    info.vhat = zeros(3,1);
+    info.up = calcLocalup(startPt);
+    info.nPts = nPts;
+    info.nIter = nIter;
+  end
+  return;
+end
 
 uhat = (endPt - startPt)/nodeDist;      % Along-track unit vector
 up = calcLocalup(startPt);
@@ -121,9 +137,7 @@ v = zeros(1,nPts);                     % Cross-track coordinates
 if acosd(dotProd) > angleThresh
 
   vhat = vhat/norm(vhat);                 % Cross-track unit vector
-
   v0 = Inf + v;
-  nIter = 0;
   while((nIter < minIter) || ((nIter < maxIter) && max(abs(v-v0)) > thresh))
     
     nIter = nIter + 1;
@@ -155,6 +169,7 @@ if acosd(dotProd) > angleThresh
   end
 else
   vhat = zeros(3,1);
+  nIter = 0;
 end
 
 if nargout > 1
