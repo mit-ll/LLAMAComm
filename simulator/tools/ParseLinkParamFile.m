@@ -8,7 +8,7 @@ function linkStruct = ParseLinkParamFile(linkStruct)
 global DisplayLLAMACommWarnings
 
 % read in link parameter file
-data = readtext(linkStruct.propParams.linkParamFile);
+data = readTextFile(linkStruct.propParams.linkParamFile);
 
 % Check to see if the current link is within the param file.  If it is, 
 % then retrieve the appropriate parameters and update the link object
