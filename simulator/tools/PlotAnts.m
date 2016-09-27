@@ -124,7 +124,7 @@ function arrowPlot(theta,len,plotParams)
     
 %------------------------------------------------------------------
 function arrowPlot2(theta,len,plotParams)
-% Use plotElev (in /llamacomm/simulator/tools/) to make the plot
+% Use polarWedgePlot(in /llamacomm/simulator/tools/) to make the plot
 
     if ~exist('plotParams', 'var')
         plotParams = 'b';
@@ -143,7 +143,7 @@ function arrowPlot2(theta,len,plotParams)
     locRot = rotMatrix*loc;
 
     % make staff of arrow
-    plotElev([theta theta],[0 len],plotParams)
+    polarWedgePlot([theta theta],[0 len],plotParams);
     % Plot the arrowhead
     hold on
     plot(locRot(1,:),locRot(2,:),plotParams)
