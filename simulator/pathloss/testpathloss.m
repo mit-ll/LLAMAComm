@@ -9,9 +9,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Build environment struct
-envParams.scenarioType = 'rural'; % Scenario type: 'urban', 'suburban' or 'rural'
-envParams.building.roofHeight = 4; % (m) Average roof height in scenario
-envParams.los_dist = 50; % (m) line-of-sight distance between nodes
+envParams.envType = 'rural'; % Scenario type: 'urban', 'suburban' or 'rural'
+envParams.building.avgRoofHeight = 4; % (m) Average roof height in scenario
+envParams.propParams.los_dist = 50; % (m) line-of-sight distance between nodes
 
 % Build transmitter node struct
 txnode.antType = 'dipole_halfWavelength';
@@ -67,7 +67,7 @@ if length(txnodelocation)>1 % Test pathloss at different ranges
   
   %   SNRdB = 10*log10(P) - medLdb - 10*log10(No*B) - NfdB;
   
-  %   titlestr = [envParams.scenarioType,', ',num2str(rxnode.fc/1e6),...
+  %   titlestr = [envParams.envType,', ',num2str(rxnode.fc/1e6),...
   %               ' MHz, BW = ',num2str(B/1e6),' MHz, P = ',...
   %               num2str(P),' W'];
   
@@ -84,7 +84,7 @@ if length(txnodelocation)>1 % Test pathloss at different ranges
   %           ', noise fig ',num2str(NfdB),' dB.']);
   %   ylabel('Median SNR (dB)');
   %   grid on;
-  %   dumpFig([envParams.scenarioType,num2str(rxnode.fc/1e6),'MHz']);
+  %   dumpFig([envParams.envType,num2str(rxnode.fc/1e6),'MHz']);
 
 elseif length(rxnodeheight)>1 % test pathloss at different Rx heights
   medLdb = zeros(size(rxnodeheight));      % median pathloss, dB
