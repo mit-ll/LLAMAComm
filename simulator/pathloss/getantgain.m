@@ -34,43 +34,51 @@ end
 
 %% TX
 
+
 % vector from tx to rx nodes
 vectx = rxnode.location - txnode.location;
-% Convert from xyz to (azimuth CCL from east, elevation above ground plane)
-thetatx = atan2(vectx(2), vectx(1)) - txnode.ant_az;
-phitx = atan2(vectx(3), norm([vectx(1), vectx(2)])) - txnode.ant_el;
-% wrap the elevation to between [-pi/2, pi/2]
-if phitx < -pi/2
-  phitx = -pi/2 + abs(phitx + pi/2);
-elseif phitx > pi/2
-  phitx = pi/2 - abs(phitx - pi/2);
-end
-% wrap the azimuth to between (-pi, pi]
-thetatx = mod(thetatx + pi, 2*pi) - pi;
-% wrap -pi to pi
-if thetatx == -pi
-  thetatx = pi;
-end
+[az,el,~] = cart2sph(vectx(1),vectx(2),vectx(3));
+[thetatx,phitx] = compute_differentialAngle(az,el,txnode.ant_az,txnode.ant_el);
+
+% % Convert from xyz to (azimuth CCL from east, elevation above ground plane)
+% thetatx = atan2(vectx(2), vectx(1)) - txnode.ant_az;
+% phitx = atan2(vectx(3), norm([vectx(1), vectx(2)])) - txnode.ant_el;
+% % wrap the elevation to between [-pi/2, pi/2]
+% if phitx < -pi/2
+%   phitx = -pi/2 + abs(phitx + pi/2);
+% elseif phitx > pi/2
+%   phitx = pi/2 - abs(phitx - pi/2);
+% end
+% % wrap the azimuth to between (-pi, pi]
+% thetatx = mod(thetatx + pi, 2*pi) - pi;
+% % wrap -pi to pi
+% if thetatx == -pi
+%   thetatx = pi;
+% end
 
 %% RX
 
-%vector from rx to tx nodes
 vecrx = txnode.location - rxnode.location;
-% Convert from xyz to (azimuth CCL from east, elevation above ground plane)
-thetarx = atan2(vecrx(2), vecrx(1)) - rxnode.ant_az;
-phirx = atan2(vecrx(3), norm([vecrx(1), vecrx(2)])) - rxnode.ant_el;
-% wrap the elevation to between [-pi/2, pi/2]
-if phirx < -pi/2
-  phirx = -pi/2 + abs(phirx + pi/2);
-elseif phirx > pi/2
-  phirx = pi/2 - abs(phirx - pi/2);
-end
-% wrap the azimuth to between (-pi, pi]
-thetarx = mod(thetarx + pi, 2*pi) - pi;
-% wrap -pi to pi
-if thetarx == -pi
-  thetarx = pi;
-end
+[az,el,~] = cart2sph(vecrx(1),vecrx(2),vecrx(3));
+[thetarx,phirx] = compute_differentialAngle(az,el,rxnode.ant_az,rxnode.ant_el);
+
+% %vector from rx to tx nodes
+% vecrx = txnode.location - rxnode.location;
+% % Convert from xyz to (azimuth CCL from east, elevation above ground plane)
+% thetarx = atan2(vecrx(2), vecrx(1)) - rxnode.ant_az;
+% phirx = atan2(vecrx(3), norm([vecrx(1), vecrx(2)])) - rxnode.ant_el;
+% % wrap the elevation to between [-pi/2, pi/2]
+% if phirx < -pi/2
+%   phirx = -pi/2 + abs(phirx + pi/2);
+% elseif phirx > pi/2
+%   phirx = pi/2 - abs(phirx - pi/2);
+% end
+% % wrap the azimuth to between (-pi, pi]
+% thetarx = mod(thetarx + pi, 2*pi) - pi;
+% % wrap -pi to pi
+% if thetarx == -pi
+%   thetarx = pi;
+% end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
