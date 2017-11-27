@@ -63,29 +63,32 @@ psi = atan((h1+h2)./dm); % reflection point elevation angle, rad.
 
 % get smaller relative delay-path path-loss without averaging
 idxsmall = find(delphi<=pi/2);
-if rhoflag==0; 
-  rho = reflection(1e6*ff(idxsmall), psi(idxsmall), ...
-                   epsr(idxsmall), sigma(idxsmall), pol);
-else 
-  rho = -1*ones(size(idxsmall));
+if ~isempty(idxsmall)
+  if rhoflag==0; 
+    rho = reflection(1e6*ff(idxsmall), psi(idxsmall), ...
+                     epsr(idxsmall), sigma(idxsmall), pol);
+  else 
+    rho = -1*ones(size(idxsmall));
+  end
+  E = 1 + rho.*exp(-1j*delphi(idxsmall)); % normalized signal 
+  
+  L(idxsmall) = db20(4*pi*rm(idxsmall)./lambda(idxsmall)) - ...
+      db20(abs(E)); % loss in dB 
 end
-E = 1 + rho.*exp(-1j*delphi(idxsmall)); % normalized signal 
-
-L(idxsmall) = db20(4*pi*rm(idxsmall)./lambda(idxsmall)) - ...
-    db20(abs(E)); % loss in dB 
 
 % for larger relative delay-paths, average values
 idxbig = find(delphi>pi/2);  
-if rhoflag==0; 
-  rho = reflection(1e6*ff(idxbig), psi(idxbig), ...
-                   epsr(idxbig), sigma(idxbig), pol);
-else 
-  rho = -1*ones(size(idxbig));
+if ~isempty(idxbig)
+  if rhoflag==0; 
+    rho = reflection(1e6*ff(idxbig), psi(idxbig), ...
+                     epsr(idxbig), sigma(idxbig), pol);
+  else 
+    rho = -1*ones(size(idxbig));
+  end
+  Esq = 1 + rho.*conj(rho); % normalized signal 
+  L(idxbig) = db20(4*pi*rm(idxbig)./lambda(idxbig)) - ...
+      db10(Esq); % loss in dB 
 end
-Esq = 1 + rho.*conj(rho); % normalized signal 
-L(idxbig) = db20(4*pi*rm(idxbig)./lambda(idxbig)) - ...
-    db10(Esq); % loss in dB 
-
 
 % Copyright (c) 2006-2016, Massachusetts Institute of Technology All rights
 % reserved.
