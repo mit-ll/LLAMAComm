@@ -40,7 +40,7 @@ for nodeLoop = 1:length(nodes)
     
     % Determine node type: 'transmiter', 'receiver', 'transceiver'
     type = [transmitter receiver];
-    switch [num2str(type(1)) num2str(type(2))];
+    switch [num2str(type(1)) num2str(type(2))]
         case '00'
             % Do nothing, must be Genie only
         case '10'
