@@ -41,7 +41,7 @@ switch(env.envType)
     Fext = 0;
   otherwise
     error('Unknown environment type: %s', env.envType)    
-end;
+end
 
 if addGaussianNoiseFlag
     % Add noise
