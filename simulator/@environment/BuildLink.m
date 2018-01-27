@@ -39,6 +39,7 @@ if isempty(env.links)
     reciprocalLink = [];
 else
     reciprocalLink = FindReciprocalLink(env.links, nodeTx, modTx, nodeRx, modRx, nodes);
+    keyboard
 end
 
 %---------------------------------------------
@@ -80,7 +81,19 @@ elseif ~isempty(reciprocalLink)
   pathLoss          = reciprocalLink.pathLoss;
   propParams        = reciprocalLink.propParams;
   
+   
+  if isfield(channel,'chanTensor')
+      channel.chanTensor = permute(channel.chanTensor,[2,1,3,4]);
+      hUnNorm = permute(channel.chanTensor,[1,2,4,3]);
+      channel.chan = hUnNorm(:,:);
+  end
   
+  if isfield(channel,'riceMatrix')
+      channel.riceMatrix = channel.riceMatrix.';
+      channel.powerProfile = channel.powerProfile.';
+      channel.chanstates = channel.chanstates.';
+  end    
+
 else
   % Modules are located in different nodes
   
