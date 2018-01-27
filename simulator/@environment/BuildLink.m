@@ -39,7 +39,6 @@ if isempty(env.links)
     reciprocalLink = [];
 else
     reciprocalLink = FindReciprocalLink(env.links, nodeTx, modTx, nodeRx, modRx, nodes);
-    keyboard
 end
 
 %---------------------------------------------
