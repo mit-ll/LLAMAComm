@@ -32,11 +32,12 @@
 #include <stdio.h>
 #ifdef MATLAB_MEX_FILE
 #include "mex.h"
+
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[]){
 
 
-  int dims[2];
+  mwSize dims[2];
   int nRowsIn, nColsIn, complexIn, classIn;
   int nRowsOut, nColsOut;
   int nShifts;
