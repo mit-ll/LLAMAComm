@@ -56,7 +56,8 @@ parfor rxtxLoop = 1:rxtxDOF
   H = jakes4(startSamp, nS, chanstate);
   
   % Apply power profile
-  pows = pprof.pows /sqrt(riceKlin + 1);
+  %pows = pprof.pows /sqrt(riceKlin + 1);
+  pows = pprof.pows /(riceKlin + 1);
 
   % H = H.*repmat(sqrt(pows(:)), 1, nS);
   % H = bsxfun(@times, H, sqrt(pows(:)));
