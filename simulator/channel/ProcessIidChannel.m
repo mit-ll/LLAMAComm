@@ -26,58 +26,62 @@ function [rxsig] = ProcessIidChannel(startSamp, channel, source)
 nS = size(source, 2) - channel.longestLag;
 
 if nS < 1
-  error('The source length: %d is less than the longest channel length: %d', ...
-        num2str(size(source, 2)), ...
-        num2str(channel.longestLag+1));
+    error('The source length: %d is less than the longest channel length: %d', ...
+          num2str(size(source, 2)), ...
+          num2str(channel.longestLag+1));
 end
 
 chanstates = channel.chanstates;
 riceKlin   = 10^(0.1*channel.riceKdB);
 
-% transpose the source so multiplication works out
-source = source.';
+if isinf(riceKlin)
+    inds = (1:nS) + channel.longestLag - channel.powerProfile(1, 1).riceLag;
+    rxsig = channel.riceMatrix*source(:, inds);
+else
+    % transpose the source so multiplication works out
+    source = source.';
 
 
-nS_ones = ones(1, nS);
-longestLag = channel.longestLag;
-powerProf = channel.powerProfile;
+    nS_ones = ones(1, nS);
+    longestLag = channel.longestLag;
+    powerProf = channel.powerProfile;
 
-rxtxDOF = nR*nT;
-allSigs = zeros(rxtxDOF, nS);
-%for rxtxLoop = 1:rxtxDOF
-parfor rxtxLoop = 1:rxtxDOF
+    rxtxDOF = nR*nT;
+    allSigs = zeros(rxtxDOF, nS);
+    %for rxtxLoop = 1:rxtxDOF
+    parfor rxtxLoop = 1:rxtxDOF
 
-  chanstate = chanstates{rxtxLoop};
-  pprof = powerProf(rxtxLoop);
-  % rLoop = 1+ mod(rxtxLoop-1, nR);
-  tLoop = 1+floor((rxtxLoop-1)/nR);
-  
-  % Generate time-varying channel
-  H = jakes4(startSamp, nS, chanstate);
-  
-  % Apply power profile
-  %pows = pprof.pows /sqrt(riceKlin + 1);
-  pows = pprof.pows /(riceKlin + 1);
+        chanstate = chanstates{rxtxLoop};
+        pprof = powerProf(rxtxLoop);
+        % rLoop = 1+ mod(rxtxLoop-1, nR);
+        tLoop = 1+floor((rxtxLoop-1)/nR);
+        
+        % Generate time-varying channel
+        H = jakes4(startSamp, nS, chanstate);
+        
+        % Apply power profile
+        %pows = pprof.pows /sqrt(riceKlin + 1);
+        pows = pprof.pows /(riceKlin + 1);
 
-  % H = H.*repmat(sqrt(pows(:)), 1, nS);
-  % H = bsxfun(@times, H, sqrt(pows(:)));
-  H = H.*(sqrt(pows(:))*nS_ones); 
-  
-  % Get ready for convolution
-  H = H.';
-  
-  allSigs(rxtxLoop, :) = TVConv(H, pprof.lags, source(:, tLoop), longestLag); %#ok source not sliced
-end % END rLoop
+        % H = H.*repmat(sqrt(pows(:)), 1, nS);
+        % H = bsxfun(@times, H, sqrt(pows(:)));
+        H = H.*(sqrt(pows(:))*nS_ones); 
+        
+        % Get ready for convolution
+        H = H.';
+        
+        allSigs(rxtxLoop, :) = TVConv(H, pprof.lags, source(:, tLoop), longestLag); %#ok source not sliced
+    end % END rLoop
 
-rxsig = reshape(sum(reshape(allSigs, [nR, nT, nS]), 2), [nR, nS]);
-allSigs = []; %#ok - allSigs no longer needed 
+    rxsig = reshape(sum(reshape(allSigs, [nR, nT, nS]), 2), [nR, nS]);
+    allSigs = []; %#ok - allSigs no longer needed 
 
-% Do the Rice tap
-inds = (1:nS) + channel.longestLag - channel.powerProfile(1, 1).riceLag;
-source = source.';  % Flip the source back
-riceMat = sqrt(riceKlin/(riceKlin + 1))*channel.riceMatrix;
-rxsig = rxsig + riceMat*source(:, inds);
-
+    % Do the Rice tap
+    inds = (1:nS) + channel.longestLag - channel.powerProfile(1, 1).riceLag;
+    source = source.';  % Flip the source back
+    riceMat = sqrt(riceKlin/(riceKlin + 1))*channel.riceMatrix;
+    rxsig = rxsig + riceMat*source(:, inds);
+end
 
 % Copyright (c) 2006-2016, Massachusetts Institute of Technology All rights
 % reserved.

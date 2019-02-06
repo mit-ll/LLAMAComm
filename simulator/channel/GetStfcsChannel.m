@@ -128,8 +128,8 @@ for rxLoop=1:nR % index Rx
     txAntLoc = mic2mac(txnode.location,txnode.antLocation(txLoop,:));
     delr = norm(rxAntLoc-txAntLoc); % range between tx and rx antennas
     phase(rxLoop,txLoop) = delr*2*pi/lam; % Phase offset
-  end;
-end;
+  end
+end
 
 % Rice matrix:
 riceMatrix = exp( 1j*(phase + ricePhaseRad) );
@@ -139,12 +139,15 @@ riceMatrix = sqrt(fakeHpow)/norm(riceMatrix,'fro')*riceMatrix;
 
 % Add specular tap
 riceK = undb10(riceKdB); % Rice K-factor (linear)
-hUnNormTensor(:,:,doppSamp,riceDelay) = ...
-    sqrt(riceK)*riceMatrix + hUnNormTensor(:,:,doppSamp,riceDelay);
-
-% Normalize by Rice K-factor
-hUnNormTensor = hUnNormTensor/sqrt(riceK + 1);
-
+if isinf(riceK)
+    hUnNormTensor(:,:,doppSamp,riceDelay) = riceMatrix;
+else    
+    hUnNormTensor(:,:,doppSamp,riceDelay) = ...
+        sqrt(riceK)*riceMatrix + hUnNormTensor(:,:,doppSamp,riceDelay);
+    
+    % Normalize by Rice K-factor
+    hUnNormTensor = hUnNormTensor/sqrt(riceK + 1);
+end
 % Re-create hUnNorm
 %hUnNorm = [];  %
 %for dopIn = 1:nDopSamp
