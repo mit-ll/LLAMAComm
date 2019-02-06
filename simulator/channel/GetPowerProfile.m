@@ -74,6 +74,9 @@ lambda = propParams.delaySpread*fs/tapSpacing;
 % first tap
 minRelPow = 1e-4; % min tap power -40 dB relative to first tap power
 maxLagIndex = -lambda*log(minRelPow); % Largest possible lag index
+if maxLagIndex < 1
+    maxLagIndex = 1;
+end
 
 % Allocate structure array
 powerProfile(nR,nT) = struct('pows', 0, ...
