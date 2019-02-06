@@ -27,17 +27,21 @@ h(Ni, Nsamples) = 0; %Allocate. h  = zeros(Ni, Nsamples);
 for ii = 1:Ni
   methodfun = chanstates(ii).method;
   f         = chanstates(ii).doppf;  % Dopp freq normalized to sample rate
-  
-  if strcmpi(methodfun, 'zheng')
-    try
-      h(ii, :) = zhengFunLUT(f, t, chanstates(ii));
-    catch ME; %#ok 
-      h(ii, :)    = zheng(f, t, chanstates(ii));      
-    end
-  else
-    h(ii, :)    = eval([methodfun, '(f, t, chanstates(ii));']);
+ 
+  switch(lower(methodfun))
+    case 'zheng'
+      try
+          h(ii, :) = zhengFunLUT(f, t, chanstates(ii));
+      catch ME; %#ok 
+          h(ii, :)    = zheng(f, t, chanstates(ii));      
+      end
+    case 'constant'
+      h(ii, :) = chanstates(ii).coeff;
+      
+    otherwise
+      h(ii, :)    = eval([methodfun, '(f, t, chanstates(ii));']);
   end
-  
+
   %%%%%%%%%%%%%%%%% Find the Correlation Functions
   if Plot % Make plots
     c = h(ii, :);
