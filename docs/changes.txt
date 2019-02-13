@@ -22,6 +22,7 @@ ___________________________________________________________________________
     - Fix for edge case velocitySpread == 0
     - Fix for edge case with riceK -> infinity
     - Cosmetic and minor performance improvements
+    - Updated documentation
 ___________________________________________________________________________
 
  *** June 2016:  LLAMAComm (v. 2.17) (MATLAB R2015b)
