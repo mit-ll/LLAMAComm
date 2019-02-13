@@ -361,7 +361,6 @@ objects.
 \begin{lstlisting}[name=hdBuildNodes]
 function hdNodes = HD_BuildNodes
 
-
 % Function HD_BuildNodes.m:
 % Example function/script for building example half-duplex nodes with
 % common transmit/receive modules and user parameters.
@@ -434,7 +433,7 @@ that tells LLAMAComm whether the module is a transmitter or a
 receiver. Details on the other properties can be found in the
 reference section of the documentation.
 
-The last two lines of the block of code shown above (lines 49-50)
+The last two lines of the block of code shown above (lines 55-56)
 are calls to the module class constructor.  The constructor expects
 a struct with the specific field names provided in the example.  It
 returns a module object.  In this example, two modules are produced:
@@ -783,9 +782,9 @@ The function headers for all controller functions need to have the
 same input and outputs.  The controller function takes in a node
 object and returns a modified node object and a status string.  The
 status string is used to detect when a simulation is finished.  On
-line 21, the status is set to \verb+'running'+.  When the controller
+line 26, the status is set to \verb+'running'+.  When the controller
 reaches the \verb+done+ state, the status is set to \verb+'done'+
-(line 69).
+(line 76).
 
 The user parameters and current state are stored within the node
 object.  They are extracted using the functions
@@ -973,6 +972,8 @@ code has been snipped for clarity).
 \begin{lstlisting}[name=fdBuildNodes][numbers=none]
 function fdNodes = FD_BuildNodes
 ...
+\end{lstlisting}
+\begin{lstlisting}[name=fdBuildNodes, firstnumber=22][numbers=none]
 
 % Define transmit/recieve modules
 
@@ -981,30 +982,34 @@ fd1_tx_mod_params.callbackFcn = @BPSK_Transmit;
 fd1_tx_mod_params.fc = 2495e6;
 fd1_tx_mod_params.type = 'transmitter';
 ...
-
+\end{lstlisting}
+\begin{lstlisting}[name=fdBuildNodes, firstnumber=40][numbers=none]
 fd1_rx_mod_params.name = 'fd1_rx';
 fd1_rx_mod_params.callbackFcn = @BPSK_Receive;
 fd1_rx_mod_params.fc = 2495e6;
 fd1_rx_mod_params.type = 'receiver';
 ...
-
+\end{lstlisting}
+\begin{lstlisting}[name=fdBuildNodes, firstnumber=56][numbers=none]
 fd2_tx_mod_params.name = 'fd2_tx';
 fd2_tx_mod_params.callbackFcn = @BPSK_Transmit;
 fd2_tx_mod_params.fc = 1500e6;
 fd2_tx_mod_params.type = 'transmitter';
 ...
-
+\end{lstlisting}
+\begin{lstlisting}[name=fdBuildNodes, firstnumber=71][numbers=none]
 fd2_rx_mod_params.name = 'fd2_rx';
 fd2_rx_mod_params.callbackFcn = @BPSK_Receive;
 fd2_rx_mod_params.fc = 1500e6;
 fd2_rx_mod_params.type = 'receiver';
 ...
-
+\end{lstlisting}
+\begin{lstlisting}[name=fdBuildNodes, firstnumber=87][numbers=none]
 fd1_tx_mod = module(fd1_tx_mod_params);
 fd1_rx_mod = module(fd1_rx_mod_params);
 fd2_tx_mod = module(fd2_tx_mod_params);
 fd2_rx_mod = module(fd2_rx_mod_params);
-
+...
 \end{lstlisting}
 
 The code block above builds the four modules used in this example.
@@ -1013,7 +1018,7 @@ frequencies are set at 2495 MHz and 1500 MHz.  Also, the BPSK
 receive and transmit functions were reused for this example.  The
 next block of code in the file constructs the node objects.
 
-\begin{lstlisting}[name=fdBuildNodes]
+\begin{lstlisting}[name=fdBuildNodes, firstnumber=93]
 % Define nodes
 
 FD_userA_node_params.name = 'FD_UserA';
@@ -1039,7 +1044,7 @@ property is used within \verb+BPSK_Receive()+ and
 of increasing the number of samples per bit for the full-duplex
 transceivers.
 
-\begin{lstlisting}[name=fdBuildNodes]
+\begin{lstlisting}[name=fdBuildNodes, firstnumber=111]
 % Set user parameters
 
 userParams.power = 10; % (Watts)
@@ -1100,7 +1105,8 @@ following listing.
 \begin{lstlisting}[name=fdController][numbers=none]
 function [nodeobj,status] = FD_UserA_Controller(nodeobj)
 ...
-
+\end{lstlisting}
+\begin{lstlisting}[name=fdController, firstnumber=24][numbers=none]
 status = 'running';  % Default status
 
 % Load user parameters
@@ -1328,10 +1334,10 @@ rx_mod = module(rx_mod_params);
 
 Module objects are constructed in the normal fashion.  However,
 since this example involves a MIMO transmitter and receiver, the
-antenna position, \verb+antPosition+ (line 11 and 38), is a
+antenna position, \verb+antPosition+ (line 30 and 57), is a
 2-dimensional matrix rather than a single vector.\footnote{Please
 refer to the reference section for more details.}  Also,
-\verb+rx_mod_params.TDCallbackFcn+ has been defined on line 32.  The
+\verb+rx_mod_params.TDCallbackFcn+ has been defined on line 51.  The
 function that it points to, \verb+LLMIMO_Rx_TDCallback+ is a custom
 plot for the timing diagram callback.
 
@@ -1358,7 +1364,7 @@ modulation/demodulation schemes.  Note that a genie transmit module can multi-ca
 
 The genie modules are defined by a name and a type (transmitter or
 receiver). To build a genie module, simply include an extra argument
-in the call to the module constructor (lines 60-61).  This extra
+in the call to the module constructor (lines 80-81).  This extra
 argument is the ``genie flag''.  It instructs the constructor to
 make a genie module.
 
@@ -1437,7 +1443,7 @@ sharedParams.nBlocksToSim = 8;
 The shared parameters, shown above, include all the information that
 is required to synchronize between the two radios.  These parameters
 define the packet structure and the training sequences.  The number
-of packets to simulate is also defined here (line 92).
+of packets to simulate is also defined here (line 136).
 
 \begin{lstlisting}[name=llmimoBuild]
 % DN-specific (Transmitter) parameters
@@ -1456,7 +1462,7 @@ dnParams.getFromRx = [];
 The transmitter (\verb+DN+) in this example does not generate data
 randomly as in previous examples.  Instead, it reads binary data
 from a file.  This file is specified as a parameter named
-\verb+infoSourceFilename+ (line 131).  When running, the controller
+\verb+infoSourceFilename+ (line 142).  When running, the controller
 function will read a block of data from file and put it into
 \verb+infoBits+. \verb+LLMimo_Transmit()+ will then modulate this
 data for transmission. The field \verb+infoSourceFID+ will be used
@@ -1620,6 +1626,24 @@ from within \verb+LLMimo_Transmit()+ and \verb+LLMimo_Receive()+).
 \begin{lstlisting}[name=llmimoCalcBER]
 function ber = LLMimo_CalcBER(nodes)
 
+% Function user.LL/LLMimo_CalcBER.m:
+% Calculates the Bit-Error Rate for the LLMimo example
+%
+% USAGE:  ber = LLMimo_CalcBER(nodes)
+%
+% Input arguments:
+%  nodes     (node obj array, 1xN) Node objects
+%
+% Output arguments:
+%  ber       (1x1) BER for DN->AN link
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Copyright (c) 2006-2016 Massachusetts Institute of Technology %
+% All rights reserved.   See software license below.            %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 % Extract user parameters
 pAN = GetUserParams(FindNode(nodes,'AN'));
 pDN = GetUserParams(FindNode(nodes,'DN'));
@@ -1715,10 +1739,10 @@ calling the \verb+Main()+ function.  The contents of the
 
 \begin{lstlisting}[name=startExample]
 % Script StartExample.m:
-% The start script sets up the MATLAB path, calls user functions to set up
-% the simulation universe, and starts the simulation.  When the simulation
-% is complete, user-defined functions can be called to analyze the
-% results.
+% The start script sets up the MATLAB path, calls user functions 
+% to set up the simulation universe, and starts the simulation.  
+% When the simulation is complete, user-defined functions can be 
+% called to analyze the results.
 %
 % This script runs the example described in the documentation:
 %    Easy rural environment
@@ -2151,14 +2175,14 @@ to the following:
 \end{enumerate}
 Now that you've updated the header comments, you can start modifying the function's code.
 
-The user-parameters struct is used to pass information between the controller callback function and receiver or transmitter callback functions.  Notice on line 26 that the user-parameters struct is obtained; on line 48, the user-parameters struct is updated---the user parameters are initialized when the node is built (see \secref{build_observer}).
+The user-parameters struct is used to pass information between the controller callback function and receiver or transmitter callback functions.  Notice on line 28 that the user-parameters struct is obtained; on line 55, the user-parameters struct is updated---the user parameters are initialized when the node is built (see \secref{build_observer}).
 
 
 To implement the receiver functionality, do the following:
 \setcounter{enumitemp}{\theenumi}
 \begin{enumerate}
 \setcounter{enumi}{\theenumitemp}
-\item Replace lines 28-50 with the following:
+\item Replace lines 30-52 with the following:
 %
 \begin{lstlisting}[firstnumber=28]
 % Compute the block received power (Watts)

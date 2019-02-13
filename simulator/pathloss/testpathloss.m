@@ -51,7 +51,7 @@ if length(txnodelocation)>1 % Test pathloss at different ranges
   for ii=1:length(txnodelocation)
     txnode.location(1) = txnodelocation(ii);
     [medLdb(ii), stdLdb(ii)] = getPathloss(txnode,rxnode,envParams);
-  end;
+  end
 
   clf;
   semilogx(txnodelocation,medLdb);
@@ -92,7 +92,7 @@ elseif length(rxnodeheight)>1 % test pathloss at different Rx heights
   for ii=1:length(rxnodeheight)
     rxnode.location(3) = rxnodeheight(ii);
     [medLdb(ii), stdLdb(ii)] = getPathloss(txnode,rxnode,envParams);
-  end;
+  end
 
   clf;
   plot(rxnodeheight,medLdb);
@@ -100,7 +100,7 @@ elseif length(rxnodeheight)>1 % test pathloss at different Rx heights
   ylabel('Median Pathloss (dB)');
   grid on;
 
-end;
+end
 
 
 % Copyright (c) 2006-2016, Massachusetts Institute of Technology All rights

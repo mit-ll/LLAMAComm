@@ -10,19 +10,33 @@ function rho = reflection(ff, psi, epsr, sigma, pol)
 %         pol   = polarization ('v'=vertical, 'h'=horizontal), must be scalar
 % output: rho   = reflection coefficient
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Copyright (c) 2006-2016 Massachusetts Institute of Technology %
-% All rights reserved.   See software license below.            %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Approved for public release: distribution unlimited.
+% 
+% This material is based upon work supported by the Defense Advanced Research 
+% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
+% findings, conclusions or recommendations expressed in this material are those 
+% of the author(s) and do not necessarily reflect the views of the Defense 
+% Advanced Research Projects Agency.
+% 
+% © 2014 Massachusetts Institute of Technology.
+% 
+% The software/firmware is provided to you on an As-Is basis
+% 
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
+% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+% specifically authorized by the U.S. Government may violate any copyrights
+% that exist in this work.
 
 % check matrix sizes, set default values, etc
-if nargin<5; 
+if nargin<5
   error('not enough intput arguments, function reflection');
 end
-if ~checkmatscalar(ff, psi, epsr, sigma);
+if ~checkmatscalar(ff, psi, epsr, sigma)
   error('non-scalar arguments must be same size, function reflection');
 end
-if ~isscalar(pol);
+if ~isscalar(pol)
   error('polarization value must be scalar, function reflection');
 end
 
@@ -31,7 +45,7 @@ xx = 18*1e9*sigma./ff; % normalized conductivity (Parsons, p. 20)
 if strcmp(pol, 'v') % vertical polarization
   rho = ( (epsr-1j*xx).*sin(psi)-sqrt( epsr-1j*xx-cos(psi).^2 ) ) ./ ...
         ( (epsr-1j*xx).*sin(psi)+sqrt( epsr-1j*xx-cos(psi).^2 ) );
-elseif strcmp(pol, 'h');
+elseif strcmp(pol, 'h')
   rho = ( sin(psi)-sqrt( epsr-1j*xx-cos(psi).^2 ) ) ./ ...
         ( sin(psi)+sqrt( epsr-1j*xx-cos(psi).^2 ) );
 else
@@ -41,33 +55,23 @@ end
 
 
 
-% Copyright (c) 2006-2016, Massachusetts Institute of Technology All rights
-% reserved.
-%
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are
-% met:
-%      * Redistributions of source code must retain the above copyright
-%        notice, this list of conditions and the following disclaimer.
-%      * Redistributions in binary form must reproduce the above  copyright
-%        notice, this list of conditions and the following disclaimer in
-%        the documentation and/or other materials provided with the
-%        distribution.
-%      * Neither the name of the Massachusetts Institute of Technology nor
-%        the names of its contributors may be used to endorse or promote
-%        products derived from this software without specific prior written
-%        permission.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
-% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-% CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
-% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
-% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-% PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% Approved for public release: distribution unlimited.
+% 
+% This material is based upon work supported by the Defense Advanced Research 
+% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
+% findings, conclusions or recommendations expressed in this material are those 
+% of the author(s) and do not necessarily reflect the views of the Defense 
+% Advanced Research Projects Agency.
+% 
+% © 2014 Massachusetts Institute of Technology.
+% 
+% The software/firmware is provided to you on an As-Is basis
+% 
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
+% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+% specifically authorized by the U.S. Government may violate any copyrights
+% that exist in this work.
 
 

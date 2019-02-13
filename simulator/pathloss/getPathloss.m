@@ -40,10 +40,24 @@ function [Ldb, sigmadb, Fext, modelInfo] = getPathloss(txnode, rxnode, envParams
 %
 %
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Copyright (c) 2006-2016 Massachusetts Institute of Technology %
-% All rights reserved.   See software license below.            %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Approved for public release: distribution unlimited.
+% 
+% This material is based upon work supported by the Defense Advanced Research 
+% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
+% findings, conclusions or recommendations expressed in this material are those 
+% of the author(s) and do not necessarily reflect the views of the Defense 
+% Advanced Research Projects Agency.
+% 
+% © 2014 Massachusetts Institute of Technology.
+% 
+% The software/firmware is provided to you on an As-Is basis
+% 
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
+% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+% specifically authorized by the U.S. Government may violate any copyrights
+% that exist in this work.
 
 % Initialize bookkeeping variables for keeping trace of model info
 branchLineNums = [];
@@ -82,7 +96,7 @@ switch(envParams.envType)
     hrm = envParams.building.avgRoofHeight; % avg. roof height, m
     los_dist = envParams.propParams.los_dist;
     
-    if ~strcmp(txbuilding.extwallmat, 'none');  % tx is indoors
+    if ~strcmp(txbuilding.extwallmat, 'none') % tx is indoors
       description = [description, 'tx is indoors'];
       ddtx = txbuilding.intdist;       % shortest in-building path length
       niwallstx = txbuilding.intwalls; % number of interior walls in path
@@ -119,7 +133,7 @@ switch(envParams.envType)
       if hhn<hrm  % both antennas below roof height     
         branchLineNums = [branchLineNums, currentLineNum-1];
         decisionTree = [decisionTree, 'hhn<hrm'];
-        if dm<=los_dist;    % LOS
+        if dm<=los_dist  % LOS
           branchLineNums = [branchLineNums, currentLineNum-1];
           decisionTree = [decisionTree, 'dm<=los_dist'];
           description = [description, 'LOS', 'call mean2pathflat'];
@@ -137,7 +151,7 @@ switch(envParams.envType)
       elseif hhn<=(hrm+deltran)  % upper antenna near roof height    
         branchLineNums = [branchLineNums, currentLineNum-1];
         decisionTree = [decisionTree, 'hhn>=hrm', 'hhn<=(hrm+deltran)'];
-        if dm<=los_dist;    % LOS
+        if dm<=los_dist  % LOS
           branchLineNums = [branchLineNums, currentLineNum-1];
           decisionTree = [decisionTree, 'dm<=los_dist'];
           description = [descriptionm 'LOS', 'call mean2path'];
@@ -184,7 +198,7 @@ switch(envParams.envType)
         hmax = 200;    % maximum height for ground-tower models, m
         tantheta = (hhn-hln)/dm; % tangent of prop path elevation angle
         hpn = dmax*tantheta;     % pseudo-node height when range-limited
-        if hpn<=hmax; 
+        if hpn<=hmax
           branchLineNums = [branchLineNums, currentLineNum-1];
           decisionTree = [decisionTree, 'hpn<=hmax'];
           
@@ -230,7 +244,7 @@ switch(envParams.envType)
         hmax = 1000;  % maximum height used here for LR model, m
         tantheta = (hhn-hln)/dm; % tangent of prop path elevation angel
         hpn = dmax*tantheta;     % pseudo-node height when range-limited
-        if hpn<=hmax; 
+        if hpn<=hmax
           branchLineNums = [branchLineNums, currentLineNum-1];
           decisionTree = [decisionTree, 'hpn<=hmax'];
           
@@ -267,9 +281,9 @@ switch(envParams.envType)
         Lex = Lobs - los( sqrt((hpn-hln)^2 + dpn^2), fmhz); % excess loss
         Ldb = Llos + Lex;
         
-      end; % antenna height selection
+      end % antenna height selection
       
-    end; % urban, all-outdoor
+    end % urban, all-outdoor
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % urban propagation model with only one node indoors 
@@ -300,7 +314,7 @@ switch(envParams.envType)
       
       deltran = 10;  % below to above roof transition region
       
-      if dm<=los_dist; % 1 node outside building, building is LOS to exterior node
+      if dm<=los_dist % 1 node outside building, building is LOS to exterior node
         branchLineNums = [branchLineNums, currentLineNum-1];
         decisionTree = [decisionTree, 'dm<=los_dist'];
         description = [description, '1 node outside building, building is LOS to exterior node', 'call into_bldg_los'];
@@ -326,7 +340,7 @@ switch(envParams.envType)
         
         % outdoor path loss
         href = max(2, hind); % outdoor reference point height, m
-        if hout<hrm; % both antennas below roof height      
+        if hout<hrm % both antennas below roof height      
           branchLineNums = [branchLineNums, currentLineNum-1];
           decisionTree = [decisionTree, 'hout<hrm'];
           description = [description, 'outdoor reference point height', 'both antennas below roof height', ...
@@ -375,7 +389,7 @@ switch(envParams.envType)
             hmax = 200;    % maximum height for ground-tower models, m
             tantheta = (hhn-href)/dm; % tangent of prop path elevation angel
             hpn = dmax*tantheta;     % pseudo-node height when range-limited
-            if hpn<=hmax; 
+            if hpn<=hmax 
               branchLineNums = [branchLineNums, currentLineNum-1];
               dpn=dmax;  % pseudo-node range
             else         % pseudo-node is height-limited 
@@ -388,15 +402,15 @@ switch(envParams.envType)
             Lex = Lobs - los( sqrt((hpn-href)^2+dpn^2), fmhz);
             Lout = Llos + Lex;
           end
-        end; % outdoor antenna high decision
+        end % outdoor antenna high decision
 
         % combine building and path loss
         Ldb = Lbldg + Lout;
         sigmadb = sqrt( sigbldg^2 + sigout^2 );
         
-      end; % LOS vs NLOS decision
+      end % LOS vs NLOS decision
       
-    end; % urban, one indoor node
+    end % urban, one indoor node
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % urban propagation model with both nodes indoors 
@@ -405,7 +419,7 @@ switch(envParams.envType)
       branchLineNums = [branchLineNums, currentLineNum-1];
       decisionTree = [decisionTree, 'ddtx>0', 'ddrx>0'];
       
-      if dm<=30; % same building
+      if dm<=30 % same building
         branchLineNums = [branchLineNums, currentLineNum-1];
         decisionTree = [decisionTree, 'dm<=30'];
         description = [description, 'same building', 'call indoor_concrete'];
@@ -433,9 +447,9 @@ switch(envParams.envType)
         Ldb = Lbldgtx + Lbldgrx + Lout;
         sigmadb = sqrt( sigbldgtx^2 + sigbldgrx^2 + sigout^2 );
 
-      end; % distance decision
+      end % distance decision
 
-    end; % urban, both indoor nodes
+    end % urban, both indoor nodes
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % finish up - shadowing and external noise
@@ -461,7 +475,7 @@ switch(envParams.envType)
         decisionTree = [decisionTree, 'hhn<hrm'];
         description = [description, 'both antennas below roof height'];
 
-        if dm<=los_dist;    % LOS
+        if dm<=los_dist  % LOS
           branchLineNums = [branchLineNums, currentLineNum-1];
           decisionTree = [decisionTree, 'dm<=los_dist'];
           description = [description, 'LOS'];
@@ -519,7 +533,7 @@ switch(envParams.envType)
           hmax = 200;    % maximum height for ground-tower models, m
           tantheta = (hhn-hln)/dm; % tangent of prop path elevation angel
           hpn = dmax*tantheta;     % pseudo-node height when range-limited
-          if hpn<=hmax; 
+          if hpn<=hmax 
             branchLineNums = [branchLineNums, currentLineNum-1];
             decisionTree = [decisionTree, 'hpn<=hmax'];
 
@@ -568,7 +582,7 @@ switch(envParams.envType)
           hmax = 1000;  % maximum height used here for LR model, m
           tantheta = (hhn-hln)/dm; % tangent of prop path elevation angel
           hpn = dmax*tantheta;     % pseudo-node height when range-limited
-          if hpn<=hmax; 
+          if hpn<=hmax
             branchLineNums = [branchLineNums, currentLineNum-1];
             decisionTree = [decisionTree, 'hpn<=hmax'];
 
@@ -602,9 +616,9 @@ switch(envParams.envType)
           Lex = Lobs - los( sqrt((hpn-hln)^2 + dpn^2), fmhz); % excess loss
           Ldb = Llos + Lex;
           
-        end; % antenna height selection
-      end; 
-    end; % suburban, outdoor        
+        end % antenna height selection
+      end 
+    end % suburban, outdoor        
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % suburban propagation model with one node indoors and one outdoors
@@ -633,7 +647,7 @@ switch(envParams.envType)
         extbldgangle = rxbuilding.extbldgangle;
       end
 
-      if dm<=los_dist; % 1 node outside building, building is LOS to outdoor node
+      if dm<=los_dist % 1 node outside building, building is LOS to outdoor node
         branchLineNums = [branchLineNums, currentLineNum-1];
         decisionTree = [decisionTree, 'dm<=los_dist'];
         description = [description, '1 node outside building, building is LOS to outdoor node'];
@@ -660,7 +674,7 @@ switch(envParams.envType)
         % outdoor path loss
         deltran = 10; % below-roof to above-roof transition region
         href = max(hind, 2); % outdoor reference point height, m
-        if hout<hrm; % both antennas below roof height      
+        if hout<hrm % both antennas below roof height      
           branchLineNums = [branchLineNums, currentLineNum-1];
           decisionTree = [decisionTree, 'hout<hrm'];
           description = [description, 'both antennas below roof height', 'call cost231', 'call okumura_sigma'];
@@ -707,7 +721,7 @@ switch(envParams.envType)
             hmax = 200;    % maximum height for ground-tower models, m
             tantheta = (hhn-href)/dm; % tangent of prop path elevation angel
             hpn = dmax*tantheta;     % pseudo-node height when range-limited
-            if hpn<=hmax; 
+            if hpn<=hmax
               branchLineNums = [branchLineNums, currentLineNum-1];
               decisionTree = [decisionTree, 'hpn<=hmax'];
 
@@ -724,16 +738,16 @@ switch(envParams.envType)
             Lex = Lobs - los(sqrt((hpn-href)^2+dpn^2), fmhz); % excess loss
             Lout = Llos + Lex;
             
-          end; % of outdoor antenna height decision
-        end;
+          end % of outdoor antenna height decision
+        end
         
         % combine building and path loss
         Ldb = Lbldg + Lout;
         sigmadb = sqrt( sigbldg^2 + sigout^2 );
 
-      end; % LOS vs NLOS decision
+      end % LOS vs NLOS decision
 
-    end; % suburban, one indoor node, one outdoor
+    end % suburban, one indoor node, one outdoor
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % suburban propagation model with both nodes indoors
@@ -742,7 +756,7 @@ switch(envParams.envType)
       branchLineNums = [branchLineNums, currentLineNum-1];
       decisionTree = [decisionTree, 'ddtx>0', 'ddrx>0'];
       
-      if dm<=10; % same building
+      if dm<=10 % same building
         branchLineNums = [branchLineNums, currentLineNum-1];
         decisionTree = [decisionTree, 'dm<=10'];
         description = [description, 'same building', 'call indoor_concrete'];
@@ -771,9 +785,9 @@ switch(envParams.envType)
         Ldb = Lbldgtx + Lbldgrx + Lout;
         sigmadb = sqrt( sigbldgtx^2 + sigbldgrx^2 + sigout^2 );
 
-      end; % distance decision
+      end % distance decision
 
-    end; % suburban, both indoors
+    end % suburban, both indoors
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % finish up - shadowing and external noise
     
@@ -826,7 +840,7 @@ switch(envParams.envType)
         hmax = 1000;  % maximum height used here for LR model, m
         tantheta = (hhn-hln)/dm; % tangent of prop path elevation angel
         hpn = dmax*tantheta;     % pseudo-node height when range-limited
-        if hpn<=hmax; 
+        if hpn<=hmax
           branchLineNums = [branchLineNums, currentLineNum-1];
           decisionTree = [decisionTree, 'hpn<=hmax'];
 
@@ -866,9 +880,9 @@ switch(envParams.envType)
       else
         error('parameters outside range, function getPathloss');
 
-      end; % antenna height selection
+      end % antenna height selection
 
-    end; % rural, two outdoor nodes
+    end % rural, two outdoor nodes
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % rural propagation model with one node indoors and one outdoors
@@ -897,7 +911,7 @@ switch(envParams.envType)
         extbldgangle = rxbuilding.extbldgangle;
       end
 
-      if dm < 1000; % treat building as LOS to outside node
+      if dm < 1000 % treat building as LOS to outside node
         branchLineNums = [branchLineNums, currentLineNum-1]; % Maybe
         decisionTree = [decisionTree, 'dm<1000'];
         description = [description, 'treat building as LOS to outside node', 'call into_bldg_los', 'other calculations'];
@@ -964,7 +978,7 @@ switch(envParams.envType)
           hmax = 1000;  % maximum height used here for LR model, m
           tantheta = (hhn-hln)/dm; % tangent of prop path elevation angel
           hpn = dmax*tantheta;     % pseudo-node height when range-limited
-          if hpn<=hmax; 
+          if hpn<=hmax
             branchLineNums = [branchLineNums, currentLineNum-1];
             decisionTree = [decisionTree, 'hpn<=hmax'];
 
@@ -981,15 +995,15 @@ switch(envParams.envType)
           Lex = Lobs - los(sqrt((hpn-href)^2 + dpn^2 ), fmhz);
           Lout = Llos + Lex;
 
-        end; % antenna height selection
+        end % antenna height selection
 
         % combine building and path loss
         Ldb = Lbldg + Lout;
         sigmadb = sqrt( sigbldg^2 + sigout^2 );
 
-      end; % LOS vs NLOS decision
+      end % LOS vs NLOS decision
 
-    end; % rural, one indoor node, one outdoor
+    end % rural, one indoor node, one outdoor
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % rural propagation model with both nodes indoors
 
@@ -997,7 +1011,7 @@ switch(envParams.envType)
       branchLineNums = [branchLineNums, currentLineNum-1];
       decisionTree = [decisionTree, 'ddtx>0', 'ddrx>0'];
       
-      if dm<=10; % same building
+      if dm<=10 % same building
         branchLineNums = [branchLineNums, currentLineNum-1];
         decisionTree = [decisionTree, 'dm<=10'];
         description = [description, 'same building', 'call indoor_conrete'];
@@ -1037,9 +1051,9 @@ switch(envParams.envType)
         Ldb = Lbldgtx + Lbldgrx + Lout;
         sigmadb = sqrt( sigbldgtx^2 + sigbldgrx^2 + sigout^2 );
 
-      end; % distance decision
+      end % distance decision
 
-    end; % rural propagation, both nodes indoors
+    end % rural propagation, both nodes indoors
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % finish up - shadowing and external noise
     
@@ -1080,7 +1094,7 @@ switch(envParams.envType)
     
     error('Unrecognized scenarioType: %s', envParams.envType);
     
-end; % envParams.envType switch
+end % envParams.envType switch
 
 
 % Build modelInfo structure if needed
@@ -1111,7 +1125,7 @@ function [ Lgt, siggt ] = groundtotower(dm, fmhz, hln, hhn, hrm, pol, envStr, lo
 %         envStr   = environment string: 'U' = urban, 'S' = suburban
 %         los_dist = line-of-sight distance, m
 
-if strcmp(envStr, 'U');  
+if strcmp(envStr, 'U')
   henv = 'U2'; % hata model environment flags
   cenv = 1;    % cost-231 walfish ikegami flags
   dh   = 30;   % ground variation
@@ -1121,7 +1135,7 @@ else
   dh   = 30;
 end 
 
-if dm<los_dist; % assume LOS
+if dm<los_dist % assume LOS
   Lgt = mean2pathflat(dm/1000, hln, hhn, fmhz, pol, 15, 0.005);
   siggt = 0;      
 elseif dm<1000  % NLOS, but too short for Hata
@@ -1186,33 +1200,23 @@ else   % different floors of building
 end
 
 
-% Copyright (c) 2006-2016, Massachusetts Institute of Technology All rights
-% reserved.
-%
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are
-% met:
-%      * Redistributions of source code must retain the above copyright
-%        notice, this list of conditions and the following disclaimer.
-%      * Redistributions in binary form must reproduce the above  copyright
-%        notice, this list of conditions and the following disclaimer in
-%        the documentation and/or other materials provided with the
-%        distribution.
-%      * Neither the name of the Massachusetts Institute of Technology nor
-%        the names of its contributors may be used to endorse or promote
-%        products derived from this software without specific prior written
-%        permission.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
-% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-% CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
-% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
-% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-% PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% Approved for public release: distribution unlimited.
+% 
+% This material is based upon work supported by the Defense Advanced Research 
+% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
+% findings, conclusions or recommendations expressed in this material are those 
+% of the author(s) and do not necessarily reflect the views of the Defense 
+% Advanced Research Projects Agency.
+% 
+% © 2014 Massachusetts Institute of Technology.
+% 
+% The software/firmware is provided to you on an As-Is basis
+% 
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
+% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+% specifically authorized by the U.S. Government may violate any copyrights
+% that exist in this work.
 
 

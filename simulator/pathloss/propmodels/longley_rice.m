@@ -57,20 +57,34 @@ function [ medLdb, stdLdb ] = longley_rice(dkm, fmhz, hm, delh, pol, deploy, ...
 % 'martemp'    maritime temperate land     Seattle, UK     320
 % 'martempsea' maritime temperate over sea duh             350
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Copyright (c) 2006-2016 Massachusetts Institute of Technology %
-% All rights reserved.   See software license below.            %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Approved for public release: distribution unlimited.
+% 
+% This material is based upon work supported by the Defense Advanced Research 
+% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
+% findings, conclusions or recommendations expressed in this material are those 
+% of the author(s) and do not necessarily reflect the views of the Defense 
+% Advanced Research Projects Agency.
+% 
+% © 2014 Massachusetts Institute of Technology.
+% 
+% The software/firmware is provided to you on an As-Is basis
+% 
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
+% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+% specifically authorized by the U.S. Government may violate any copyrights
+% that exist in this work.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % house keeping
 
-if nargin< 9 || isempty(ground);  ground  = 'avg';      end;
-if nargin< 8 || isempty(climate); climate = 'conttemp'; end;
-if nargin< 7 || isempty(gelev);   gelev   = 0;          end;
-if nargin< 6 || isempty(deploy);  deploy  = [ 0, 0];   end;
-if nargin< 5 || isempty(pol);     pol     = 'v';        end;
-if nargin< 4 || isempty(delh);    delh    = 90;         end;
+if nargin< 9 || isempty(ground);  ground  = 'avg';      end
+if nargin< 8 || isempty(climate); climate = 'conttemp'; end
+if nargin< 7 || isempty(gelev);   gelev   = 0;          end
+if nargin< 6 || isempty(deploy);  deploy  = [ 0, 0];   end
+if nargin< 5 || isempty(pol);     pol     = 'v';        end
+if nargin< 4 || isempty(delh);    delh    = 90;         end
 
 % debugging values: compare with plot on p 29 of Coverage Prediction
 % for Mobile Radio Systems Operating in the 800/900 MHz Frequency
@@ -86,7 +100,7 @@ if nargin< 4 || isempty(delh);    delh    = 90;         end;
 %climate = 'conttemp';
 %ground  = 'avg';
 
-switch climate;  % set climate parameters
+switch climate  % set climate parameters
   case 'equat';      climno = 1; No = 360;
   case 'contsub';    climno = 2; No = 320;
   case 'marsub';     climno = 3; No = 370;
@@ -95,24 +109,28 @@ switch climate;  % set climate parameters
   case 'martemp';    climno = 6; No = 320;
   case 'martempsea'; climno = 7; No = 350;
   otherwise; error('unknown climate specifier, function longley-rice');
-end;
+end
 
-if strcmp(pol, 'v'); ipol = 1; else ipol=0; end; % set polarization flag
+if strcmp(pol, 'v')
+    ipol = 1; 
+else 
+    ipol=0; 
+end % set polarization flag
 
-switch ground;
+switch ground
   case 'poor';   eps = 4;  sgm = 0.001;
   case 'avg';    eps = 15; sgm = .005;
   case 'good';   eps = 25; sgm = 0.02;
   case 'fwater'; eps = 81; sgm = 0.01;
   case 'swater'; eps = 81; sgm = 5;
   otherwise; error('unknown ground condition specifier, function longley-rice');
-end;
+end
 
 % initialize propagation parameters
 kwxqlrps = qlrps(fmhz, hm, delh, gelev, No, ipol, eps, sgm); %#ok - kwxqlrps unused
 %if kwxqlrps>1;
 %   error(['error, kwx = ' int2str(kwxqlrps) ', function qlrps in function longley_rice']);
-%end;
+%end
 
 % set required parameters and call qlra, the 'area mode initialization'
 % sub-routine
@@ -132,7 +150,7 @@ mdvar = 2;
 kwxqlra = qlra(deploy, climno, mdvar); %#ok - kwxqlra unused
 %if kwxqlra>1;
 %   error(['error, kwx = ' int2str(kwxqlra) ', function qlra in function longley_rice']);
-%end;
+%end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % run propagation routine
@@ -143,27 +161,27 @@ stdLdb = zeros(size(dkm));
 kwxlrprop = zeros(size(dkm));
 kwxmedL = zeros(size(dkm));
 kwx1sigma =  zeros(size(dkm));
-for ii=1:length(dkm);
+for ii=1:length(dkm)
   [Llrprop(ii), kwxlrprop(ii)] = lrprop(1000*dkm(ii));
   %   if kwxlrprop(ii)>1;
   %      error(['error, kwx = ' int2str(kwxlrprop(ii)) ...
   %             ', function lrprop in function longley_rice at range ' ...
   %             num2str(dkm(ii)) ' km']);
-  %      end;
+  %      end
   [medLdb(ii), kwxmedL(ii)] = avar(0, 0, 0);
   %   if kwxmedL(ii)>1;
   %      error(['error, kwx = ' int2str(kwxmedL(ii)) ...
   %             ', function avar in function longley_rice at range ' ...
   %             num2str(dkm(ii)) ' km']);
-  %      end;
+  %      end
   [Ldb1sigma, kwx1sigma(ii)] = avar(1, 0, 0);
   %if kwx1sigma(ii)>1;
   %      error(['error, kwx = ' int2str(kwx1sigma(ii)) ...
   %             ', function avar in function longley_rice at range ' ...
   %             num2str(dkm(ii)) ' km']);
-  %      end;
+  %      end
   stdLdb(ii) = medLdb(ii) - Ldb1sigma;
-end;
+end
 
 medLdb = medLdb + los(sqrt( (1000*dkm).^2 + (hm(1)-hm(2))^2 ), fmhz);
 
@@ -938,32 +956,22 @@ end
 
 
 
-% Copyright (c) 2006-2016, Massachusetts Institute of Technology All rights
-% reserved.
-%
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are
-% met:
-%      * Redistributions of source code must retain the above copyright
-%        notice, this list of conditions and the following disclaimer.
-%      * Redistributions in binary form must reproduce the above  copyright
-%        notice, this list of conditions and the following disclaimer in
-%        the documentation and/or other materials provided with the
-%        distribution.
-%      * Neither the name of the Massachusetts Institute of Technology nor
-%        the names of its contributors may be used to endorse or promote
-%        products derived from this software without specific prior written
-%        permission.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
-% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-% CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
-% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
-% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-% PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% Approved for public release: distribution unlimited.
+% 
+% This material is based upon work supported by the Defense Advanced Research 
+% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
+% findings, conclusions or recommendations expressed in this material are those 
+% of the author(s) and do not necessarily reflect the views of the Defense 
+% Advanced Research Projects Agency.
+% 
+% © 2014 Massachusetts Institute of Technology.
+% 
+% The software/firmware is provided to you on an As-Is basis
+% 
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
+% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+% specifically authorized by the U.S. Government may violate any copyrights
+% that exist in this work.
 

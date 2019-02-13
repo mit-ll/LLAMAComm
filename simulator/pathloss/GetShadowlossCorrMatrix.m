@@ -20,10 +20,24 @@ function [Krho, linkNames] = GetShadowlossCorrMatrix(nodeArray,linkMatrix)
 %                             an array of names of the two linked nodes,
 %                             e.g., linkNames{1} = {'nodeA','nodeB'};
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Copyright (c) 2006-2016 Massachusetts Institute of Technology %
-% All rights reserved.   See software license below.            %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Approved for public release: distribution unlimited.
+% 
+% This material is based upon work supported by the Defense Advanced Research 
+% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
+% findings, conclusions or recommendations expressed in this material are those 
+% of the author(s) and do not necessarily reflect the views of the Defense 
+% Advanced Research Projects Agency.
+% 
+% © 2014 Massachusetts Institute of Technology.
+% 
+% The software/firmware is provided to you on an As-Is basis
+% 
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
+% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+% specifically authorized by the U.S. Government may violate any copyrights
+% that exist in this work.
 
 % If ther are no links, then quit gracefully with an error message
 if ~sum(sum(linkMatrix))
@@ -48,9 +62,9 @@ for ii=1:nNodes
       nLinks = nLinks+1;
       linkMatrix(ii,jj) = nLinks;
       linkMatrix(jj,ii) = nLinks;
-    end;
-  end;
-end;
+    end
+  end
+end
 
 
 % find link correlations
@@ -76,8 +90,8 @@ for ii=1:nLinks
                                      [ nodeArray(nodej1).location; ...
                         nodeArray(nodej2).location ]);
     Krho(jj,ii) = Krho(ii,jj);
-  end;
-end;
+  end
+end
 
 % if required, diagonal load Krho to make positive definite
 RR = Krho;
@@ -87,7 +101,7 @@ while min(lambda)<=0
   delta = delta+0.05;
   RR = ( RR + delta*eye(nLinks) )./(1+delta);
   lambda = eig(RR);
-end;
+end
 Krho = RR;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -104,13 +118,13 @@ function rho = shadowCorrUncommon(nodes1,nodes2)
 % verify input arguments
 if nargin<2   
   error('Too few arguments, function shadowCorrUncommon');
-end;
+end
 if (size(nodes1,1)<2 || size(nodes2,1)<2)
   error('Input arguments too short, function shadowCorrUncommon');
-end;
+end
 if (size(nodes1,2)<2 || size(nodes2,2)<2)
   error('Input arguments too short, function shadowCorrUncommon');
-end;
+end
 
 % check for common node in two links, treat as special case
 if all(nodes1(1,1:2)==nodes2(1,1:2))
@@ -125,7 +139,7 @@ elseif all(nodes1(2,1:2)==nodes2(1,1:2))
 elseif all(nodes1(2,1:2)==nodes2(2,1:2))     
   rho = shadowCorrFromLoc(nodes1(2,:),nodes1(1,:),nodes2(1,:));
   return;
-end;
+end
 
 % general case: no common node => average possible connecting links
 rho = (  shadowCorrFromLoc(nodes1(1,:),nodes1(2,:),nodes2(1,:))* ...
@@ -155,10 +169,10 @@ function rho = shadowCorrFromLoc(commonNode,endNode1,endNode2)
 
 if nargin<3
   error('Too few arguments, function shadowCorrFromLoc');
-end;
+end
 if length(commonNode)<2 || length(endNode1)<2 || length(endNode2)<2
   error('Input arguments too short, function shadowCorrFromLoc');
-end;
+end
 
 % get bearing angles from common to end nodes, in degrees
 theta1 = getbearing(commonNode,endNode1); 
@@ -180,42 +194,32 @@ function psi = getbearing(loc1,loc2)
 % Given two locations return bearing angle from first location, looking
 % towards second. Bearing angle is measured CCL from east, in degrees
 
-if all(loc1(1:2)==loc2(1:2));
+if all(loc1(1:2)==loc2(1:2))
   psi = nan;
   return;
-end;
+end
 
 psi = 180/pi * atan2(loc2(2)-loc1(2),loc2(1)-loc1(1));
 psi = mod(psi,360);
 
 
-% Copyright (c) 2006-2016, Massachusetts Institute of Technology All rights
-% reserved.
-%
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are
-% met:
-%      * Redistributions of source code must retain the above copyright
-%        notice, this list of conditions and the following disclaimer.
-%      * Redistributions in binary form must reproduce the above  copyright
-%        notice, this list of conditions and the following disclaimer in
-%        the documentation and/or other materials provided with the
-%        distribution.
-%      * Neither the name of the Massachusetts Institute of Technology nor
-%        the names of its contributors may be used to endorse or promote
-%        products derived from this software without specific prior written
-%        permission.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
-% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-% CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-% PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% Approved for public release: distribution unlimited.
+% 
+% This material is based upon work supported by the Defense Advanced Research 
+% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
+% findings, conclusions or recommendations expressed in this material are those 
+% of the author(s) and do not necessarily reflect the views of the Defense 
+% Advanced Research Projects Agency.
+% 
+% © 2014 Massachusetts Institute of Technology.
+% 
+% The software/firmware is provided to you on an As-Is basis
+% 
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
+% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+% specifically authorized by the U.S. Government may violate any copyrights
+% that exist in this work.
 
 

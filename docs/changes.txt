@@ -1,5 +1,29 @@
 ___________________________________________________________________________
 
+ *** February 2019:  LLAMAComm (v. 2.18) (MATLAB R2015b)
+    - Fix to FindReciprocalLink when reciprocal link when there are different
+      numbers of antennas at the ends
+    - Fix to BuildLink to fix self-link problem
+    - Fix so that LOS propagation models can include element gain patterns
+    - getPathLoss now has optional tracing info for model selection via
+      a 4th output argument
+    - Added support functions for atmospheric propagation modeling
+    - Fix to InitTimingDiagram to work with handle-based graphics
+    - Removed 'plotElev.m', added replacement 'polarWedgePlot.m'
+    - Dependency on external file 'readtext.m' was removed
+    - Edge case fix to mean2pathflat 
+    - Fixed erroneous gain calculation in getantgain
+    - Added 'compute_differentialAmgle.m'
+    - Fixed problem in MakeNodeMap that caused node locations to not appear
+      correctly on some computers
+    - Updated Stackzs.c to comply the recent MEX API changes
+    - Fixed ProcessIidchannel bug where riceK factor was square-rooted twice    
+    - Fix for edge case dopplerSpread == 0
+    - Fix for edge case velocitySpread == 0
+    - Fix for edge case with riceK -> infinity
+    - Cosmetic and minor performance improvements
+___________________________________________________________________________
+
  *** June 2016:  LLAMAComm (v. 2.17) (MATLAB R2015b)
     - Renamed "user" directory to "user_code". Created "examples" subdirectory
       under "user_code"

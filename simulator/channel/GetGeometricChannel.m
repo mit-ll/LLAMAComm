@@ -34,10 +34,24 @@ function channel = GetGeometricChannel(nodeTx,modTx,nodeRx,modRx,...
 %
 % The filters used for fractional delay are really only good to about half the Nyquist bandwidth.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Copyright (c) 2006-2016 Massachusetts Institute of Technology %
-% All rights reserved.   See software license below.            %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Approved for public release: distribution unlimited.
+% 
+% This material is based upon work supported by the Defense Advanced Research 
+% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
+% findings, conclusions or recommendations expressed in this material are those 
+% of the author(s) and do not necessarily reflect the views of the Defense 
+% Advanced Research Projects Agency.
+% 
+% © 2014 Massachusetts Institute of Technology.
+% 
+% The software/firmware is provided to you on an As-Is basis
+% 
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
+% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+% specifically authorized by the U.S. Government may violate any copyrights
+% that exist in this work.
 
 global includePropagationDelay
 %global includeFractionalDelay
@@ -86,8 +100,8 @@ for rxLoop=1:nR % index Rx
                   % Transmit antenna location
     txAntLoc = mic2mac(txnode.location,txnode.antLocation(txLoop,:));
     delays(rxLoop,txLoop) = norm(rxAntLoc-txAntLoc)./c_light; % range between tx and rx antennas
-  end;
-end;
+  end
+end
 
 minDelay = min(delays(:));
 maxDelay = max(delays(:));
@@ -97,7 +111,7 @@ halfDelay=(nDelayFilters-1)/2; % in samples
 bulkDelaySamp = floor(minDelay * fs - halfDelay); % should be <= minDelay * fs
 bulkDelay = bulkDelaySamp / fs; % so the fractional delay and filter delay is all rolled into the channel filters
 
-if includePropagationDelay,
+if includePropagationDelay
     nPropDelaySamp = bulkDelaySamp;
 else
     nPropDelaySamp = 0;
@@ -109,16 +123,16 @@ farrowDesign = fdesign.fracdelay(0.24,'N',nDelayFilters);
 farrow = design(farrowDesign,'lagrange','FilterStructure','farrowfd');
 
 hTensor = zeros(nR,nT,1,chanTimeTaps); % This will have unit direct-path gain and then be scaled by pathloss at the end
-for rxLoop = 1:nR,
-    for txLoop = 1:nT,
+for rxLoop = 1:nR
+    for txLoop = 1:nT
         delaySamples = delays(rxLoop,txLoop) * fs - bulkDelaySamp;
         fracDelay = delaySamples - floor(delaySamples);
         farrow.FracDelay=fracDelay;
         ind = floor(delaySamples) - halfDelay;
         phase = 2*pi * rxnode.fc * (delays(rxLoop,txLoop) - bulkDelay); % phase contribution from the complex carrier
-        if fracDelay < eps,
+        if fracDelay < eps
             hTensor(rxLoop,txLoop,1,floor(delaySamples)) = exp(1i*phase);
-        elseif fracDelay > 1 - eps,
+        elseif fracDelay > 1 - eps
             hTensor(rxLoop,txLoop,1,floor(delaySamples)+1) = exp(1i*phase);
         else
             hTensor(rxLoop,txLoop,1,ind+1:ind+nDelayFilters) = exp(1i*phase) .* ...
@@ -146,33 +160,23 @@ channel.freqOffs          = 0; % Can be an array
 channel.phiOffs           = 0; % Can be an array
 channel.chanType          = propParams.chanType;
 
-% Copyright (c) 2006-2016, Massachusetts Institute of Technology All rights
-% reserved.
-%
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are
-% met:
-%      * Redistributions of source code must retain the above copyright
-%        notice, this list of conditions and the following disclaimer.
-%      * Redistributions in binary form must reproduce the above  copyright
-%        notice, this list of conditions and the following disclaimer in
-%        the documentation and/or other materials provided with the
-%        distribution.
-%      * Neither the name of the Massachusetts Institute of Technology nor
-%        the names of its contributors may be used to endorse or promote
-%        products derived from this software without specific prior written
-%        permission.
-%
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
-% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-% CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-% PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% Approved for public release: distribution unlimited.
+% 
+% This material is based upon work supported by the Defense Advanced Research 
+% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
+% findings, conclusions or recommendations expressed in this material are those 
+% of the author(s) and do not necessarily reflect the views of the Defense 
+% Advanced Research Projects Agency.
+% 
+% © 2014 Massachusetts Institute of Technology.
+% 
+% The software/firmware is provided to you on an As-Is basis
+% 
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
+% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+% specifically authorized by the U.S. Government may violate any copyrights
+% that exist in this work.
 
 
