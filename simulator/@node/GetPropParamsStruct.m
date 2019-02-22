@@ -51,8 +51,11 @@ if randomDelaySpread
 else
     propParams.delaySpread   = envParams.propParams.delaySpread;
 end
-propParams.velocitySpread    = GetVelocitySpread(nodTx,modTx,nodRx,modRx,env);
-
+%propParams.velocitySpread    = GetVelocitySpread(nodTx,modTx,nodRx,modRx,env);
+[propParams.velocitySpread, ...
+ propParams.velocityShift, ...
+ propParams.txHighFlag, ...
+ propParams.rxHighFlag] = GetVelocitySpreadShift(nodTx,modTx,nodRx,modRx,env);
 % Approved for public release: distribution unlimited.
 % 
 % This material is based upon work supported by the Defense Advanced Research 

@@ -21,6 +21,7 @@ ___________________________________________________________________________
     - Fix for edge case dopplerSpread == 0
     - Fix for edge case velocitySpread == 0
     - Fix for edge case with riceK -> infinity
+    - Fixes to apply doppler shift even when doppler spread is not appropriate
     - Cosmetic and minor performance improvements
     - Updated documentation
 ___________________________________________________________________________

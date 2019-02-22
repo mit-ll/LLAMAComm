@@ -214,6 +214,19 @@ k.toID = {GetNodeName(nodeRx), GetModuleName(modRx), GetFc(modRx)};    % {nodeNa
 
 linkobj = link(k);
 
+
+linkID = sprintf('''%s:%s'' -> ''%s:%s:%.2f MHz''', ...
+                 k.fromID{1}, k.fromID{2}, ...
+                 k.toID{1}, k.toID{2}, k.toID{3}/1e6);
+if propParams.txHighFlag
+    warning('In %s, the node named %s is above 200 m.\n Doppler-offset will be added instead of Doppler-spread', linkID, GetNodeName(nodeTx));
+end
+
+if propParams.rxHighFlag
+    warning('In %s, the node named %s is above 200 m.\n Doppler-offset will be added instead of Doppler-spread', linkID, GetNodeName(nodeRx));
+end
+
+
 % Populate the link array of the environment object
 env.links = [env.links, linkobj];
 

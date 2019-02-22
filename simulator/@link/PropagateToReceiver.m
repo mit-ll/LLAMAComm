@@ -181,24 +181,49 @@ end % END switch over channel type
 % Apply the local oscillator frequency offsets
 mTx = struct(modTx);
 mRx = struct(modRx);
-freqOffset = (mTx.loError + mTx.loCorrection ...
-              - mRx.loError - mRx.loCorrection)*fr;
+%freqOffset = (mTx.loError + mTx.loCorrection ...
+%              - mRx.loError - mRx.loCorrection)*fr;
+%
+%if freqOffset > 0.01*sampRate
+%  % Build Link ID
+%  linkID = sprintf('''%s:%s:%.2f MHz'' -> ''%s:%s:%.2f MHz''', ...
+%                   linkobj.fromID{1}, linkobj.fromID{2}, ft/1e6, ...
+%                   linkobj.toID{1}, linkobj.toID{2}, linkobj.toID{3}/1e6);
+%  error('The frequency offset %2.2f Hz in link %s\nis greater than 1%% of the sample rate %2.6f MHz\n', ...
+%        freqOffset, linkID, sampRate/1e6);
+%end  
+%
+%if freqOffset ~= 0
+%  modulation = exp(1i*2*pi*(freqOffset/fs)...
+%                   *((0:size(rxsig, 2)-1) + startRx));
+%  rxsig = repmat(modulation, size(rxsig, 1), 1).*rxsig;
+%end
+loOffset = (mTx.loError + mTx.loCorrection ...
+            - mRx.loError - mRx.loCorrection)*fr;
 
-if freqOffset > 0.01*sampRate
+if loOffset > 0.01*sampRate
   % Build Link ID
   linkID = sprintf('''%s:%s:%.2f MHz'' -> ''%s:%s:%.2f MHz''', ...
                    linkobj.fromID{1}, linkobj.fromID{2}, ft/1e6, ...
                    linkobj.toID{1}, linkobj.toID{2}, linkobj.toID{3}/1e6);
+  
   error('The frequency offset %2.2f Hz in link %s\nis greater than 1%% of the sample rate %2.6f MHz\n', ...
-        freqOffset, linkID, sampRate/1e6);
+        loOffset, linkID, sampRate/1e6);
 end  
 
-if freqOffset ~= 0
-  modulation = exp(1i*2*pi*(freqOffset/fs)...
-                   *((0:size(rxsig, 2)-1) + startRx));
-  rxsig = repmat(modulation, size(rxsig, 1), 1).*rxsig;
+% add in doppler offset on the link
+if(linkobj.propParams.velocityShift ~= 0)   
+    c         = 2.998e8; % speed of light
+    dopplerOffset = GetFc(modRx).*(linkobj.propParams.velocityShift./c);
+else
+    dopplerOffset = 0;
 end
-
+if loOffset ~= 0 || dopplerOffset ~= 0
+    totalOffset = loOffset + dopplerOffset;
+    modulation = exp(1i*2*pi*(totalOffset/fs)...
+                     *((0:size(rxsig, 2)-1) + startRx));
+    rxsig = repmat(modulation, size(rxsig, 1), 1).*rxsig;    
+end
 
 % Approved for public release: distribution unlimited.
 % 
