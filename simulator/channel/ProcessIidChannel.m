@@ -62,8 +62,8 @@ else
 
     rxtxDOF = nR*nT;
     allSigs = zeros(rxtxDOF, nS);
-    %for rxtxLoop = 1:rxtxDOF
-    parfor rxtxLoop = 1:rxtxDOF
+    for rxtxLoop = 1:rxtxDOF
+        %parfor rxtxLoop = 1:rxtxDOF
 
         chanstate = chanstates{rxtxLoop};
         pprof = powerProf(rxtxLoop);
@@ -84,7 +84,7 @@ else
         % Get ready for convolution
         H = H.';
         
-        allSigs(rxtxLoop, :) = TVConv(H, pprof.lags, source(:, tLoop), longestLag); %#ok source not sliced
+        allSigs(rxtxLoop, :) = TVConv(H, pprof.lags, source(:, tLoop), longestLag); 
     end % END rLoop
 
     rxsig = reshape(sum(reshape(allSigs, [nR, nT, nS]), 2), [nR, nS]);
