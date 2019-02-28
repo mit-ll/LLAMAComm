@@ -24,6 +24,7 @@ ___________________________________________________________________________
     - Fixes to apply doppler shift even when doppler spread is not appropriate
     - New function 'GetVelocitySpreadShift' a substitute for 'GetVelocitySpread'
     - Replaced 'parfor' with 'for' inside ProcessIidChannel, it was hurting speed.
+    - Fixed a bug in getPathloss model info reporting
     - Cosmetic and minor performance improvements
     - Updated documentation
 ___________________________________________________________________________
