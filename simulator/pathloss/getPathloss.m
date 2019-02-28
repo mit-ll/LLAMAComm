@@ -154,7 +154,7 @@ switch(envParams.envType)
         if dm<=los_dist  % LOS
           branchLineNums = [branchLineNums, currentLineNum-1];
           decisionTree = [decisionTree, 'dm<=los_dist'];
-          description = [descriptionm 'LOS', 'call mean2path'];
+          description = [description, 'LOS', 'call mean2path'];
           
           Ldb = mean2pathflat(dm/1000, htx, hrx, fmhz, tpol, 15, 0.005);
           sigmadb = 0;      
@@ -162,7 +162,7 @@ switch(envParams.envType)
         elseif dm<=5000 % NLOS
           branchLineNums = [branchLineNums, currentLineNum-1];
           decisionTree = [decisionTree, 'dm>los_dist', 'dm<=5000'];
-          description = [descriptionm 'NLOS', 'call cost231', 'call groundtotower', 'other calculations'];
+          description = [description, 'NLOS', 'call cost231', 'call groundtotower', 'other calculations'];
           
           Lbelow = cost231(dm/1000, fmhz, hln, hhn, hrm, [], [], [], 1);
           Labove = groundtotower(dm, fmhz, hln, hhn, hrm, tpol, 'U', los_dist);
@@ -173,7 +173,7 @@ switch(envParams.envType)
         else
           branchLineNums = [branchLineNums, currentLineNum-1];
           decisionTree = [decisionTree, 'dm>los_dist', 'dm>5000'];
-          description = [descriptionm 'call groundtotower', 'call okumuru_sigma'];
+          description = [description, 'call groundtotower', 'call okumuru_sigma'];
           
           Ldb = groundtotower(dm, fmhz, hln, hhn, hrm, tpol, 'U', los_dist);
           sigmadb = okumura_sigma(fmhz, 'U');
@@ -184,7 +184,7 @@ switch(envParams.envType)
         branchLineNums = [branchLineNums, currentLineNum-2];
         
         decisionTree = [decisionTree, 'hhn>=hrm', 'hhn>(hrm+deltran)', 'hln<hrm', 'hhn<=200'];
-        description = [descriptionm 'one antenna below roof height, other on roof or tower', 'call groundtotower'];
+        description = [description, 'one antenna below roof height, other on roof or tower', 'call groundtotower'];
         
         [Ldb, sigmadb] = groundtotower(dm, fmhz, hln, hhn, hrm, tpol, 'U', los_dist);
         
