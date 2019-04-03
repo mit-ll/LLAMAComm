@@ -1,57 +1,60 @@
 function [L, alpha] = cost231(dkm,fmhz,hmm,hbm,hrm,bm,wm,phideg,env)
 % function [L, alpha] = cost231(dkm,fmhz,hmm,hbm,hrm,bm,wm,phi,env)
-% given horizontal range in Km, and frequency in MHz, returns 
-% median average power loss in dB, and range exponent, 
+% given horizontal range in Km, and frequency in MHz, returns
+% median average power loss in dB, and range exponent,
 % (linear L  is proportional to dkm^alpha)
-% predicted by the COST231 Walfish Ikegami non-line-of-sight 
-% propagation model 
-% (Digital Mobile Radio Towards Future Generation Systems: COST 231 
-% Final Report, at http://www.lx.it.pt/cost231/final_report.htm, 
+% predicted by the COST231 Walfish Ikegami non-line-of-sight
+% propagation model
+% (Digital Mobile Radio Towards Future Generation Systems: COST 231
+% Final Report, at http://www.lx.it.pt/cost231/final_report.htm,
 % downloaded June 25, 2005, also in Low, VTC 1992, pp 936-942)
 % input:
 % dkm    = range in km (0.02-5)
 % fmhz   = frequency in MHz (800-2000)
 % hbm    = base station antenna height in m, (4,50)
 % hmm    = mobile station antenna height in m, (1,3)
-% hrm    = average roof height in m, typically 3*no. floors, +3 if roof slants 
+% hrm    = average roof height in m, typically 3*no. floors, +3 if roof slants
 % bm     = distance between buildings in m, typically 20-50
 % wm     = street width in m, typically bm/2
 % phideg = prop. angle w.r.t. street, in degrees, (0,90), 90 is worst case
 % env    = environment, 0 = suburban, 1 = metro center
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % housekeeping
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if nargin <9 || isempty(env) 
-  env = 1; 
+if nargin <9 || isempty(env)
+  env = 1;
 end
 if nargin <8 || isempty(phideg)
   phideg = 45;
 end
 if nargin <6 || isempty(bm)
-  bm = 35; 
+  bm = 35;
 end
 if nargin <7 || isempty(wm)
-  wm = bm/2; 
+  wm = bm/2;
 end
 if nargin <5
   error('first five arguments required, function cost231');
@@ -87,7 +90,7 @@ end
 
 Lrts = -16.9 - db10(wm) + db10(fmhz) + db20(hrm-hmm) + Lori;
 if Lrts <0
-  Lrts=0; 
+  Lrts=0;
 end
 
 
@@ -109,7 +112,7 @@ else
 end
 
 % distance dependence
-if hbm>hrm  
+if hbm>hrm
   kd = 18.0;
 else
   kd = 18.0 - 15.0*(hbm-hrm)./hrm;
@@ -137,22 +140,25 @@ end
 
 
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

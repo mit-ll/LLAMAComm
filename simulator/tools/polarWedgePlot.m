@@ -11,22 +11,25 @@ function out = polarWedgePlot(theta, rho, plotOpts, plotString)
 %
 %
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -51,13 +54,13 @@ radToDeg = 360/twoPi;
 
 %
 % Adjust polar wedge angles
-% 
+%
 if (plotOpts.thetaMax-plotOpts.thetaMin)>twoPi
   thetaMin = 0;
   thetaMax = twoPi;
 else
   thetaMin = plotOpts.thetaMin;
-  thetaMax = plotOpts.thetaMax; 
+  thetaMax = plotOpts.thetaMax;
 end
 
 %
@@ -92,7 +95,7 @@ if isempty(get(0, 'Children'))
 else
   if isempty(findobj(gcf, 'Type', 'axes'))
     held = false;
-  else    
+  else
     ax = gca;
     held = ishold(ax);
   end
@@ -119,7 +122,7 @@ if ~held
   set(ax, ...
       'dataaspectratio', [1 1 1], ...
       'plotboxaspectratiomode', 'auto', ...
-      'Visible', 'off') 
+      'Visible', 'off')
 
   if abs(thetaMax-thetaMin) < twoPi
     phi = (linspace(thetaMin, thetaMax, plotOpts.radialGridNSteps)-plotOpts.orientationAngle)* ...
@@ -139,31 +142,31 @@ if ~held
   else
     if numel(angleGridLines)>1
       meanAngleGrid = mean(angleGridLines);
-      [~, loc] = min(abs(angleGridLines-meanAngleGrid)); 
+      [~, loc] = min(abs(angleGridLines-meanAngleGrid));
       radialLabelsAngle = angleGridLines(loc(1))+ ...
           abs(0.5*mean(diff(angleGridLines)));
     else
       radialLabelsAngle = ((thetaMin+thetaMax)/2)+(abs(thetaMax-thetaMin)/12);
     end
   end
-  
+
 
   %
   % Draw main circle patch
   %
   if isempty(plotOpts.patchColor)
-    p = patch(xHat*rMax, yHat*rMax, [1, 1, 1], 'Parent', ax); 
+    p = patch(xHat*rMax, yHat*rMax, [1, 1, 1], 'Parent', ax);
   else
     if ischar(plotOpts.patchColor)
       switch(plotOpts.patchColor)
         case 'axis'
-          p = patch(xHat*rMax, yHat*rMax, get(ax, 'color'), 'Parent', ax); 
+          p = patch(xHat*rMax, yHat*rMax, get(ax, 'color'), 'Parent', ax);
         otherwise
           % color string (e.g. 'r'):
-          p = patch(xHat*rMax, yHat*rMax, plotOpts.patchColor, 'Parent', ax); 
+          p = patch(xHat*rMax, yHat*rMax, plotOpts.patchColor, 'Parent', ax);
       end
     else
-      p = patch(xHat*rMax, yHat*rMax, plotOpts.patchColor, 'Parent', ax); 
+      p = patch(xHat*rMax, yHat*rMax, plotOpts.patchColor, 'Parent', ax);
     end
   end
   set(p, 'Tag', 'background', ...
@@ -188,10 +191,10 @@ if ~held
       switch(lower(plotOpts.angleType))
         case 'rad'
           angleStr = num2str(angleGridLines(ii));
-          
+
         case {'sin', 'sine'}
           angleStr = num2str(sin(angleGridLines(ii)));
-          
+
         otherwise
           % e.g. "deg":
           if plotOpts.adornAngles
@@ -201,7 +204,7 @@ if ~held
             angleStr = num2str(angleGridLines(ii)*radToDeg);
           end
       end
-      
+
       if plotOpts.angleTickLabels
         t = text(rText*cos(ang), rText*sin(ang), angleStr);
         switch(signFix(sin(ang)))
@@ -209,9 +212,9 @@ if ~held
             vertAlign = 'bottom';
           case 0
             vertAlign = 'middle';
-          case -1        
+          case -1
             vertAlign = 'top';
-        end        
+        end
         switch(signFix(cos(ang)))
           case 1
             horizAlign = 'left';
@@ -219,14 +222,14 @@ if ~held
             horizAlign = 'center';
           case -1
             horizAlign = 'right';
-        end        
+        end
         set(t, ...
             'Tag', 'angleGridLabel', ...
             'UserData', angleGridLines(ii), ...
             'VerticalAlignment', vertAlign, ...
             'HorizontalAlignment', horizAlign, ...
             'HandleVisibility', plotOpts.handleVisibility);
-        
+
       end
 
     end
@@ -256,7 +259,7 @@ if ~held
 
     rText = rTick(ii); %+(rTickDelta*0.15);
     labelStr = rTickLabel(ii, :);%#ok
-    
+
     %
     % Radial Ticks:
     %
@@ -268,13 +271,13 @@ if ~held
       else
         t = text(xRadHat*rText, yRadHat*rText, [' ', num2str(rTick(ii)+rhoMin, plotOpts.radialTickFormatString), ' '], ...
                  'HorizontalAlignment', rHAlign, 'VerticalAlignment', 'baseline', ...
-                 'Parent', ax);    
+                 'Parent', ax);
       end
       set(t, 'Tag', 'radialGridLabel', ...
              'UserData', rTick(ii)+rhoMin, ...
              'HandleVisibility', plotOpts.handleVisibility);
     end
-  end  
+  end
 
   %
   % Enforce wedge limits
@@ -283,7 +286,7 @@ if ~held
   theta(...
       mod((theta-thetaMin)+(twoPi*ceil((thetaMin-min(theta))/twoPi)), twoPi)>= ...
       thetaMax-thetaMin) = NaN;
-  
+
 end
 
 
@@ -310,7 +313,7 @@ function plotOpts = getOpts(plotOpts)
 halfPi = pi/2;
 
 if ~isstruct(plotOpts)
-  if ischar(plotOpts)   
+  if ischar(plotOpts)
     plotOpts = struct('plotString', plotOpts);
   else
     plotOpts = [];
@@ -319,7 +322,7 @@ end
 %defaults = struct(...
 %    'adornAngles', 'true', ...
 %    'angleDir', -1, ...
-%    'angleGridLines', [], ...    
+%    'angleGridLines', [], ...
 %    'angleGridStyle', 'k:', ...
 %    'angleGridNSteps', 20, ...
 %    'angleTickLabels', true, ...
@@ -341,7 +344,7 @@ end
 defaults = struct(...
     'adornAngles', 'false', ...
     'angleDir', 1, ...
-    'angleGridLines', [], ...    
+    'angleGridLines', [], ...
     'angleGridStyle', 'k', ...
     'angleGridNSteps', 20, ...
     'angleTickLabels', true, ...
@@ -393,7 +396,7 @@ if ~isfield(plotOpts,'warnUnknownOption') || plotOpts.warnUnknownOption
     end
   end
 end
- 
+
 % Ensure fields exist and apply defaults
 fldnames = fieldnames(defaults);
 for fldIndx = 1:numel(fldnames)
@@ -425,7 +428,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function y = signFix(x)
 %
-% "Fixes" naive sign(cos(x)), sign(sin(x)) calculations in determining 
+% "Fixes" naive sign(cos(x)), sign(sin(x)) calculations in determining
 % sectors.
 %
 thresh = eps;
@@ -436,22 +439,25 @@ else
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

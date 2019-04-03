@@ -1,6 +1,6 @@
 function Latm = atmosphericLoss(tx_xyz, rx_xyz, fghz, atmosphere)
 %
-%Usage: 
+%Usage:
 %
 %   Latm = atmosphericLoss_nofrec(tx_xyz, rx_xyz, fghz, atmosphere)
 %
@@ -22,22 +22,25 @@ function Latm = atmosphericLoss(tx_xyz, rx_xyz, fghz, atmosphere)
 %
 %
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -46,7 +49,7 @@ if nargin < 4
   atmosphere = struct('latd',[], 'season', []);
 end
 
-% Airborne parameters   
+% Airborne parameters
 ds = 100; % Approximate along-line spacing (meters)
 
 nodeDist = norm(rx_xyz - tx_xyz);
@@ -64,20 +67,20 @@ if any(hi_km <0)
   Latm = Inf; % Below (geometric) horizon
 else
   nPts = size(xyz, 2);
-  
-  [temperature, pressure, rho] = ITUrefAtmosphere(hi_km, atmosphere.latd, atmosphere.season); 
+
+  [temperature, pressure, rho] = ITUrefAtmosphere(hi_km, atmosphere.latd, atmosphere.season);
   gamma = ITUspecificAtten(fghz, temperature, pressure, rho); % dB/km
-  
-  % Integrate via trapezoidal rule 
+
+  % Integrate via trapezoidal rule
   % Note that for non-linear paths, the arc-length increments will be non-constant
   ds_km = 1e-3*sqrt(sum(diff(xyz,1,2).^2, 1));
-  Latm = sum(0.5*(gamma(1:nPts-1)+gamma(2:nPts)).*ds_km);  
+  Latm = sum(0.5*(gamma(1:nPts-1)+gamma(2:nPts)).*ds_km);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [xyz, info] = calcPath(startPt, endPt, ds, atmosphere, geomInfo)
 %
-%Usage: 
+%Usage:
 %
 %   xyz = calcPath(startPt, endPt, fghz, atmosphere)
 %
@@ -90,12 +93,12 @@ function [xyz, info] = calcPath(startPt, endPt, ds, atmosphere, geomInfo)
 %Outputs:
 %
 %   xyz        - 3xN array of points along a path between startPt and endPt.
-%                N is always >=3 
+%                N is always >=3
 %
 %Description:
 %
 %  Computes a light path berween the two specified points, taking refraction into account.
-% The path is computed by appealing to Fermat's principal. The path returned is found by 
+% The path is computed by appealing to Fermat's principal. The path returned is found by
 % an iterative method that solves for the piecewise linear least-time path.
 %
 
@@ -126,7 +129,7 @@ nodeDist = norm(endPt - startPt);
 nPts = min(max_nPts, 3 + 2*floor(nodeDist/abs(ds)/2)); % Odd number, >= 3
 if nodeDist==0
   xyz = repmat(startPt, [1, nPts]);
-  if nargout > 1    
+  if nargout > 1
     info.u = zeros(1, nPts);
     info.v = zeros(1, nPts);
     info.uhat = zeros(3,1);
@@ -160,29 +163,29 @@ if angle > angleThresh && angle < 180-angleThresh
   vhat = vhat/norm(vhat);                 % Cross-track unit vector
   v0 = Inf + v;
   while((nIter < minIter) || ((nIter < maxIter) && max(abs(v-v0)) > thresh))
-    
+
     nIter = nIter + 1;
     L = sqrt(deltau2 + (diff(v).^2));
-    
-    % Estimate index of refraction and cross-track derivatives 
+
+    % Estimate index of refraction and cross-track derivatives
     hi_km = 1e-3*calcAltitude(xyz, geomInfo);
-    [temperature, pressure, rho] = ITUrefAtmosphere(hi_km, atmosphere.latd, atmosphere.season); 
+    [temperature, pressure, rho] = ITUrefAtmosphere(hi_km, atmosphere.latd, atmosphere.season);
     N1 = refractivity(temperature, pressure, rho);
-    
+
     hi_km2 = 1e-3*calcAltitude(xyz + (dv*vhat)*ones(1,nPts), geomInfo);
-    [temperature2, pressure2, rho2] = ITUrefAtmosphere(hi_km2, atmosphere.latd, atmosphere.season); 
-    N2 = refractivity(temperature2, pressure2, rho2);  
+    [temperature2, pressure2, rho2] = ITUrefAtmosphere(hi_km2, atmosphere.latd, atmosphere.season);
+    N2 = refractivity(temperature2, pressure2, rho2);
 
     dn = 1e-6*(N2-N1)/dv; % Cross-track derivative of index of refraction at each point
     n = 1 + 1e-6*N1; % Index of refraction at each point
-    
+
     v0 = v; % Save
-    
+
     % Solve tridiagonal system
     w = (n(2:nPts)+n(1:nPts-1))./L;
     D = -(w(1:nPts-2)+w(2:nPts-1)); % Diagonal terms
     O = w(2:nPts-2); % Off diagonal
-    Q = (L(1:nPts-2) + L(2:nPts-1)).*dn(2:nPts-1); 
+    Q = (L(1:nPts-2) + L(2:nPts-1)).*dn(2:nPts-1);
     v(2:nPts-1) = solveTridiag(D, O, O, Q).';
 
     % Update coordinates
@@ -207,7 +210,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function xyz = calcPath_norefrac(startPt, endPt, ds); %#ok if unused
 %
-%Usage: 
+%Usage:
 %
 %   xyz = atmosphericLoss_nofrec(startPt, endPt, fghz, atmosphere)
 %
@@ -220,7 +223,7 @@ function xyz = calcPath_norefrac(startPt, endPt, ds); %#ok if unused
 %Outputs:
 %
 %   xyz        - 3xN array of points along a path between startPt and endPt.
-%                N is always >=3 
+%                N is always >=3
 %
 %Description:
 %
@@ -259,16 +262,16 @@ function hi = calcAltitude(xyz, geomInfo)
 if nargin < 2 || isempty(geomInfo) || ~isstruct(geomInfo)
   geomInfo = [];
   geomInfo.type = 'spherical';
-  geomInfo.Re = 6371.0088e3; % Earth radius, in meters (IUGG)    
+  geomInfo.Re = 6371.0088e3; % Earth radius, in meters (IUGG)
   geomInfo.alt0 = 0; % Altitude of the coordinate system origin
   geomInfo.up = [0;0;1]; % Unit vector in local "up" direction at the origin
 end
 
 nPts = size(xyz, 2);
-switch(geomInfo.type)  
+switch(geomInfo.type)
   case 'spherical'
     earthCenter = -(geomInfo.Re + geomInfo.alt0)*geomInfo.up;
-    hi = (sqrt(sum((xyz-earthCenter*ones(1, nPts)).^2))-geomInfo.Re); % Altitude (km)(spherical earth)    
+    hi = (sqrt(sum((xyz-earthCenter*ones(1, nPts)).^2))-geomInfo.Re); % Altitude (km)(spherical earth)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -285,13 +288,13 @@ function uhat = calcLocalup(xyz, geomInfo)
 %
 if nargin < 2 || isempty(geomInfo) || ~isstruct(geomInfo)
   geomInfo.type = 'spherical';
-  geomInfo.Re = 6371.0088e3; % Earth radius, in meters (IUGG)    
+  geomInfo.Re = 6371.0088e3; % Earth radius, in meters (IUGG)
   geomInfo.alt0 = 0; % Altitude of the coordinate system origin
   geomInfo.up = [0;0;1]; % Unit vector in local "up" direction at the origin
 end
 
 nPts = size(xyz, 2);
-switch(geomInfo.type)  
+switch(geomInfo.type)
   case 'spherical'
     earthCenter = -(geomInfo.Re + geomInfo.alt0)*geomInfo.up;
     fromCenter = (xyz-earthCenter*ones(1, nPts));
@@ -309,9 +312,9 @@ function x = solveTridiag(diagonal, upper, below, y)
 %
 %Description:
 %
-% Efficiently solves the tridiagonal system Ax = y where A has a diagonal 
+% Efficiently solves the tridiagonal system Ax = y where A has a diagonal
 % DIAGONAL, upper diagonal UPPER and below diagonal BELOW
-% 
+%
 
 nDim = numel(y);
 x = zeros(nDim, 1);
@@ -332,21 +335,24 @@ for ii = (nDim-1):-1:1
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.

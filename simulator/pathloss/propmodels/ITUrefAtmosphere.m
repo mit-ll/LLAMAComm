@@ -1,19 +1,19 @@
 function [tt, pp, rho] = ITUrefAtmosphere(hh, varargin)
 %
-% USAGE: 
+% USAGE:
 %        ITUrefAtmosphere(hh)
 %        ITUrefAtmosphere(hh, latd, season)
 %
-% DESCRIPTION: 
+% DESCRIPTION:
 %  Return atmospheric parameters using reference
 %  standard atmosphere models from ITU Recommendation
-%  Rec. ITU-R P.835-5, 2012. These atmospheres are 
+%  Rec. ITU-R P.835-5, 2012. These atmospheres are
 %  annual means for the season specified.
 %
-% INPUTS:  
+% INPUTS:
 %          hh   - Height above mean sea level, in km
 %          latd - Geodetic latitude, in degrees
-%          season - Either 'summer' or 'winter'. 
+%          season - Either 'summer' or 'winter'.
 %                   May be omitted for tropical latitudes
 %
 % OUTPUTS:
@@ -25,29 +25,32 @@ function [tt, pp, rho] = ITUrefAtmosphere(hh, varargin)
 % Note vapor pressure = rho*tt/216.7
 % Dry air pressure is pp-ee
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
 if nargin>=2 % there are arguments specifying model to use
 
   % this allows input arguments to be passed as either a list
-  % of arguments or as a single cell array, if desired. 
+  % of arguments or as a single cell array, if desired.
   % if 2nd argument is a cell array, all subsequent arguments are ignored
   if iscell(varargin{1})
     cellArgs = varargin{1};
@@ -76,8 +79,8 @@ if ~isempty(latd) && ~isempty(season) && isnumeric(season)
   [tt1, pp1, rho1] = ITUrefAtmosphere(hh, latd, 'summer');
 
   season = real(season(1));
-  Wwinter = cos(pi*season/2).^2;  
-  Wsummer = sin(pi*season/2).^2; 
+  Wwinter = cos(pi*season/2).^2;
+  Wsummer = sin(pi*season/2).^2;
   tt = tt0*Wwinter + tt1*Wsummer;
   pp = pp0*Wwinter + pp1*Wsummer;
   rho = rho0*Wwinter + rho1*Wsummer;
@@ -86,34 +89,34 @@ end
 
 if isempty(latd)  % use reference standard atmosphere, averaged over
               % globe (and season?), Section 1.1
-  
+
   tt = nan(size(hh));              % temperature, K
   pp = nan(size(hh));              % air pressure, hPa
-  
+
   idx = (hh>=0 & hh<11 );
   tt(idx) = 288.15 - 6.5*hh(idx);
   pp(idx) = 1013.25 * ( 288.15 ./ tt(idx) ).^(-34.163/6.5);
-  
+
   idx = (hh>=11 & hh<20 );
   tt(idx) = 216.65;
   pp(idx) = 226.32 * exp( -34.163*(hh(idx)-11)/216.65 );
-  
+
   idx = (hh>=20 & hh<32 );
   tt(idx) = 216.65 + (hh(idx)-20 );
   pp(idx) = 54.75 * ( 216.65 ./ tt(idx) ).^(34.163/1.0);
-  
+
   idx = (hh>=32 & hh<47 );
   tt(idx) = 228.65 + 2.8*(hh(idx)-32);
   pp(idx) =  8.680 * ( 228.65 ./ tt(idx) ).^(34.163/2.8);
-  
+
   idx = (hh>=47 & hh<51 );
   tt(idx) = 270.65;
   pp(idx) = 1.1091 * exp( -34.163*(hh(idx)-47)/270.65);
-  
+
   idx = (hh>=51 & hh<71 );
   tt(idx) = 270.65 -2.8*(hh(idx)-51);
   pp(idx) = 0.669 * ( 270.65 ./ tt(idx) ).^(-34.163/2.8);
-  
+
   idx = (hh>=71 & hh<=85 );
   tt(idx) = 214.65 -2.0*(hh(idx)-71);
   pp(idx) = 0.0395 * ( 214.65 ./ tt(idx) ).^(-34.163/2.0);
@@ -121,21 +124,21 @@ if isempty(latd)  % use reference standard atmosphere, averaged over
   rho = 7.5 * exp( -hh/2 );
 
 elseif abs(latd)<=22 % tropical region, seasons don't matter
-  
+
   tt = nan(size(hh));
-  
+
   idx = (hh>=0 & hh<17 );
   tt(idx) = 300.4222 - 6.3533*hh(idx) + 0.005886*hh(idx).^2;
-  
+
   idx = (hh>=17 & hh<47 );
   tt(idx) = 194 + 2.533*(hh(idx)-17);
 
   idx = (hh>=47 & hh<52 );
   tt(idx) = 270;
-  
+
   idx = (hh>=52 & hh<80 );
   tt(idx) = 270 - 3.0714*(hh(idx)-52 );
-  
+
   idx = (hh>=80 & hh<= 100 );
   tt(idx) = 184;
 
@@ -143,10 +146,10 @@ elseif abs(latd)<=22 % tropical region, seasons don't matter
 
   idx = (hh>=0 & hh<10 );
   pp(idx) = 1012.0306 - 109.0338*hh(idx) + 3.6316*hh(idx).^2;
-  
+
   idx = (hh>=10 & hh<72);
   pp(idx) =  284.8526 * exp( -0.147*(hh(idx)-10) );
-  
+
   idx = (hh>=72 & hh<=100 );
   pp(idx) = 0.03137 * exp( -0.165*(hh(idx)-72) );
   rho = nan(size(hh));
@@ -162,38 +165,38 @@ elseif abs(latd)<=45 % mid-latitudes, summer and winter models
   if strcmpi(season, 'summer')
 
     tt = nan(size(hh));
-  
+
     idx = (hh>=0 & hh<13);
     tt(idx) = 294.9838 - 5.2159*hh(idx) - 0.07109*hh(idx).^2;
-    
+
     idx = (hh>=13 & hh<17 );
     tt(idx) = 215.15;
-    
+
     idx = (hh>=17 & hh<47);
     tt(idx) = 215.15*exp(0.008128*(hh(idx)-17));
-    
+
     idx = (hh>=47 & hh<53 );
     tt(idx) = 275;
-    
+
     idx = (hh>=53 & hh<80 );
     tt(idx) = 275 + 20*( 1 - exp(0.06*(hh(idx)-53)) ); % = 193 @ hh=80, not 175
-    
+
     idx = (hh>=80 & hh<=100 );
     tt(idx) = 175;
-    
+
     pp = nan(size(hh));
     idx = (hh>=0 & hh<10 );
-    
+
     pp(idx) = 1012.8186 - 111.5569*hh(idx) + 3.8646*hh(idx).^2;
     idx = (hh>=10 & hh<72);
-    
+
     pp(idx) =  283.7096 * exp( -0.147*(hh(idx)-10) );
     idx = (hh>=72 & hh<=100 );
-    
+
     pp(idx) = 0.031240 * exp( -0.165*(hh(idx)-72) );
 
     rho = nan(size(hh));
-    
+
     idx = (hh>=0 & hh<=15 );
     rho(idx) = 14.3542*exp( -0.4174*hh(idx) - 0.02290*hh(idx).^2 + ...
                             0.001007*hh(idx).^3 );
@@ -203,32 +206,32 @@ elseif abs(latd)<=45 % mid-latitudes, summer and winter models
   elseif strcmpi(season, 'winter')
 
     tt = nan(size(hh));
-    
+
     idx = (hh>=0 & hh<10);
     tt(idx) = 272.7241 - 3.6217*hh(idx) - 0.1759*hh(idx).^2;
-    
+
     idx = (hh>=10 & hh<33 );
     tt(idx) = 218;
-    
+
     idx = (hh>=33 & hh<47);
     tt(idx) = 218 + 3.3571*(hh(idx)-33);
-    
+
     idx = (hh>=47 & hh<53 );
     tt(idx) = 265;
-    
+
     idx = (hh>=53 & hh<80 );
     tt(idx) = 265 - 2.0370*(hh(idx)-53);
-    
+
     idx = (hh>=80 & hh<=100 );
     tt(idx) = 210;
     pp = nan(size(hh));
 
     idx = (hh>=0 & hh<10 );
     pp(idx) = 1018.8627 - 124.2954*hh(idx) + 4.8307*hh(idx).^2;
-    
+
     idx = (hh>=10 & hh<72);
     pp(idx) =  258.9787 * exp( -0.147*(hh(idx)-10) );
-    
+
     idx = (hh>=72 & hh<=100 );
     pp(idx) = 0.0285170 * exp( -0.155*(hh(idx)-72) );
 
@@ -297,29 +300,29 @@ elseif abs(latd)<=90  % high latitudes
 
     idx = (hh>=8.5 & hh<30 );
     tt(idx) = 217.5;
-    
+
     idx = (hh>=30 & hh<50);
     tt(idx) = 217.5 + 2.125*(hh(idx)-30);
-    
+
     idx = (hh>=50 & hh<54 );
     tt(idx) = 260;
-    
+
     idx = (hh>=54 & hh<=100 );
     tt(idx) = 260 - 1.667*(hh(idx)-54);
-    
+
     pp = nan(size(hh));
-    
+
     idx = (hh>=0 & hh<10 );
     pp(idx) = 1010.8828 - 122.2411*hh(idx) + 4.554*hh(idx).^2;
-    
+
     idx = (hh>=10 & hh<72);
     pp(idx) =  243.8718 * exp( -0.147*(hh(idx)-10) );
-    
+
     idx = (hh>=72 & hh<=100 );
     pp(idx) = 0.0268535 * exp( -0.150*(hh(idx)-72) );
-    
+
     rho = nan(size(hh));
-    
+
     idx = (hh>=0 & hh<=10 );
     rho(idx) = 1.2319*exp( 0.07481*hh(idx) - 0.0981*hh(idx).^2 + ...
                            0.00281*hh(idx).^3 );
@@ -330,7 +333,7 @@ elseif abs(latd)<=90  % high latitudes
     error(['Argument SEASON unknown value: ', season ]);
   end
 
-else 
+else
   error(['Argmument latitude outside range. Latitude = ', num2str(latd) ]);
 end
 
@@ -343,22 +346,25 @@ rho(hh>85) = 0;
 % get water-vapor partial pressure
 %ee = rho .* tt / 216.7;
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

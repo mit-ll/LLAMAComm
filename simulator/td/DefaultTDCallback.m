@@ -33,7 +33,7 @@ function DefaultTDCallback(src, ...
 % *If* the callback has 10 input arguments, then the 10th argument is:
 %
 %  user      (struct) User parameters at the time this callback was
-%             set up.  The callback is set up by 
+%             set up.  The callback is set up by
 %             @module/UpdateTimingDiagram.m immediately after finishing
 %             one of the user-defined module callback functions (the
 %             transmit or receive function)
@@ -42,22 +42,25 @@ function DefaultTDCallback(src, ...
 %  -none-
 %
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -142,7 +145,7 @@ for c = 1:numChans
 
   % Plot spectrum
   ah2 = subplot(m, n, 2*c, 'Parent', fh);
-  
+
   % Spectrogram
   KT   = 1.38e-23 * 300;
   fres = 10e3; % (Hz) Bin resolution
@@ -152,10 +155,10 @@ for c = 1:numChans
   else
     specType = 'welch';
   end
-  
+
   switch specType
     case 'welch'
-      
+
       % Spectrum has already been normalized by the sample rate
       %Ps = pwelch(sig(c, :), [], [], [], 1, 'twosided');
 
@@ -167,7 +170,7 @@ for c = 1:numChans
       %Ps = abs(fft(sig(c, :), nfft)).^2/nfft;
 
       f = ShiftedFreqScale(length(Ps), fs) + fc;
-      
+
       sh = plot(f/1e6, db10(fftshift(Ps))+30, ...
                 'Parent', ah2); %#ok - sh unused
       xlabel(ah2, 'MHz')
@@ -176,8 +179,8 @@ for c = 1:numChans
       grid(ah2, 'on');
       set(ah2, 'XLimMode', 'manual');
       set(ah2, 'Xlim', [f(1) f(end)]/1e6);
-      
-      
+
+
     case 'spectrogram_toneNormalized'
       w = hamming(nfft);
       S = db20(abs(fftshift(spectrogram(sig(c, :)+1i*eps, w), 1)))+30 ...
@@ -187,7 +190,7 @@ for c = 1:numChans
       time = (0:size(S, 2)-1)/fs*(nfft/2);
       f = ShiftedFreqScale(nfft, fs) + fc;
       fres = 1/(sum(w)^2/(norm(w)^2*fs));
-      
+
       imagesc(time*1e3, f/1e6, S, ...
               'Parent', ah2, ...
               [minS, maxS]);
@@ -197,7 +200,7 @@ for c = 1:numChans
       ylabel(ah2, 'Freq (MHz)');
       title(ah2, sprintf('SA output (dBm), fc=%.3f MHz, NBW = %.1f kHz', fc/1e6, fres/1e3));
       grid(ah2, 'on');
-      
+
     case 'spectrogram_noiseNormalized'
       % Spectrogram
       fres = 10e3; % (Hz) Bin resolution
@@ -209,7 +212,7 @@ for c = 1:numChans
       maxS = max(max(S(:)), minS+1);
       time = (0:size(S, 2)-1)/fs*(nfft/2);
       f = ShiftedFreqScale(nfft, fs) + fc;
-      
+
       imagesc(time*1e3, f/1e6, S, 'Parent', ah2, [minS, maxS])
       axis(ah2, 'xy');
       colorbar
@@ -217,29 +220,32 @@ for c = 1:numChans
       ylabel(ah2, 'Freq (MHz)')
       title(ah2, sprintf('PSD (dBm), fc=%.3f MHz', fc/1e6));
       grid(ah2, 'on');
-      
+
   end % END switch specType
-  
+
 end
 
 
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

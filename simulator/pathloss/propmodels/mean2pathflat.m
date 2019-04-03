@@ -1,7 +1,7 @@
 function L = mean2pathflat(dk, h1, h2, ff, pol, epsr, sigma)
 % function L = mean2pathflat(d, h1, h2, f, epsr, sigma)
 % local mean path loss due to two-path progagation in flatland
-% does not assume antenna heights much less than range, 
+% does not assume antenna heights much less than range,
 % but range must be short enough to ignore earth curvature.
 % If dielectric constant and conductivity are not input, rho = -1
 % All non-scaler input parameters must be vectors of the same size
@@ -9,28 +9,31 @@ function L = mean2pathflat(dk, h1, h2, ff, pol, epsr, sigma)
 %         h1    = one antenna height, m
 %         h2    = other antenna height, m
 %         ff    = signal frequency, MHz
-%         pol   = polarization ('v'=vertical, 'h'=horizontal), 
+%         pol   = polarization ('v'=vertical, 'h'=horizontal),
 %                 default 'v', must be scaler
 %         epsr  = relative dielectric constant of reflecing surface
 %         sigma = conductivity of reflecting surface (Siemens)
 % output: L     = local mean propagation loss (dB)
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -38,22 +41,22 @@ function L = mean2pathflat(dk, h1, h2, ff, pol, epsr, sigma)
 % check matrix sizes, set default values, etc
 
 if nargin<5 || isempty(pol)
-  pol = 'v'; 
+  pol = 'v';
 end
 if nargin<4
-  error('Minimum four input variables'); 
+  error('Minimum four input variables');
 end
 if any(dk<0) || any(h1<0) || any(h2<0)
   warning('mean2pathflat:negativeVars', 'Negative input variables, who knows what will happen');
 end
 % convert all numerical inputs to equal sized matrices
-[dk, h1, h2, ff] = matsize(dk, h1, h2, ff); 
+[dk, h1, h2, ff] = matsize(dk, h1, h2, ff);
 if any([isnan(dk), isnan(h1), isnan(h2), isnan(ff) ])
   error('All non-scaler input variables must be equal sized');
 end
 if nargin<7 || isempty(epsr) || isempty(sigma)
   rhoflag = -1;
-else 
+else
   [epsr, sigma] = matsize(dk, epsr, sigma);
   if any( [ isnan(epsr) isnan(sigma) ])
     error('All non-scaler input variables must be equal sized');
@@ -65,7 +68,7 @@ dm = 1000*dk;  % range in meters
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% get propagation loss 
+% get propagation loss
 L = zeros(size(dm));
 
 % find exact parameters at range
@@ -81,45 +84,48 @@ if ~isempty(idxsmall)
     if rhoflag==0
         rho = reflection(1e6*ff(idxsmall), psi(idxsmall), ...
                    epsr(idxsmall), sigma(idxsmall), pol);
-    else 
+    else
         rho = -1*ones(size(idxsmall));
     end
-    E = 1 + rho.*exp(-1j*delphi(idxsmall)); % normalized signal 
-    
+    E = 1 + rho.*exp(-1j*delphi(idxsmall)); % normalized signal
+
     L(idxsmall) = db20(4*pi*rm(idxsmall)./lambda(idxsmall)) - ...
-        db20(abs(E)); % loss in dB 
+        db20(abs(E)); % loss in dB
 end
 
 % for larger relative delay-paths, average values
-idxbig = find(delphi>pi/2);  
+idxbig = find(delphi>pi/2);
 if ~isempty(idxbig)
     if rhoflag==0
         rho = reflection(1e6*ff(idxbig), psi(idxbig), ...
                          epsr(idxbig), sigma(idxbig), pol);
-    else 
+    else
         rho = -1*ones(size(idxbig));
     end
-    Esq = 1 + rho.*conj(rho); % normalized signal 
+    Esq = 1 + rho.*conj(rho); % normalized signal
     L(idxbig) = db20(4*pi*rm(idxbig)./lambda(idxbig)) - ...
-        db10(Esq); % loss in dB 
+        db10(Esq); % loss in dB
 end
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

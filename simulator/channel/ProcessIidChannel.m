@@ -12,24 +12,27 @@ function [rxsig] = ProcessIidChannel(startSamp, channel, source)
 %  source    (nT x blockLength + nDelay complex)  Transmitted signal
 %
 % Output argument:
-%  rxsig     (nR x N complex) Analog signal received by module.  
+%  rxsig     (nR x N complex) Analog signal received by module.
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -69,26 +72,26 @@ else
         pprof = powerProf(rxtxLoop);
         % rLoop = 1+ mod(rxtxLoop-1, nR);
         tLoop = 1+floor((rxtxLoop-1)/nR);
-        
+
         % Generate time-varying channel
         H = jakes4(startSamp, nS, chanstate);
-        
+
         % Apply power profile
         %pows = pprof.pows /sqrt(riceKlin + 1);
         pows = pprof.pows /(riceKlin + 1);
 
         % H = H.*repmat(sqrt(pows(:)), 1, nS);
         % H = bsxfun(@times, H, sqrt(pows(:)));
-        H = H.*(sqrt(pows(:))*nS_ones); 
-        
+        H = H.*(sqrt(pows(:))*nS_ones);
+
         % Get ready for convolution
         H = H.';
-        
-        allSigs(rxtxLoop, :) = TVConv(H, pprof.lags, source(:, tLoop), longestLag); 
+
+        allSigs(rxtxLoop, :) = TVConv(H, pprof.lags, source(:, tLoop), longestLag);
     end % END rLoop
 
     rxsig = reshape(sum(reshape(allSigs, [nR, nT, nS]), 2), [nR, nS]);
-    allSigs = []; %#ok - allSigs no longer needed 
+    allSigs = []; %#ok - allSigs no longer needed
 
     % Do the Rice tap
     inds = (1:nS) + channel.longestLag - channel.powerProfile(1, 1).riceLag;
@@ -97,22 +100,25 @@ else
     rxsig = rxsig + riceMat*source(:, inds);
 end
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

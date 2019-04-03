@@ -1,8 +1,8 @@
 function channel = GetStfcsChannel(nodeTx,modTx,nodeRx,modRx,...
                                    propParams,pathLoss)
 
-% Function 'simulator/channel/GetStfcsChannel.m':  
-% Builds channel struct which contains relevant parameters relating 
+% Function 'simulator/channel/GetStfcsChannel.m':
+% Builds channel struct which contains relevant parameters relating
 % to the MIMO link.  This is the interface to Dan Bliss's code.
 %
 % USAGE:  channel = GetStfcsChannel(nodeTx,modTx,nodeRx,modRx,propParams,pathLoss)
@@ -19,22 +19,25 @@ function channel = GetStfcsChannel(nodeTx,modTx,nodeRx,modRx,...
 %  channel          (struct) Structure containing channel parameters
 %
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -72,7 +75,7 @@ dopSpread = propParams.velocitySpread/c* rxnode.fc; % (Hz)
 if includePropagationDelay
   % Determine the propagation delay (number of samples)
   nPropDelaySamp = norm(rxnode.location - txnode.location)/c*fs;
-  
+
   if includeFractionalDelay
     nPropDelaySampFix = fix(nPropDelaySamp);  % Integer part of delay
     d = nPropDelaySamp - nPropDelaySampFix;   % Decimal part of delay
@@ -83,7 +86,7 @@ if includePropagationDelay
       % Design fractional-delay filter
       nDelayFiltLen = 63;
       t = -(nDelayFiltLen-1)/2:(nDelayFiltLen-1)/2;
-      fracDelayFilter = sin(pi*(t-d))./(pi*(t-d));            
+      fracDelayFilter = sin(pi*(t-d))./(pi*(t-d));
     else
       % Do rounding because fractional delay is close to unity
       nPropDelaySamp = round(nPropDelaySamp);
@@ -91,13 +94,13 @@ if includePropagationDelay
   else % Remove fractional part of delay
     nPropDelaySamp = round(nPropDelaySamp);
   end
-  
+
 else
   nPropDelaySamp = 0;  % Assume no propagation delays
 end
 
 % Calculate channel tensor from transmit node to receive node
-try 
+try
   [hUnNorm, nDelaySamp, nDopSamp, hUnNormTensor, fakeHpow] = ...
       stfChanTensor(...
           propParams.alpha, ...
@@ -106,10 +109,10 @@ try
           1/fs, overSamp, ...
           dopSpread, ...
           propParams.longestCoherBlock, overSamp ); %#ok hUnNorm unused
-                                                    
+
   % Place Rice delay in the middle of the delay spread
   riceDelay = round(nDelaySamp/2);
-  % Place Rice tap near the middle of the Doppler spread 
+  % Place Rice tap near the middle of the Doppler spread
   doppSamp = round((nDopSamp + 1)/2);
   % Get the doppler frequency offsets
   if nDopSamp > 1
@@ -155,10 +158,10 @@ riceMatrix = sqrt(fakeHpow)/norm(riceMatrix,'fro')*riceMatrix;
 riceK = undb10(riceKdB); % Rice K-factor (linear)
 if isinf(riceK)
     hUnNormTensor(:,:,doppSamp,riceDelay) = riceMatrix;
-else    
+else
     hUnNormTensor(:,:,doppSamp,riceDelay) = ...
         sqrt(riceK)*riceMatrix + hUnNormTensor(:,:,doppSamp,riceDelay);
-    
+
     % Normalize by Rice K-factor
     hUnNormTensor = hUnNormTensor/sqrt(riceK + 1);
 end
@@ -191,22 +194,25 @@ if exist('fracDelayFilter','var')
   channel.fracDelayFilter = fracDelayFilter;
 end
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

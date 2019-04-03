@@ -9,10 +9,10 @@ function [hTime, hTensor] = DisplayHtensor(env, linkIndex, samples, makeplot, fi
 %  env          (environment obj) Environment object
 %  linkIndex    (int) Index of link object to display.
 %  samples      (int array) Channel tensor sample times.
-%  makeplot     (bool) (optional) Set true if you would like an 
-%                      automatically generated scatter plot.  
+%  makeplot     (bool) (optional) Set true if you would like an
+%                      automatically generated scatter plot.
 %                      Default is true.
-%  fignum       (int) (optional) You can set the figure number with 
+%  fignum       (int) (optional) You can set the figure number with
 %                      this input
 %
 % Output arguments:
@@ -38,22 +38,25 @@ function [hTime, hTensor] = DisplayHtensor(env, linkIndex, samples, makeplot, fi
 %  >> hTime = DisplayHtensor(env, linkIndex, samples);
 %
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -79,9 +82,9 @@ hTensor = k.channel.chanTensor;
 %---------- THE FOLLOWING CODE IS NOT YET IMPLEMENTED ------------%
 %
 % if findCohTimeBandwidthFlag
-% 
+%
 %     % Setup parameters for finding coherence bandwidth and coherence time
-% 
+%
 %     procParam.cohBandParam = 0.7;     % Linear drop over freq correlation
 %     procParam.leftK = 0.1;            % Threshold for cumsum left frequencies
 %     procParam.rightK = 0.9;           % Threshold for cumsum right frequencies
@@ -96,17 +99,17 @@ hTensor = k.channel.chanTensor;
 %     procParam.sampleRate = simulationSampleRate;
 %     procParam.chanEstOffset = samples(2) - samples(1);
 %     procParam.linkName = k.linkName;
-% 
+%
 %     procParam.plotCohBandwidthFlag = 1;
 %     procParam.plotCohTimeFlag = 1;
 %     procParam.plotChanFlag = 0;
 %     procParam.plotAllChanFlag = 0;
 %     procParam.plotNarrowChanFlag = 0;
-% 
-% 
+%
+%
 %     % Find the coherence time and bandwidth
 %     [coherenceTime, coherenceBandwidth] = CohTimeBandwidth(procParam);
-% 
+%
 % end
 %
 %----------------------------------------------------------------%
@@ -133,22 +136,25 @@ if makeplot
   set(gcf, 'Name', k.linkName)
 end
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

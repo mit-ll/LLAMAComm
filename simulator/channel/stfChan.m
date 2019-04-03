@@ -2,28 +2,28 @@ function [h,weightVec] = ...
     stfChan(alpha,n,delaySpread,nDelay,freqSpread,nFreq,...
     sampRatioT,sampRatioF,firstV)
 %
-%  This function produces random space-time-frequency channel matrices 
-%  with a give spatial correlation.  
+%  This function produces random space-time-frequency channel matrices
+%  with a give spatial correlation.
 %
 % Outputs
-%  h        - stf channel matrix with the dimension of 
+%  h        - stf channel matrix with the dimension of
 %           nRx by (nTx*nReDelay*nReFreq) where
 %               nReDelay = ceil(nDelay*sampRatioT(1)/sampRatioT(2)) ;
 %               nReFreq  = ceil(nFreq*sampRatioF(1)/sampRatioF(2)) ;
 %
-%  weightVec - weighting vector applied to give delay and frequency 
+%  weightVec - weighting vector applied to give delay and frequency
 %           dependent fall off
-% 
-% 
+%
+%
 % Inputs
-%   alpha   - correlation parameter 0 >= alpha >= 1, 
-%           where 0 indicates a rank 1 channel, and 1 indicates a 
+%   alpha   - correlation parameter 0 >= alpha >= 1,
+%           where 0 indicates a rank 1 channel, and 1 indicates a
 %           gaussian channel.  If alpha is a scalar then the channel
 %           correlation is symmetric. Otherwise, two entries indicate
 %           the receiver and transmitter alpha respectively.
-%           
+%
 %   n       - number of antennas.  If n is a scalar then the channel
-%           channel matrix is symmetric.  Otherwise, two entries 
+%           channel matrix is symmetric.  Otherwise, two entries
 %           indicate the number of receiver and transmitter channels
 %           respectively.
 %
@@ -33,9 +33,9 @@ function [h,weightVec] = ...
 %   nDelay  - number of delay taps
 %
 %   freqSpread - a measure of the doppler frequency spread in units of
-%           resolvable doppler (1 / coherent processing interval), 
+%           resolvable doppler (1 / coherent processing interval),
 %           matched to stfData
-%                       
+%
 %   nFreq   - number of frequency taps
 %
 %   sampRatioT - array [p q] which is used by "resample" to allow
@@ -48,25 +48,28 @@ function [h,weightVec] = ...
 %           absent, it is assumed to be 1.
 %
 %   firstV  - is an optional parameter that is used to specify the
-%           first (dominant) column of the unitary matrix associated 
+%           first (dominant) column of the unitary matrix associated
 %           with the channel
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -111,18 +114,18 @@ weightVec = weightingMatrix(:) ;
 % for freqIn = 1:nFreq
 %     wIn = wIn + 1 ;
 %     if freqIn == floor((nFreq-1)/2)
-%         h = [h weightVec(wIn) * correlatedChannelMatrix(alpha,n,firstV) ] ; 
+%         h = [h weightVec(wIn) * correlatedChannelMatrix(alpha,n,firstV) ] ;
 %     else
-%         h = [h weightVec(wIn) * correlatedChannelMatrix(alpha,n) ] ; 
+%         h = [h weightVec(wIn) * correlatedChannelMatrix(alpha,n) ] ;
 %     end
-%     
+%
 %     for delayIn = 2:nDelay
 %         wIn = wIn + 1 ;
-%         h = [h weightVec(wIn) * correlatedChannelMatrix(alpha,n) ] ; 
+%         h = [h weightVec(wIn) * correlatedChannelMatrix(alpha,n) ] ;
 %     end
 % end
-% 
-        
+%
+
 hUnWTensor = zeros(n(1),n(2),nDelay,nFreq) ;
 for delayIn = 1:nDelay
     corH0 = correlatedChannelMatrix(alpha,n,firstV) ;
@@ -131,7 +134,7 @@ for delayIn = 1:nDelay
         if (delayIn == 1)
             hUnWTensor(:,:,delayIn,freqIn) = corH0 ;
         else
-            hUnWTensor(:,:,delayIn,freqIn) = corH ;    
+            hUnWTensor(:,:,delayIn,freqIn) = corH ;
         end
     end
 end
@@ -144,19 +147,19 @@ for rxIn = 1:n(1)
     for txIn = 1:n(2)
         m  = reshape(hUnWTensor(rxIn,txIn,:,:),nDelay,nFreq) ;
         mw = m .* weightingMatrix ;
-        
+
         if nReDelay == nDelay
             mUpDelay = mw ;
         else
             mUpDelay = resample(mw,sampRatioT(1),sampRatioT(2)) ;
         end
-        
+
         if nReFreq == nFreq
             mUp = mUpDelay ;
         else
             mUp      = resample(mUpDelay.',sampRatioF(1),sampRatioF(2)).' ;
         end
-        
+
         hTensorResamp(rxIn,txIn,:,:) = mUp ;
     end
 end
@@ -166,22 +169,25 @@ h = reshape(hTensorResamp,n(1),n(2)*nReDelay*nReFreq) ;
 
 
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

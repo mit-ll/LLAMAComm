@@ -20,22 +20,25 @@ function gamma = ITUspecificAtten(f, T, p, rho)
 %  gamma - Specific attenuation of the atmosphere (in dB/km)
 %
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -217,13 +220,13 @@ den1 = (d + ((f.^2)./d));
 num2 = 1.4e-12.*p.*(theta.^1.5);
 den2 = 1+ (1.9e-5.*(f.^1.5));
 
-%Ndry = f.*p.*(theta.^2).*((num1./den1)+(num2.*(1-(1.2e-5.*(f.^1.5))))); % P.676-3 (1997) 
+%Ndry = f.*p.*(theta.^2).*((num1./den1)+(num2.*(1-(1.2e-5.*(f.^1.5))))); % P.676-3 (1997)
 Ndry = f.*p.*(theta.^2).*((num1./den1)+(num2./den2)); % P.676-10 (9/2013)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Wet continuum contribution
-% Nwet = f.*((3.57.*(theta.^7.5).*e) + 0.113.*p).*1e-7.*e.*(theta.^3); % P.676-3 (1997) 
+% Nwet = f.*((3.57.*(theta.^7.5).*e) + 0.113.*p).*1e-7.*e.*(theta.^3); % P.676-3 (1997)
 Nwet = 0; % P.676-10 (9/2013)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -236,21 +239,21 @@ for ii = 1:size(data_o2,1)
   S = data_o2(ii, 2).*1e-7.*p.*(theta.^3).*exp(data_o2(ii, 3).*(1-theta));
 
   % "e" in the calculation below looks suspicious:
-  Deltaf = data_o2(ii,4).*1e-4.*(p.*(theta.^(0.8 - data_o2(ii,5))) + (1.1.*e.*theta)); 
-  
+  Deltaf = data_o2(ii,4).*1e-4.*(p.*(theta.^(0.8 - data_o2(ii,5))) + (1.1.*e.*theta));
+
   % Line-width modification (P.676-10, not in P.676-3):
   Deltaf = sqrt((Deltaf.^2) + 2.25e-6);
-  
-  
+
+
   delta = (data_o2(ii,6) + data_o2(ii,7)*theta).*1e-4.*(p+e).*(theta.^0.8);
-  
+
   num1 = Deltaf - delta.*(data_o2(ii,1) - f);
   den1 = ((data_o2(ii,1) - f).^2) + (Deltaf.^2);
   num2 = Deltaf - delta.*(data_o2(ii,1) + f);
   den2 = ((data_o2(ii,1) + f).^2) + (Deltaf.^2);
-  
+
   F = (f./data_o2(ii,1)).*((num1./den1) + (num2./den2));
-  
+
   Npp = Npp + S.*F;
 end
 
@@ -262,8 +265,8 @@ for ii = 1:size(data_h2o, 1)
   S = data_h2o(ii,2).*1e-1.*e.*(theta.^3.5).*exp(data_h2o(ii,3).*(1-theta));
   Deltaf = data_h2o(ii, 4).*1e-4.*(p.*(theta.^(data_h2o(ii,5))) + data_h2o(ii, 6).*e.*(theta.^data_h2o(ii, 7)));
   % Doppler broadening:
-  Deltaf = 0.535.*Deltaf + sqrt(0.217.*(Deltaf.^2)+((2.1316e-12).*(data_h2o(ii,1).^2)./theta)); 
-  
+  Deltaf = 0.535.*Deltaf + sqrt(0.217.*(Deltaf.^2)+((2.1316e-12).*(data_h2o(ii,1).^2)./theta));
+
   den1 = ((data_h2o(ii,1) - f).^2) + (Deltaf.^2);
   den2 = ((data_h2o(ii,1) + f).^2) + (Deltaf.^2);
   F = (f./data_h2o(ii,1)).*((Deltaf./den1) + (Deltaf./den2));
@@ -275,22 +278,25 @@ end
 
 gamma = 0.1820.*f.*Npp;
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

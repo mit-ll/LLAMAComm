@@ -1,28 +1,31 @@
 function Ls = shadowloss(an,dn,env)
 % given a full set of nodes, return a set of correlated shadow
 % loss values (dB) with the desired statistics (standard deviation
-% and cross-correlation). 
-% output vector is 
-% [ an->dn shadow loss; 
-%   is->an shadow loss; 
+% and cross-correlation).
+% output vector is
+% [ an->dn shadow loss;
+%   is->an shadow loss;
 %   is->dn shadow loss ];
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -81,22 +84,22 @@ function [ RR, ss ] = getshadowcorr(an,dn,env)
 Ni = length(env.is); % number of interference sources
 Nl = 2*Ni+1;         % total number of links
 
-% vector of shadow loss standard deviations, Nlx1 
-ss = zeros(Nl,1);  
+% vector of shadow loss standard deviations, Nlx1
+ss = zeros(Nl,1);
 
-% matrix of shadow loss correlation coefficients 
+% matrix of shadow loss correlation coefficients
 RR = eye(Nl);
 
 % find correlation between an->dn link and others
 ss(1) = env.d2a.stdLdb;
 for jj=1:Ni  % correlate an->dn with is->an at an
-  psi_a2d = bearing(an.location,dn.location); 
+  psi_a2d = bearing(an.location,dn.location);
   psi_a2i = bearing(an.location,env.is(jj).location);
   RR(1,jj+1) = shadowcorr(psi_a2d,psi_a2i);
   RR(jj+1,1) = RR(1,jj+1);
 end
 for jj=1:Ni % correlate an->dn with is->dn at dn
-  psi_d2a = bearing(dn.location,an.location); 
+  psi_d2a = bearing(dn.location,an.location);
   psi_d2i = bearing(dn.location,env.is(jj).location);
   RR(1,jj+Ni+1) = shadowcorr(psi_d2a,psi_d2i);
   RR(jj+Ni+1,1) = RR(1,jj+Ni+1);
@@ -134,7 +137,7 @@ end
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function psi = bearing(loc1,loc2)
 % function psi = bearing(loc1,loc2);
 % Given two locations return bearing angle from first location, looking
@@ -174,22 +177,25 @@ rho = 0.7479 - 0.0039*deltheta;
 rho(deltheta>90) = 0.3933;
 
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

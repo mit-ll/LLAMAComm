@@ -1,7 +1,7 @@
 function L = hata(dkm,fmhz,hmm,hbm,cover)
 % function L = hata(dkm,fmhz,hmm,hbm,cover)
 % Plot mobile system propagation loss using Okumura-Hata model
-% from Hata, VTC 1980, pp 317-325, 
+% from Hata, VTC 1980, pp 317-325,
 % Formerly this had range, frequency, and ground
 % cover extensions from RACE Mobile Telecommunications Project R1043
 % (REF:RMTP/CC/R157, Issue 1.1, London 12/18/91), but now it's just hata
@@ -9,12 +9,12 @@ function L = hata(dkm,fmhz,hmm,hbm,cover)
 %
 % All input parameters may be either scalar, or equal size arrays,
 % except cover, which must be single-valued
-% Parameter	Definition		Units	Range		
-% dkm		Range			Km	1-20		
-% fmhz		Carrier Frequency	MHz	150-1500	
-% hmm    	Mobile Station Height	m	1-10		
-% hbm		Base Station Height	m 	30-200		
-% cover		Ground Cover Type	none	see Table 1 	
+% Parameter	Definition		Units	Range
+% dkm		Range			Km	1-20
+% fmhz		Carrier Frequency	MHz	150-1500
+% hmm    	Mobile Station Height	m	1-10
+% hbm		Base Station Height	m 	30-200
+% cover		Ground Cover Type	none	see Table 1
 %
 % Model is applicable when base station antenna is taller roof height
 % (or other obstructions) within 100 to 200 m
@@ -25,22 +25,25 @@ function L = hata(dkm,fmhz,hmm,hbm,cover)
 % U1	urban, low density -- buildings < 5 stories, moderate density
 % U2	urban -- avg. 5 story buildings, up to 10 stories, moderate density
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -48,8 +51,8 @@ function L = hata(dkm,fmhz,hmm,hbm,cover)
 % housekeeping
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if nargin<5 || isempty(cover)
-  cover = 'U1'; % default 
-end 
+  cover = 'U1'; % default
+end
 if nargin<4
   error('Too few input arguments, function hata');
 end
@@ -66,7 +69,7 @@ end
 if strcmp(cover,'U2') % buildings >= 5 stories
   if fmhz<=200
       ahm = 8.29*( bels( 1.54*hmm) ).^2 - 1.1;
-  else	   
+  else
       ahm = 3.2 *( bels(11.75*hmm) ).^2 - 4.97;
   end
 else
@@ -102,22 +105,25 @@ end
 
 
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

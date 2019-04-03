@@ -4,22 +4,22 @@ function [ medLdb, stdLdb ] = longley_rice(dkm, fmhz, hm, delh, pol, deploy, ...
 % [ medLdb, stdLdb ] = longley_rice(dkm, fmhz, hm, delh, pol, deploy, ...
 %                                   gelev, climate, ground);
 % run the Longley-Rice propagation model in the area mode
-% as described in G. A. Hufford, A. G. Longley, W. A. Kissick, 
-% A Guide to the Use of the ITS Irregular Terrain Model in the 
+% as described in G. A. Hufford, A. G. Longley, W. A. Kissick,
+% A Guide to the Use of the ITS Irregular Terrain Model in the
 % Area Prediction Mode, NTIA Report 82-100, April 1982. Also
 % described in Parsons
 %
-% inputs:  dkm     = ground range in km, vector 
+% inputs:  dkm     = ground range in km, vector
 %          fmhz    = frequency in MHz, scalar
 %          hm      = 2-vector of antenna heights, m
 %          delh    = terrain variablility parameter, m (see below), default 90
 %          pol     = polarization, 'v'=vertical, 'h'=horizontal, default 'v'
-%          deploy  = 2-vector indicating antenna site selection, 
+%          deploy  = 2-vector indicating antenna site selection,
 %                    0='random', 1='careful', 2='very careful', default [0, 0]
 %          gelev   = avg. ground elevation in m, default 0
 %          ground  = ground condition (see below), default 'avg'
 %          climate = climate descriptor (see below), default 'conttemp'
-%          
+%
 % outputs: medLdb  = median channel loss, dB
 %          stdLdb  = channel loss standard deviation, in dB
 %
@@ -29,7 +29,7 @@ function [ medLdb, stdLdb ] = longley_rice(dkm, fmhz, hm, delh, pol, deploy, ...
 % antenna height       0.5 m to     3 km
 % polarization        vertical or horizontal
 %
-% terrain variablity is defined as difference between 90% quantile 
+% terrain variablity is defined as difference between 90% quantile
 % elevation and 10% quantile elevation in m, in the limit as path length
 % grows but terrain variation is uniform. Recommended values are
 % flat or water             0
@@ -46,7 +46,7 @@ function [ medLdb, stdLdb ] = longley_rice(dkm, fmhz, hm, delh, pol, deploy, ...
 % 'fwater' fresh water              81                0.010
 % 'swater' salt water               81                5.000
 %
-% climate is used to set the L-R climate parameter and surface refractivity 
+% climate is used to set the L-R climate parameter and surface refractivity
 % at sea level (No)
 % value        climate type                example         No
 % 'equat'      equatorial                  Congo           360
@@ -57,22 +57,25 @@ function [ medLdb, stdLdb ] = longley_rice(dkm, fmhz, hm, delh, pol, deploy, ...
 % 'martemp'    maritime temperate land     Seattle, UK     320
 % 'martempsea' maritime temperate over sea duh             350
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -112,9 +115,9 @@ switch climate  % set climate parameters
 end
 
 if strcmp(pol, 'v')
-    ipol = 1; 
-else 
-    ipol=0; 
+    ipol = 1;
+else
+    ipol=0;
 end % set polarization flag
 
 switch ground
@@ -136,15 +139,15 @@ kwxqlrps = qlrps(fmhz, hm, delh, gelev, No, ipol, eps, sgm); %#ok - kwxqlrps unu
 % sub-routine
 
 % set mode flag, mdvar, allowed values:
-% mdvar = 0, "single message mode", reliability is time, location, 
+% mdvar = 0, "single message mode", reliability is time, location,
 %            and situation variability combined
-% mdvar = 1, "individual mode", reliability is time, confidence is combined 
+% mdvar = 1, "individual mode", reliability is time, confidence is combined
 %            location and situation
-% mdvar = 2, "mobile mode", reliability is time and location, confidence 
+% mdvar = 2, "mobile mode", reliability is time and location, confidence
 %            is situation
-% mdvar = 3, "broadcast mode", reliability is two-fold: at least qt of time 
+% mdvar = 3, "broadcast mode", reliability is two-fold: at least qt of time
 %            in at least ql of locations, confidence is situation variability
-mdvar = 2; 
+mdvar = 2;
 
 % set area-prediction-mode parameters
 kwxqlra = qlra(deploy, climno, mdvar); %#ok - kwxqlra unused
@@ -198,7 +201,7 @@ function kwx_out = qlrps(fmhz, hm, delh, zsys, en0, ipol, epss, sgm)
 %         en0  = atmospheric refractivity at sea level
 %         ipol = polarization, 0 = horizontal, 1 = vertical
 %         epss = ground relative permittivity
-%         sgm  = ground conductivity 
+%         sgm  = ground conductivity
 % output: kwx  = error flag
 %                0 = no warning
 %                1 = parameters are close to limits
@@ -234,11 +237,11 @@ function kwx_out = qlra(kst, klimx, mdvarx)
 % function kwx = qlra(kst, klimx, mdvarx)
 % calculates he, dl, the, mdp, lvar for sub-routine avar
 % will also set mdvar, klim with correct inputs
-% inputs: kst    = deployment criteria, 0 = random, 1 = careful, 
+% inputs: kst    = deployment criteria, 0 = random, 1 = careful,
 %                  2 = very careful (2-vector)
 %         klimx  = climate flag, 1 = equatorial, 2 = continental sub-tropical
-%                  3 = maritime sub-tropical, 4 = desert, 
-%                  5 = maritime temperate over land, 
+%                  3 = maritime sub-tropical, 4 = desert,
+%                  5 = maritime temperate over land,
 %                  6 = maritime temperate over sea
 %         mdvarx = statistical variation analysis mode flag
 %                  0 = single message mode
@@ -292,7 +295,7 @@ function [aref_out, kwx_out] = lrprop(d)
 % function [ aref, kwx ] = lrprop(d)
 % calculates dls, dlsa, dla, tha, kwx, aed, emd, ak2, ak1, aref, dx, ems, aes
 % input:  d    = distance, m
-% outputs:aref = median channel loss, dB 
+% outputs:aref = median channel loss, dB
 %         kwx  = error flag
 %                0 = no warning
 %                1 = parameters are close to limits
@@ -446,7 +449,7 @@ function [res, kwx_out] = avar(zzt, zzl, zzc)
 % values such that q = qerf(z), for q the desired quantile
 % mdvar = 0 (single message mode), zzt, zzl unused, zzc is total variance
 %           (time, location, and situation)
-% mdvar = 1 (individual mode) zzt is reliability (time), zzl is unused, 
+% mdvar = 1 (individual mode) zzt is reliability (time), zzl is unused,
 %            zzc is confidence (location and situation)
 % mdvar = 2 (mobile mode) zzt is reliability (time and location), zzl is
 %           unused, zzc is confidence (situation)
@@ -463,7 +466,7 @@ function [res, kwx_out] = avar(zzt, zzl, zzc)
 
 %global kwx aref mdp dist hg wn dh ens gme zgnd he dl the
 %global lvar sgc mdvar klim
-global kwx aref dist wn dh he 
+global kwx aref dist wn dh he
 global lvar sgc mdvar klim
 persistent kdv wl ws dexa de vmd vs0 sgl sgtm sgtp sgtd tgtd gm gp cv1
 persistent cv2 yv1 yv2 yv3 csm1 csm2 ysm1 ysm2 ysm3 csp1 csp2 ysp1 ysp2 ysp3
@@ -567,13 +570,13 @@ if lvar > 0
     sgtp=curv(csp1, csp2, ysp1, ysp2, ysp3, de)*gp;
     sgtd=sgtp*csd1;
     tgtd=(sgtp-sgtd)*zd;
-    if wl 
+    if wl
       sgl=0;
     else
       q=(1-0.8*exp(-dist/50e3))*dh*wn;
       sgl=10*q/(q+13);
     end
-    if ws      
+    if ws
       vs0=0;
     else
       vs0=(5+3*exp(-de/100e3))^2;
@@ -593,7 +596,7 @@ elseif kdv == 1
 elseif kdv == 2
   zl=zt;
 end
-if abs(zt) > 3.10 || abs(zl) > 3.10 || abs(zc) > 3.10 
+if abs(zt) > 3.10 || abs(zl) > 3.10 || abs(zc) > 3.10
   kwx=max(kwx, 1);
 end
 if zt < 0
@@ -633,13 +636,13 @@ function res=adiff(d)
 %global dlsa dx ael ak1 ak2 aed emd aes ems dls dla tha
 global mdp hg wn dh gme zgnd he dl
 global dlsa dla tha
-persistent wd1 xd1 afo qk aht xht 
+persistent wd1 xd1 afo qk aht xht
 
 third=1/3;
 if d == 0
   q=hg(1)*hg(2);
   qk=he(1)*he(2)-q;
-  if mdp < 0 
+  if mdp < 0
     q=q+10;
   end
   wd1=sqrt(1+qk/q);
@@ -682,7 +685,7 @@ a = [133.4 104.6 71.8];
 b = [0.332e-3 0.212e-3 0.157e-3];
 c = [-4.343, -1.086, 2.171];
 
-if td <= 10e3 
+if td <= 10e3
   ii=1;
 elseif td <= 70e3
   ii=2;
@@ -738,17 +741,17 @@ global wn ens gme he dl the tha
 persistent ad rr etq h0s
 
 
-if d == 0 
+if d == 0
   ad=dl(1)-dl(2);
   rr=he(2)/he(1);
-  if ad < 0 
+  if ad < 0
     ad = -ad;
     rr=1/rr;
   end
   etq=(5.67e-6*ens-2.32e-3)*ens+0.031;
   h0s=-15;
   res=0;
-else  % d == 0 
+else  % d == 0
   if h0s > 15
     h0=h0s;
   else
@@ -782,7 +785,7 @@ else  % d == 0
   th=tha+d*gme;
   res=ahd(th*d)+4.343*log(47.7*wn*th^4)-0.1*(ens-301)*...
       exp(-th*d/40e3)+h0;
-end % d == 0 
+end % d == 0
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function res=curv(c1, c2, x1, x2, x3, de)
@@ -851,7 +854,7 @@ if x < 200
   end
 else
   res = 0.05751*x-4.343*log(x);
-  if x < 2000 
+  if x < 2000
     w=0.0134*x*exp(-0.005*x);
     res=(1-w)*res+w*(17.372*log(x)-117);
   end
@@ -956,22 +959,25 @@ end
 
 
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

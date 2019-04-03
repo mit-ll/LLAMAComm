@@ -1,6 +1,6 @@
 function [ Kdb, medKdb ] = getRiceK(txnode, rxnode, Ldb)
 % function [ Kdb, medKdb ] = getRiceK(txnode, rxnode, Ldb);
-% Get random Rice K-factor for link between two nodes, 
+% Get random Rice K-factor for link between two nodes,
 % K-factor is defined as ratio of specular (or dominant path) signal
 % power to difuse (e.g., Rayleigh path) signal power.
 % Also returns median value of KdB
@@ -16,29 +16,32 @@ function [ Kdb, medKdb ] = getRiceK(txnode, rxnode, Ldb)
 %
 % Reference:
 %
-% P. Soma, D. S. Baum, V. Erceg, R. Krishnamoorthy, A. J. Paulraj, 
-% "Analyis and Modeling of Multiple-Input Multiple-Output (MIMO) 
-% Radio Channel Based on Outdoor Measurements Conducted at 2.5 GHZ 
-% for Fixed BWA Applications, " IEEE Intl. Conf. Communications, Vol. 1, 
-% 28 April - 2 May, 2002, pp 272-276. 
+% P. Soma, D. S. Baum, V. Erceg, R. Krishnamoorthy, A. J. Paulraj,
+% "Analyis and Modeling of Multiple-Input Multiple-Output (MIMO)
+% Radio Channel Based on Outdoor Measurements Conducted at 2.5 GHZ
+% for Fixed BWA Applications, " IEEE Intl. Conf. Communications, Vol. 1,
+% 28 April - 2 May, 2002, pp 272-276.
 %
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -69,7 +72,7 @@ fmhz = rxnode.fc/1e6; % center frequency, mHz
 % in-building range
 if ~strcmp(txbuilding.extwallmat, 'none')  % tx is indoors
   ddtx = txbuilding.intdist;       % shortest in-building path length
-else 
+else
   ddtx = 0;
 end
 if ~strcmp(rxbuilding.extwallmat, 'none')   % rx is indoors
@@ -78,14 +81,14 @@ if ~strcmp(rxbuilding.extwallmat, 'none')   % rx is indoors
   else % Rx-site Rx is not colocated with it's Tx
     ddrx = rxbuilding.intdist;     % shortest in-building path length
   end
-else 
+else
   ddrx = 0;
 end
 
 % if Tx or Rx antennas are not all identical, K factor can be different
 % for each antenna pair, make an NxM matrix of K's, N = # Tx antennas
 % M = # Rx antennas. Figure out if this is the case:
-if length(txnode.antType)== 1; txno = 1; 
+if length(txnode.antType)== 1; txno = 1;
 else
   txsame = zeros(length(txnode.antType));
   txsame(1) = 1;
@@ -93,13 +96,13 @@ else
     txsame = strcmp(txnode.antType{1}, ...
                     txnode.antType{ii});
   end
-  if all(txsame) 
+  if all(txsame)
     txno = 1;
-  else 
+  else
     txno = length(txsame);
   end
 end
-if length(rxnode.antType)== 1; rxno = 1; 
+if length(rxnode.antType)== 1; rxno = 1;
 else
   rxsame = zeros(length(rxnode.antType));
   rxsame(1) = 1;
@@ -107,9 +110,9 @@ else
     rxsame = strcmp(rxnode.antType{1}, ...
                     rxnode.antType{ii});
   end
-  if all(rxsame) 
+  if all(rxsame)
     rxno = 1;
-  else 
+  else
     rxno = length(rxsame);
   end
 end
@@ -125,7 +128,7 @@ for ii=1:txno
       [], ...
       fmhz, ...
       txnode.antType{ii}); %#ok - azelmax used below in 'eval'
-  
+
   % azelmax used below in the 'eval'
   [temp, Dtxdb(ii)] = ...
       eval([ txnode.antType{ii} '(azelmax(1), azelmax(2), fmhz);']); %#ok - temp unused
@@ -217,14 +220,14 @@ Kdb(alpha==0) = 30;
 medKdb(medalpha<1) = db10(medalpha./(1-medalpha));
 medKdb(medalpha==1) = 30;
 
-% Subtract 3 dB from the K-factor (We subtract to compensate for the 
+% Subtract 3 dB from the K-factor (We subtract to compensate for the
 % space-time alpha factor already included in Dan's channel generator).
 Kdb = Kdb - 3;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function minD = gainfunction(azel, fmhz, antenna); %#ok - azel, fmhz unused
 % function allows search for antenna coordinates with
 % maximum directivity
@@ -237,22 +240,25 @@ function minD = gainfunction(azel, fmhz, antenna); %#ok - azel, fmhz unused
 minD = -DD;
 
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

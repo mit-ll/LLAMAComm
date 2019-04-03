@@ -3,29 +3,32 @@ function h = jakes4(starttime, Nsamples, chanstates, Plot)
 %
 % NSAMPLES is the number of samples you want.
 %
-% STARTTIME is the time at which you begin channel sampling.  
+% STARTTIME is the time at which you begin channel sampling.
 %
 % CHANSTATES is a structure array containing the channel states
 %
-% PLOT is an argument (1 or 0) which enables plotting of 
+% PLOT is an argument (1 or 0) which enables plotting of
 %   the time autocorrelation function of each tap.
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -41,17 +44,17 @@ h(Ni, Nsamples) = 0; %Allocate. h  = zeros(Ni, Nsamples);
 for ii = 1:Ni
   methodfun = chanstates(ii).method;
   f         = chanstates(ii).doppf;  % Dopp freq normalized to sample rate
-  
+
   switch(lower(methodfun))
     case 'zheng'
       try
           h(ii, :) = zhengFunLUT(f, t, chanstates(ii));
-      catch ME; %#ok 
-          h(ii, :)    = zheng(f, t, chanstates(ii));      
+      catch ME; %#ok
+          h(ii, :)    = zheng(f, t, chanstates(ii));
       end
     case 'constant'
       h(ii, :) = chanstates(ii).coeff;
-      
+
     otherwise
       h(ii, :)    = eval([methodfun, '(f, t, chanstates(ii));']);
   end
@@ -82,7 +85,7 @@ for ii = 1:Ni
     %subplot(322), plot(x, abs(Rcc((length(Rcc)+1)/2:end))), title('abs(Rcc)'), hold on, ...
     %   plot(x, abs(besselj(0, 2*pi*[0:Lags*N]*fmfb)), 'r'), xlabel('Time Delay, fm/fb*t')
     nfft = max(2^10, 2^nextpow2(length(c)));
-    subplot(322), plot((-nfft/2:nfft/2-1)/nfft, db20(abs(fftshift(fft(c, nfft))))), 
+    subplot(322), plot((-nfft/2:nfft/2-1)/nfft, db20(abs(fftshift(fft(c, nfft))))),
     grid on
     subplot(323), plot(x, Rii((length(Rii)+1)/2:end)), title('Rii (b) Rqq (g)'), hold on, ...
         plot(x, .5*real(besselj(0, 2*pi*(0:Lags*N)*fmfb)), 'r'), xlabel('Time Delay, fm/fb*t')
@@ -193,22 +196,25 @@ h = sqrt(1/(4*M))*h;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

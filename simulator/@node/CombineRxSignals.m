@@ -3,7 +3,7 @@ function [nodes, env, sig] = CombineRxSignals(nodes, env, nodeRxIdx, modRxIdx, r
 % Function @node/CombineRxSignals.m:
 % Combines analog signals from all sources transmitting at the same
 % time.  If there are no modules transmitting, i.e., the transmit
-% modules are all in the 'wait' state, then additive noise only 
+% modules are all in the 'wait' state, then additive noise only
 % is received.
 %
 % USAGE: [env, sig, sigSep] = CombineRxSignals(nodes, modobj, relevant)
@@ -21,25 +21,28 @@ function [nodes, env, sig] = CombineRxSignals(nodes, env, nodeRxIdx, modRxIdx, r
 % Output argument:
 %  nodes     (node obj array) Array of all node object in the simulation
 %  env       (environment obj) Modified environment object
-%  sig       (MxN complex) Analog signal received by module.  
+%  sig       (MxN complex) Analog signal received by module.
 %             M channels x N samples
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -55,17 +58,17 @@ modRx = nodes(nodeRxIdx).modules(modRxIdx);
 
 % Check if the received signals should be separated
 p = GetUserParams(nodeRx);
-if isfield(p, 'separateTheReceivedSignals') 
+if isfield(p, 'separateTheReceivedSignals')
   separateTheReceivedSignals = p.separateTheReceivedSignals;
 else
   separateTheReceivedSignals = false;
 end
-if isfield(p, 'getChannelResponse') 
+if isfield(p, 'getChannelResponse')
   getChannelResponse = p.getChannelResponse;
   chanResp = []; % Initialize the channel response
 else
   getChannelResponse = false;
-end 
+end
 
 
 % Add white Gaussian noise (includes external noise)
@@ -120,22 +123,25 @@ if getChannelResponse
   nodes(nodeRxIdx).user.chanResp = chanResp;
 end
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

@@ -1,21 +1,24 @@
 % This script tests the channel models used in LLAMAComm
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -38,7 +41,7 @@ propParams.chanType          = 'iid';  % 'iid' or 'sampled'
 propParams.velocitySpread    = 5;      % (m/s)
 switch lower(propParams.chanType)
   case 'iid'
-    
+
   case 'sampled'
     propParams.alpha              = 0.7;% Spatial correlation parameter
     propParams.channelOversamp    = 3;  % Channel interpolation parameter
@@ -88,9 +91,9 @@ longestSpread = 0;          % Used to find the longest channel realization
 fs      = modRx.fs;         % Simulation sample rate
 hLag = cell(1, nThrows);
 for cLoop = 1:nThrows
-  
+
   disp(cLoop)
-  
+
   switch propParams.chanType
     case 'iid'
       % Get the channel parameters
@@ -105,8 +108,8 @@ for cLoop = 1:nThrows
                                          propParams, pathLoss);
       longestSpread = size(channel{cLoop}.chanTensor, 4);
   end
-  
-  % Compute for each antenna pair the channel impulse response 
+
+  % Compute for each antenna pair the channel impulse response
   % to a delta input at time 0
   hLag{cLoop} = ChannelImpulseResponse(channel{cLoop}, 0, fs);
 end
@@ -117,7 +120,7 @@ pProfile = zeros(longestSpread, nThrows);
 for cLoop = 1:nThrows
   %[nR, nT, nL, nS] = size(hLag{cLoop});
   nL = size(hLag{cLoop}, 3);
-  
+
   % Stack the instantaneous power-profiles into one matrix
   hcur(1:nL, cLoop) = squeeze(hLag{cLoop}(1, 1, :, 1));
   pProfile(:, cLoop) = abs(hcur(:, cLoop)).^2/norm(hcur(:, cLoop));
@@ -144,7 +147,7 @@ drawnow
 %% Sample the channel impulse response over time
 Ndelta  = fs*0.001;   % Sample the channel every millisecond
 Nend    = fs*0.1;       % Sample for 1 second
-samps   = 0:Ndelta:Nend; 
+samps   = 0:Ndelta:Nend;
 nS = length(samps);
 nThrowsTime = 1;
 hTime = cell(1, nThrowsTime);
@@ -209,7 +212,7 @@ subplot(323)
 plot(x, Rii((length(Rii)+1)/2:end))
 title('Rii (b) Rqq (g)')
 hold on
-plot(x, Rqq((length(Rqq)+1)/2:end), 'g')    
+plot(x, Rqq((length(Rqq)+1)/2:end), 'g')
 plot(x, .5*real(besselj(0, 2*pi*(0:Lags*N)*fmfb))*temp, 'r')
 xlabel('Time Delay, fm/fb*t')
 axis tight
@@ -249,8 +252,8 @@ subplot(324), hold off
 subplot(325), hold off
 subplot(326), hold off
 
-% 
-% 
+%
+%
 % % Estimate the coherence time and bandwidth
 % p.cohBandParam = 1.0;           % linear drop (coherence band parameter)
 % p.leftK        = 0.1;           % threshold for cumsum left frequencies
@@ -259,26 +262,29 @@ subplot(326), hold off
 % p.Hhat4D       = hTime;         % RX-by-TX-by-lag-by-Time channel estimates
 % p.Ind          = samps;         % time sample instances
 % p.sampleRate   = fs;            % simulation sample rate
-% 
+%
 % [coherenceTime, coherenceBandwidth] = CohTimeBandwidth(p);
 
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

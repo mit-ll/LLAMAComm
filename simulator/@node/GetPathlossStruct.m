@@ -1,7 +1,7 @@
 function pathLoss = GetPathlossStruct(nodeTx,modTx,nodeRx,modRx,envParams)
 
-% Function '@node/GetPathlossStruct.m':  
-% Builds pathLoss struct which contains relevant parameters relating 
+% Function '@node/GetPathlossStruct.m':
+% Builds pathLoss struct which contains relevant parameters relating
 % to pathloss of the link.  This code interfaces LLamaComm with the
 % pathloss code written by Bruce McGuffin for Cogcom.
 %
@@ -18,22 +18,25 @@ function pathLoss = GetPathlossStruct(nodeTx,modTx,nodeRx,modRx,envParams)
 %  pathLoss     (struct) Structure containing pathloss parameters
 %
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -51,7 +54,7 @@ txnode.building.extwallmat = txantenna.exteriorWallMaterial;
 txnode.building.intdist = txantenna.distToExteriorWall;
 txnode.building.intwalls = txantenna.numInteriorWalls;
 txnode.building.extbldgangle = txantenna.exteriorBldgAngle;
-txnode.antLocation = txantenna.antPosition; 
+txnode.antLocation = txantenna.antPosition;
 txnode.location = nodeTx.location;
 txnode.fc = GetFc(modTx);
 
@@ -66,7 +69,7 @@ rxnode.building.extwallmat = rxantenna.exteriorWallMaterial;
 rxnode.building.intdist = rxantenna.distToExteriorWall;
 rxnode.building.intwalls = rxantenna.numInteriorWalls;
 rxnode.building.extbldgangle = rxantenna.exteriorBldgAngle;
-rxnode.antLocation = rxantenna.antPosition; 
+rxnode.antLocation = rxantenna.antPosition;
 rxnode.location = nodeRx.location;
 rxnode.fc = GetFc(modRx);
 
@@ -83,10 +86,10 @@ linkIndex = FindShadowLinkIndex(envParams.shadow.linkNames,...
 %
 % where Lambda is a diagonal matrix of shadowloss standard deviations and
 % Z' is the unweighted correlated shadowloss realization.
-% Recall that Z' has been setup previously in Main.m by calling 
+% Recall that Z' has been setup previously in Main.m by calling
 % @environment/SetupShadowloss.m.  Z' is defined as follows:
 %
-% Z' = sqrtm(Krho)*Z, 
+% Z' = sqrtm(Krho)*Z,
 %
 % where Z is a realization from a vector-valued i.i.d. standard normal
 % distribution and Krho is the shadowloss correlation matrix obtained
@@ -128,7 +131,7 @@ pathLoss.distBetweenNodes = distBetweenNodes;
 
 if DEBUGGING
   1; %#ok if unreachable
-  figure; 
+  figure;
   PlotAnts(txnode,rxnode,thetatx,phitx,thetarx,phirx);
   % Make figure name the name of the link
   set(gcf,'Name',[txnode.name,':',GetModuleName(modTx),...
@@ -137,22 +140,25 @@ if DEBUGGING
                   ':',num2str(GetFc(modRx)/1e6),'MHz']);
 end
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

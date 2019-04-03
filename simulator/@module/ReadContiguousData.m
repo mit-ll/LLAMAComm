@@ -2,13 +2,13 @@ function [out, len] = ReadContiguousData(modobj, reqStart, reqLen, fr)
 
 % Function @module/ReadContiguousData.m:
 % Reads saved analog data from a module's associated save file in
-% one contiguous block.  
+% one contiguous block.
 %
-% It's possible that all the data requested won't be available.  
+% It's possible that all the data requested won't be available.
 % If data at the beginning is missing, it will be padded with zeros.
 % This will only happen in case samples before time zero are requested.
-% If data at the end is missing, this function will return as much of the 
-% requested data as possible.  It will be important to check the start 
+% If data at the end is missing, this function will return as much of the
+% requested data as possible.  It will be important to check the start
 % index and length of the block that is actually returned.
 %
 % If no data is avaialable, this function will return out=[] and len=0.
@@ -27,24 +27,27 @@ function [out, len] = ReadContiguousData(modobj, reqStart, reqLen, fr)
 %  out       (CxLa) Complex data read from file.  This function will
 %             return as much data as is available.
 %  len       (int) Length of the returned data block
-%  
+%
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -65,12 +68,12 @@ searchIdx0 = 1;
 for searchIdx = length(modobj.history):-1:1
   block = modobj.history{searchIdx};
   blockEnd = block.start+block.blockLength-1;
-  
+
   % Stop when blocks are found before the request
   if blockEnd < reqStart
     searchIdx0 = 1 + searchIdx;
     break;
-  end  
+  end
 end
 
 % Search history starting from beginning of the relevant portion
@@ -80,12 +83,12 @@ for searchIdx = searchIdx0:length(modobj.history)
   block = modobj.history{searchIdx};
   blockStart = block.start;
   blockEnd = block.start+block.blockLength-1;
-  
+
   % Skip blocks that are before the start of the request
   if blockEnd<reqStart
     continue;
   end
- 
+
   % reqLen = reqEnd-reqStart+1;
   blockLen = block.blockLength;
   ft = block.fc;       % Transmiter center frequency
@@ -105,7 +108,7 @@ for searchIdx = searchIdx0:length(modobj.history)
     else
       fid = modobj.fid;
     end
-    
+
     % Read signal block from file
     sig = ReadSigBlock(fid, block.fPtr);
 
@@ -159,7 +162,7 @@ if isempty(lastIdx)
   return;
 end
 
-% If more samples are needed at the end, but were are available, 
+% If more samples are needed at the end, but were are available,
 % shorten output matrix
 if lastIdx<reqLen
   lastBlock = modobj.history{end};
@@ -179,22 +182,25 @@ end
 
 
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

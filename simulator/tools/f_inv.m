@@ -2,7 +2,7 @@ function x = f_inv(y, xvec, yvec)
 % F_INV   Approximates the function inverse x = f^{-1}(y)
 %
 % x = f_inv(y, xvec, yvec)
-% 
+%
 % Inputs:
 %  y        (double array)  y-values where the inverse should be computed
 %  xvec     (double array)  sampled x domain
@@ -11,22 +11,22 @@ function x = f_inv(y, xvec, yvec)
 % Output:
 %  x        (double array if f(x) = y is one-to-one, otherwise cell array)
 %
-% This function is great when f(x) = y is defined, but x = f^{-1}(y) is 
+% This function is great when f(x) = y is defined, but x = f^{-1}(y) is
 % difficult or impossible to derive.  It also comes in handy when only
-% the samples 'yvec' and 'xvec' are available and the inverse 
+% the samples 'yvec' and 'xvec' are available and the inverse
 % x = f^{-1)(y) needs to be computed.
 %
 % The samples 'xvec' and 'yvec' are related through the function lookup
-% table f(xvec) = yvec.  The output 'x' is computed through a linear 
-% interpolation. The input 'y' must be within the range defined by 
-% min(yvec) <= y <= max(yvec); otherwise, a  warning will be displayed 
-% and 'x' will be set to 'NaN'. 
+% table f(xvec) = yvec.  The output 'x' is computed through a linear
+% interpolation. The input 'y' must be within the range defined by
+% min(yvec) <= y <= max(yvec); otherwise, a  warning will be displayed
+% and 'x' will be set to 'NaN'.
 %
-% For every point in the array 'y', if the function f(x) = y is 
-% one-to-one over the sampled domain 'xvec', then the output 'x' will 
-% be a  double array of the same length as the input 'y'; otherwise, 
-% 'x' will be a cell array of the same length as 'y', where the 
-% nth cell contains all the x-values corresponding to the nth entry 
+% For every point in the array 'y', if the function f(x) = y is
+% one-to-one over the sampled domain 'xvec', then the output 'x' will
+% be a  double array of the same length as the input 'y'; otherwise,
+% 'x' will be a cell array of the same length as 'y', where the
+% nth cell contains all the x-values corresponding to the nth entry
 % of the input array 'y'.
 %
 % Example 1.  f(x) = x^2 = y, domain = [0, 10]
@@ -36,8 +36,8 @@ function x = f_inv(y, xvec, yvec)
 %  y = 17;                  % point in the range
 %  x = f_inv(y, xvec, yvec)   % note that sqrt(17) = 4.1231
 %
-%  x = 
-% 
+%  x =
+%
 %      4.1231
 %
 % Example 2.  f(x) = x^2 = y, domain = [-10, 10]
@@ -47,33 +47,36 @@ function x = f_inv(y, xvec, yvec)
 %  y = 17;                  % point in the range
 %  x = f_inv(y, xvec, yvec)
 %
-%  x = 
-% 
+%  x =
+%
 %      [1x2 double]
 %
 %  x{1}
 %
-%  ans = 
+%  ans =
 %
 %        -4.1231     4.1231
 %
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -97,12 +100,12 @@ for I = 1:length(y)
   else
     % Find the level change locations
     ind = find(diff(y(I) < yvec));
-    
+
     if length(ind) > 1
       % The function is not one to one
       one_to_one = 0;
     end
-    
+
     out{I} = zeros(1, length(ind));
     for J = 1:length(ind)
       if y(I) == yvec(ind(J))
@@ -129,22 +132,25 @@ else
   x = out;
 end
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

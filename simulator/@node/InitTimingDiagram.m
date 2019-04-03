@@ -13,22 +13,25 @@ function InitTimingDiagram(nodes)
 %
 % See also: @module/UpdateTimingDiagram.m
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -65,16 +68,16 @@ for n = 1:length(nodes)
       label = modname;
     end
     YTickLabel{indx} = label;
-    
+
     % Store into a mini-database for later
     temp.ypos = yposition;
     temp.nodename = nodename;
     temp.modname = modname;
     yaxisdb{n, m} = temp;
-    
+
     yposition = yposition + 1;
   end
-  
+
   % Make gap between nodes
   yposition = yposition + 1;
 end
@@ -96,7 +99,7 @@ if ismember(figList, timingDiagramFig)
   clf(timingDiagramFig);
   ah = axes('Parent', timingDiagramFig);
 else
-   
+
   % Configure figure size/position
   screensize = get(0, 'screensize');
   pixW = screensize(3)-100;
@@ -107,7 +110,7 @@ else
   % Open new figure
   figure(timingDiagramFig);
   ah = axes('Parent', timingDiagramFig);
-  
+
   % Set figure title and hide figure number
   set(timingDiagramFig, ...
       'NumberTitle', 'off', ...
@@ -129,7 +132,7 @@ set(ah, ...
     'FontSize', 12, ...
     'YLim', [-1 yposition-1], ...
     'NextPlot', 'add');
-if ~isnumeric(ah)  
+if ~isnumeric(ah)
   % Newer matlab graphics engine will mangle labels
   set(ah, 'TickLabelInterpreter', 'none');
 end
@@ -147,22 +150,25 @@ user.cmap = cmap;
 user.execorder = 0;  % Initialize execution order counter
 set(timingDiagramFig, 'UserData', user);
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

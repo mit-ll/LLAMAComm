@@ -1,8 +1,8 @@
 function channel = GetIidChannel(nodeTx, modTx, nodeRx, modRx, ...
                                  propParams, pathLoss)
 
-% Function 'simulator/channel/GetIidChannel.m':  
-% Builds channel struct which contains relevant parameters relating 
+% Function 'simulator/channel/GetIidChannel.m':
+% Builds channel struct which contains relevant parameters relating
 % to the MIMO link.  All the taps are independent identically distributed.
 % with a certain power profile
 %
@@ -20,22 +20,25 @@ function channel = GetIidChannel(nodeTx, modTx, nodeRx, modRx, ...
 %  channel          (struct) Structure containing channel parameters
 %
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -158,12 +161,12 @@ for rLoop = 1:nR
           chanstate.prof   = 10.^(chanstate.prof/10); % Lognormal
           chanstate.prof   = chanstate.prof/sum(chanstate.prof)*chanstate.M;
           chanstate.method = method{rLoop, tLoop, lLoop};
-          
+
         case 'constant'
           chanstate.doppf  = dopSpread/fs;
           chanstate.coeff  = (randn + 1j*randn)/sqrt(2);
           chanstate.method = method{rLoop, tLoop, lLoop};
-          
+
         case 'los_awgn'
           chanstate.doppf  = dopSpread/fs;
           chanstate.coeff  = 0;
@@ -181,7 +184,7 @@ end % END rLoop
 if includePropagationDelay
   % Determine the propagation delay (number of samples)
   nPropDelaySamp = norm(rxnode.location - txnode.location)/c*fs;
-  
+
   if includeFractionalDelay
     nPropDelaySampFix = fix(nPropDelaySamp);  % Integer part of delay
     d = nPropDelaySamp - nPropDelaySampFix;   % Decimal part of delay
@@ -192,7 +195,7 @@ if includePropagationDelay
       % Design fractional-delay filter
       nDelayFiltLen = 63;
       t = (-(nDelayFiltLen-1)/2:(nDelayFiltLen-1)/2);
-      fracDelayFilter = sin(pi*(t-d))./(pi*(t-d));            
+      fracDelayFilter = sin(pi*(t-d))./(pi*(t-d));
     else
       % Do rounding because fractional delay is close to unity
       nPropDelaySamp = round(nPropDelaySamp);
@@ -200,7 +203,7 @@ if includePropagationDelay
   else % Remove fractional part of delay
     nPropDelaySamp = round(nPropDelaySamp);
   end
-  
+
 else
   nPropDelaySamp = 0;  % Assume no propagation delays
 end
@@ -245,22 +248,25 @@ if exist('fracDelayFilter', 'var')
   channel.fracDelayFilter = fracDelayFilter;
 end
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

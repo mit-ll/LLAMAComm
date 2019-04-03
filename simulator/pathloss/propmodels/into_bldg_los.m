@@ -2,19 +2,19 @@ function LdB = into_bldg_los(do, dp, dd, fmhz, ...
                              h1m, h2m, nwall, canyon, bw); %#ok - bw unused
 % function LdB = into_bldg_los(do, dp, dd, fmhz, h1m, h2m, nwall, canyon, bw)
 % Find concrete building penetration loss between an external
-% antenna (BS) with a line-of-sight view of the building and an 
-% internal antenna (MS), using the model from the COST 231 final 
-% report, Section 4.6.2. Positions are given relative to a 
-% hypothetical penetration point on the building exterior wall 
-% which is closest to the interior antenna and in the external 
-% antenna field of view. This point is assumed to be connected 
+% antenna (BS) with a line-of-sight view of the building and an
+% internal antenna (MS), using the model from the COST 231 final
+% report, Section 4.6.2. Positions are given relative to a
+% hypothetical penetration point on the building exterior wall
+% which is closest to the interior antenna and in the external
+% antenna field of view. This point is assumed to be connected
 % to the interior antenna by a line perpendicular to the external wall.
-% All numerical inputs must be scalar or equal sized matrices, env 
+% All numerical inputs must be scalar or equal sized matrices, env
 % must be single valued
 % input:
 % do       = length of outdoor line orthogonal to exterior wall, from
 %            BS (exterior node) to wall (or extension of wall), m
-% dp       = length of line parallel to exterior wall from penetration 
+% dp       = length of line parallel to exterior wall from penetration
 %            point to point on wall (or extension) opposite BS, m
 % dd       = interior distance from MS to penetration point = point on
 %            exterior wall closest to interior node (MS), m
@@ -39,22 +39,25 @@ function LdB = into_bldg_los(do, dp, dd, fmhz, ...
 %                    |
 %                 BS x (outdoors)
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -62,19 +65,19 @@ function LdB = into_bldg_los(do, dp, dd, fmhz, ...
 % housekeeping
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %if nargin <9 || isempty(bw)
-%  bw = 35; 
+%  bw = 35;
 %end
 if nargin<8 || isempty(canyon)
-  canyon = 'no'; 
+  canyon = 'no';
 end
 if nargin<7 || isempty(nwall)
-  nwall=0; 
+  nwall=0;
 end
 if nargin<6 || isempty(h2m)
-  h2m = 1; 
+  h2m = 1;
 end
 if nargin<5 || isempty(h1m)
-  h1m = 8; 
+  h1m = 8;
 end
 if nargin<4
   error('Not enough input arguments, function into_bldg_los');
@@ -100,12 +103,12 @@ end
 rr = sqrt( do.^2 + dp.^2 + (h1m-h2m).^2 ); % length of direct path from
                                            % BS to penetration point
 if rr==0
-  rr=0.1; 
+  rr=0.1;
 end
 
 theta = asin(do./rr); % direct path grazing angle at exterior wall
 if theta < 30*pi/180
-  theta = 30*pi/180; 
+  theta = 30*pi/180;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -153,22 +156,25 @@ L0f = los(abs(rr+dd), fmhz);
 LdB = L900dB - L0 + L0f + fcorr;
 
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

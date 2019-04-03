@@ -1,7 +1,7 @@
 function powerProfile = GetPowerProfile(nodeTx, modTx, nodeRx, modRx, ...
                                         propParams, pathLoss, fs)
 
-% Function 'simulator/channel/GetPowerProfile.m':  
+% Function 'simulator/channel/GetPowerProfile.m':
 % Builds diffuse channel power profile for each Tx-Rx antenna pair based
 % on the assumption that the power profile is exponentially decaying.
 % Assumes the probability that a given tap is active is proportional to
@@ -19,26 +19,29 @@ function powerProfile = GetPowerProfile(nodeTx, modTx, nodeRx, modRx, ...
 %  fs               (double) (Hz) Simulation sample rate
 %
 % Output argument:
-%  powerProfile     (nR, nT struct matrix) struct containing delay spread 
+%  powerProfile     (nR, nT struct matrix) struct containing delay spread
 %                           power profiles for each Tx-Rx antenna pair.
 %
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -101,7 +104,7 @@ powerProfile(nR,nT) = struct('pows', 0, ...
 nThrows = 1000;
 for rLoop = 1:nR
   for tLoop = 1:nT
-    
+
     % Make the probability that a tap is active based on the power
     % level of the tap.  This will create power profiles that are
     % increasingly sparse at greater lag indices.
@@ -110,7 +113,7 @@ for rLoop = 1:nR
     lags = zeros(1, maxNumLags);
     lagInd = 1;
     for I = 1:nThrows
-      
+
       % Generate a random sample from an exponential distribution and
       % round to the nearst integer tap lag
       cdfx = rand*(1-minRelPow);  % limit to minRelPow power
@@ -121,7 +124,7 @@ for rLoop = 1:nR
         lagInd = lagInd + 1;
         lags(lagInd) = lag;
       end
-     
+
       % Check to see if we have maxNumLags number of lags
       if lagInd == maxNumLags
         break
@@ -133,21 +136,21 @@ for rLoop = 1:nR
       lags = sort(lags(1:lagInd), 'ascend');
     else
       % Order the lags from smallest to largest
-      lags = sort(lags, 'ascend');      
-    end      
-    
-    
+      lags = sort(lags, 'ascend');
+    end
+
+
     % Calculate the power profile and normalize to unit power.
     % Include a fudge factor to decrease the power roll off
     % because we are enforcing a sparse power profile.
-    fudgeFactor = maxLagIndex/maxNumLags;  
+    fudgeFactor = maxLagIndex/maxNumLags;
     pows = 1/(lambda+fudgeFactor)*exp(-1/(lambda+fudgeFactor)*lags);
     pows = pows/sum(pows);
-    
+
     % Calculate the RMS delay spread of the given power profile
     meanSpread = sum(lags.*pows);
     measuredRMSdelaySpread = sqrt(sum((lags-meanSpread).^2.*pows));
-    
+
     % Make a plot of the power
     if 1==0
       pows_normMin_dB = db10(pows/pows(end));
@@ -156,18 +159,18 @@ for rLoop = 1:nR
       plot([lambda, lambda], [0, pows_normMin_dB(1)], 'g')
       plot([spreadRMS, spreadRMS], [0, pows_normMin_dB(1)], 'r');
       grid('off');
-      hold('off');      
+      hold('off');
       legend('Power Profile', ...
              'Target RMS delay spread', ...
              'Measured RMS Delay Spread');
     end
-    
+
     % Include the total path loss into the power profile
     pows = pows/totalPathLossLin;
-    
+
     % The profile is exponential, so place the Rice tap at zero lag
     riceLag = 0;
-    
+
     % Create the struct
     powerProfile(rLoop, tLoop).pows = pows;
     powerProfile(rLoop, tLoop).lags = lags*tapSpacing;
@@ -177,22 +180,25 @@ for rLoop = 1:nR
   end
 end
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

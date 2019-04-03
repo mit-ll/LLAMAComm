@@ -1,6 +1,6 @@
 function [Krho, linkNames] = GetShadowlossCorrMatrix(nodeArray,linkMatrix)
 
-% Function 'pathloss/GetShadowlossCorrMatrix.m':  
+% Function 'pathloss/GetShadowlossCorrMatrix.m':
 %
 % USAGE:  Krho = GetShadowlossCorrMatrix(nodeArray,linkMatrix)
 %
@@ -9,8 +9,8 @@ function [Krho, linkNames] = GetShadowlossCorrMatrix(nodeArray,linkMatrix)
 %   .type      (string) 'transmitter', 'receiver', or 'transceiver'
 %   .name      (string) Node name returned by GetNodeName(nodeobj)
 %   .location  (1 x 3 double) (m) 3-D location of node
-%  linkMatrix  (N x N double) Symmetric Boolean matrix indicating 
-%                             links between nodes.  N is the number 
+%  linkMatrix  (N x N double) Symmetric Boolean matrix indicating
+%                             links between nodes.  N is the number
 %                             of nodes.
 %
 % Output arguments:
@@ -20,22 +20,25 @@ function [Krho, linkNames] = GetShadowlossCorrMatrix(nodeArray,linkMatrix)
 %                             an array of names of the two linked nodes,
 %                             e.g., linkNames{1} = {'nodeA','nodeB'};
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -74,14 +77,14 @@ for ii=1:nLinks
   [nodei1, nodei2] = ind2sub(size(linkMatrix), ...
                              find(linkMatrix==ii,1,'first'));
   linkNames{ii} = {nodeArray(nodei1).name, nodeArray(nodei2).name};
-  
+
   % There may be problems if the nodes share the same x and y coordinates
   if nodeArray(nodei1).location(1:2) == nodeArray(nodei2).location(1:2)
     warning(['llamacomn:pathloss:',mfilename,':ColocatedNodes'], ...
             [nodeArray(nodei1).name,' and ',nodeArray(nodei2).name,...
              ' share the same x and y coordinates!!  This may cause problems!!'])
-  end      
-  
+  end
+
   for jj = ii+1:nLinks
     [nodej1, nodej2] = ind2sub(size(linkMatrix), ...
                                find(linkMatrix==jj,1, 'first'));
@@ -107,16 +110,16 @@ Krho = RR;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function rho = shadowCorrUncommon(nodes1,nodes2)
 % given node locations for two radio links with no common node
-% return the correlation coefficient for log-normal shadowing loss 
+% return the correlation coefficient for log-normal shadowing loss
 % in dB-domain.
-% inputs: nodes1 = 2-row matrix, each row is x,y or x,y,z location of 
+% inputs: nodes1 = 2-row matrix, each row is x,y or x,y,z location of
 %                  link 1 nodes
-%         nodes2 = 2-row matrix, each row is x,y or x,y,z location of 
+%         nodes2 = 2-row matrix, each row is x,y or x,y,z location of
 %                  link 1 nodes
 % output: rho    = shadowing cross-correlation
 
 % verify input arguments
-if nargin<2   
+if nargin<2
   error('Too few arguments, function shadowCorrUncommon');
 end
 if (size(nodes1,1)<2 || size(nodes2,1)<2)
@@ -130,13 +133,13 @@ end
 if all(nodes1(1,1:2)==nodes2(1,1:2))
   rho = shadowCorrFromLoc(nodes1(1,:),nodes1(2,:),nodes2(2,:));
   return;
-elseif all(nodes1(1,1:2)==nodes2(2,1:2))     
+elseif all(nodes1(1,1:2)==nodes2(2,1:2))
   rho = shadowCorrFromLoc(nodes1(1,:),nodes1(2,:),nodes2(1,:));
   return;
-elseif all(nodes1(2,1:2)==nodes2(1,1:2))     
+elseif all(nodes1(2,1:2)==nodes2(1,1:2))
   rho = shadowCorrFromLoc(nodes1(2,:),nodes1(1,:),nodes2(2,:));
   return;
-elseif all(nodes1(2,1:2)==nodes2(2,1:2))     
+elseif all(nodes1(2,1:2)==nodes2(2,1:2))
   rho = shadowCorrFromLoc(nodes1(2,:),nodes1(1,:),nodes2(1,:));
   return;
 end
@@ -175,7 +178,7 @@ if length(commonNode)<2 || length(endNode1)<2 || length(endNode2)<2
 end
 
 % get bearing angles from common to end nodes, in degrees
-theta1 = getbearing(commonNode,endNode1); 
+theta1 = getbearing(commonNode,endNode1);
 theta2 = getbearing(commonNode,endNode2);
 
 
@@ -188,7 +191,7 @@ deltheta = abs(deltheta);
 rho = 0.7479 - 0.0039*deltheta;
 rho(deltheta>90) = 0.3933;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function psi = getbearing(loc1,loc2)
 % function psi = bearing(loc1,loc2);
 % Given two locations return bearing angle from first location, looking
@@ -203,22 +206,25 @@ psi = 180/pi * atan2(loc2(2)-loc1(2),loc2(1)-loc1(1));
 psi = mod(psi,360);
 
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

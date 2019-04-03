@@ -12,22 +12,25 @@ function NMCallback(n)
 %  -none-
 %
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -69,9 +72,9 @@ numNonGenieMods = length(nonGenieMods);
 % Plot the antenna parameters
 fig = figure;
 for modLoop = 1:numNonGenieMods
-  
+
   curMod = n.modules(nonGenieMods(modLoop));
-  
+
   % Create the subplot index
   if numNonGenieMods <= 2
     ax = subplot(1, numNonGenieMods, modLoop, ...
@@ -83,7 +86,7 @@ for modLoop = 1:numNonGenieMods
     ax = subplot(ceil(numNonGenieMods/3), 3, modLoop, ...
                  'Parent', fig);
   end
-  
+
   name = [n.name, ':', GetModuleName(curMod)];
   ant = GetAntennaParams(curMod);
   plotAnts(n.location, ant.antPosition, name, ant, ax);
@@ -165,7 +168,7 @@ for antLoop = 1:size(loc, 1)
           'FontSize', antLabelFont, 'FontWeight', 'demi', ...
           'Color', [0 0 0], ...
           'Parent', ax); %#ok - h unused
-  
+
   % Find unit-vector look direction in xyz coords
   lookDir = [cos(ant_el(antLoop))*cos(ant_az(antLoop)), ...
              cos(ant_el(antLoop))*sin(ant_az(antLoop)), ...
@@ -177,8 +180,8 @@ for antLoop = 1:size(loc, 1)
                lookDirA(1), lookDirA(2), lookDirA(3), 'Color', [0 0 1], ...
                'MarkerSize', 20, ...
                'Parent', ax); %#ok - hq unused
-  
-  
+
+
 end
 
 % Format plot
@@ -213,22 +216,25 @@ elAngle = 40;
 view(ax, azAngle, elAngle);
 
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 

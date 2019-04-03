@@ -2,7 +2,7 @@ function [response, histidx] = CheckHistory(modobj, startidx, stopidx, fc, fs)
 
 % Function @module/CheckHistory.m:
 % Examines the history field of a module to see if it contains transmit
-% data between the specified startidx and stopidx.  Returns history 
+% data between the specified startidx and stopidx.  Returns history
 % indices containing the required data.
 %
 % USAGE: response = CheckHistory(modobj, startidx, stopidx, fc, fs)
@@ -17,29 +17,32 @@ function [response, histidx] = CheckHistory(modobj, startidx, stopidx, fc, fs)
 % Output argument:
 %  response  (string) One of:
 %              'data_available': If transmit data is available
-%              'not_transmitting_inband': Module is not a transmitter or 
+%              'not_transmitting_inband': Module is not a transmitter or
 %                   never transmits in-band during this time
 %              'not_ready': Transmit data not available yet
 %  histidx   (1xB) Indices for the B blocks containing the relevant
 %             data.
 %
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
@@ -52,7 +55,7 @@ if ~strcmp('transmitter', modobj.type)
   return;
 end
 
-% If the requested region is beyond the history of the module, 
+% If the requested region is beyond the history of the module,
 % return 'not_ready' unless the module is marked as done.
 if isempty(modobj.history) || ...
       modobj.history{end}.start+modobj.history{end}.blockLength-1 < stopidx
@@ -81,7 +84,7 @@ for k = nHist:-1:1
   if blockend < startidx
     break;
   end
-  
+
   % Check for overlap in time and frequency
   if Overlap(startidx, stopidx, blockstart, blockend) &&...
         (abs(objHist.fc-fc) <= fs) &&...
@@ -124,22 +127,25 @@ end
 
 
 
-% Approved for public release: distribution unlimited.
-% 
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+% DISTRIBUTION STATEMENT A. Approved for public release.
+% Distribution is unlimited.
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
-% © 2014 Massachusetts Institute of Technology.
-% 
+%
+% © 2019 Massachusetts Institute of Technology.
+%
+% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
+%
 % The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
+%
+% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
+% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
+% U.S. Government rights in this work are defined by DFARS 252.227-7013 or
+% DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
 
