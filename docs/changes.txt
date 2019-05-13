@@ -22,7 +22,9 @@ specifically authorized by the U.S. Government may violate any copyrights
 that exist in this work.
 ___________________________________________________________________________
 
-
+___________________________________________________________________________
+ *** May 2019:  LLAMAComm (v. 2.19) (MATLAB R2015b)
+     - Added WSSUS-wideband channel model
 ___________________________________________________________________________
  *** April 2019:  LLAMAComm (v. 2.18) (MATLAB R2015b)
      - Updated copyright notices
