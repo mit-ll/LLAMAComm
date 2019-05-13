@@ -17,7 +17,7 @@ function [env, linkobj] = BuildLink(env, nodeTx, modTx, nodeRx, modRx, nodes)
 %
 % Output argument:
 %  env      (environment obj) modifed environment with new link
-%  rxsig    (MxN complex) Analog signal received by module.
+%  rxsig    (MxN complex) Analog signal received by module.  
 %            M channels x N samples
 
 % DISTRIBUTION STATEMENT A. Approved for public release.
@@ -64,69 +64,70 @@ end
 % check to see if modTx and modRx are in the same node
 if strcmp(GetNodeName(nodeTx), GetNodeName(nodeRx))
   % Co-located modules (self-interference)
-
+  
   % Generate Parameters
   switch lower(chanType)
     case 'stfcs'
-      pathLoss                     = 1;
-      channel.chanType             = chanType;
-      channel.nDelaySamp           = 1;
-      channel.nPropDelaySamp       = 0;
-      channel.dopplerSpreadHz      = 0;
-      channel.nDopplerSamp         = 1;
-      channel.freqOffs             = 0;
-      channel.phiOffs              = 0;
-      channel.chanTensor           = zeros(nRx, nTx, 1, 1);
+      pathLoss                        = 1;
+      channel.chanType                = chanType;
+      channel.nDelaySamp              = 1;
+      channel.nPropDelaySamp          = 0;
+      channel.dopplerSpreadHz         = 0;
+      channel.nDopplerSamp            = 1;
+      channel.freqOffs                = 0;
+      channel.phiOffs                 = 0;
+      channel.chanTensor              = zeros(nRx, nTx, 1, 1);
       channel.chanTensor(:, :, :, 1)  = zeros(nRx, nTx);
-      propParams.longestCoherBlock = 1;
-      propParams.stfcsChannelOversamp   = 3;
-    case {'wssus', 'los_awgn', 'env_awgn','wideband_awgn'}
+      propParams.longestCoherBlock    = 1;
+      propParams.stfcsChannelOversamp = 3;
+    
+    case {'wssus', 'los_awgn', 'env_awgn','wideband_awgn', 'wssus-wideband'}
       pathLoss                     = 1;
       channel.chanType             = chanType;
       channel.longestLag           = 0;
       channel.nPropDelaySamp       = 0;
       channel.riceMatrix           = ones(nRx,nTx);
       propParams                   = [];
+
   end % END switch on chanType
-
-
+  
+  
 elseif ~isempty(reciprocalLink)
-
+    
   % Modules are reciprocal so load the same channel parameters
   reciprocalLink    = struct(reciprocalLink);
   channel           = reciprocalLink.channel;
   pathLoss          = reciprocalLink.pathLoss;
   propParams        = reciprocalLink.propParams;
-
+  
   if isfield(channel,'chanTensor')
       channel.chanTensor = permute(channel.chanTensor,[2,1,3,4]);
       hUnNorm = permute(channel.chanTensor,[1,2,4,3]);
       channel.chan = hUnNorm(:,:);
   end
-
+  
    if isfield(channel,'riceMatrix')
        channel.riceMatrix = channel.riceMatrix.';
        channel.powerProfile = channel.powerProfile.';
        channel.chanstates = channel.chanstates.';
-   end
-
+   end    
 
 else
   % Modules are located in different nodes
-
+  
   % Extract pertinent environment parameters
   %envParams.scenarioType = env.envType;
   %envParams.building.roofHeight = env.building.avgRoofHeight;
   %envParams.shadow = env.shadow;
   %envParams.los_dist = env.propParams.los_dist;
   %envParams.atmosphere = env.atmosphere;
-
+  
   envParams = struct(env);
-
-  % Generate Pathloss
+  
+  % Generate Pathloss 
   switch lower(chanType)
-    case {'los_awgn','wideband_awgn'}
-      % Line of sight pathloss
+    case {'los_awgn', 'wideband_awgn'}
+      % Line of sight pathloss       
       %pathLoss.totalPathLoss = Line_of_sight_loss(nodeTx, modTx, nodeRx, modRx);
       losLoss = Line_of_sight_loss(nodeTx, modTx, nodeRx, modRx);
       temp = GetPathlossStruct(nodeTx, modTx, nodeRx, modRx, envParams);
@@ -137,7 +138,7 @@ else
       pathLoss.shadowLoss         = 0;
       pathLoss.riceMedKdB         = inf;
       pathLoss.riceKdB            = inf;
-
+      
     case 'env_awgn'
       % Call Bruce McGuffin's Code
       pathLoss = GetPathlossStruct(nodeTx, modTx, nodeRx, modRx, envParams);
@@ -148,12 +149,12 @@ else
       pathLoss.shadowLoss         = 0;
       pathLoss.riceMedKdB         = inf;
       pathLoss.riceKdB            = inf;
-
+      
     otherwise
       % Call Bruce McGuffin's Code
       pathLoss = GetPathlossStruct(nodeTx, modTx, nodeRx, modRx, envParams);
   end
-
+  
   % Compute the various propagation parameters
   propParams = GetPropParamsStruct(nodeTx, modTx, nodeRx, modRx, env, pathLoss);
   propParams.chanType = chanType;
@@ -161,8 +162,8 @@ else
   % check to see if link parameters should be user-specified
   if isfield(propParams, 'linkParamFile')
     if ~isempty(propParams.linkParamFile)
-      linkStruct.fromID     = {GetNodeName(nodeTx), GetModuleName(modTx)};
-      linkStruct.toID       = {GetNodeName(nodeRx), GetModuleName(modRx), GetFc(modRx)};
+      linkStruct.fromID     = {GetNodeName(nodeTx), GetModuleName(modTx)}; 
+      linkStruct.toID       = {GetNodeName(nodeRx), GetModuleName(modRx), GetFc(modRx)}; 
       linkStruct.pathLoss   = pathLoss;
       linkStruct.propParams = propParams;
       linkStruct            = ParseLinkParamFile(linkStruct);
@@ -170,13 +171,13 @@ else
       propParams            = linkStruct.propParams;
     end
   end
-
-
+  
+  
   % Generate Space-Time-Frequency Channel
   nTx = struct(nodeTx);
-  mTx  = struct(modTx);
+  mTx = struct(modTx);
   nRx = struct(nodeRx);
-  mRx  = struct(modRx);
+  mRx = struct(modRx);
   switch lower(chanType)
     case 'stfcs'
       channel = GetStfcsChannel(nTx, mTx, nRx, mRx, ...
@@ -184,10 +185,14 @@ else
     case 'wideband_awgn'
       channel = GetGeometricChannel(nTx, mTx, nRx, mRx, ...
            propParams, pathLoss);
-
+       
     case {'wssus', 'los_awgn', 'env_awgn'}
       channel = GetWssusChannel(nTx, mTx, nRx, mRx, ...
                                 propParams, pathLoss);
+    case 'wssus-wideband'
+      channel = GetWssusWBChannel(nTx, mTx, nRx, mRx, ...
+                                  propParams, pathLoss);
+      
   end
 end
 
@@ -260,5 +265,3 @@ end
 % DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
-
-

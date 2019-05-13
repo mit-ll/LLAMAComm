@@ -1,9 +1,9 @@
 function [linkobj, rxsig] = PropagateToReceiver(linkobj, modTx, modRx, histIdx); %#ok - histIndx unused
 
 % Function @link/PropagateToReceiver.m:
-% Performs the channel propagation and signal processing on the
-% analog transmit data necessary to produce the analog signal seen
-% by the receiving module in the link.  It is called by
+% Performs the channel propagation and signal processing on the 
+% analog transmit data necessary to produce the analog signal seen 
+% by the receiving module in the link.  It is called by 
 % @environment/DoPropagation.m for each link.
 %
 % USAGE: [linkobj, rxsig] = PropagateToReceiver(linkObj, source)
@@ -13,7 +13,7 @@ function [linkobj, rxsig] = PropagateToReceiver(linkobj, modTx, modRx, histIdx);
 %  source   (nT x blockLength complex)  In-band analog transmitted signal
 %
 % Output argument:
-%  rxsig    (MxN complex) Analog signal received by module.
+%  rxsig    (MxN complex) Analog signal received by module.  
 %            M channels x N samples.
 
 % DISTRIBUTION STATEMENT A. Approved for public release.
@@ -40,6 +40,8 @@ function [linkobj, rxsig] = PropagateToReceiver(linkobj, modTx, modRx, histIdx);
 
 global DisplayLLAMACommWarnings;
 
+debug = ~true;
+
 % get the receiver module request
 req = GetRequest(modRx);
 
@@ -54,107 +56,120 @@ nT = GetNumAnts(modTx);
 % Get center frequency of the requesting receive module
 fr = req.fc;
 
+switch lower(linkobj.channel.chanType)
+  case {'wssus-wideband'}
+    antSepSamps = linkobj.channel.nodeAntSepSamps;  
+  otherwise
+    antSepSamps = 0; % Zero unless otherwise modeled
+end
+
 % Get parameters from link object
 nPropDelaySamp  = linkobj.channel.nPropDelaySamp;
 sampRate        = GetFs(modRx);
 
-switch lower(linkobj.channel.chanType)
-  case {'stfcs','wideband_awgn'}
-    nDelay  = linkobj.channel.nDelaySamp;
-  case {'wssus', 'los_awgn', 'env_awgn'}
-    nDelay  = linkobj.channel.longestLag + 1;
-end
-
 %---------------------------------------------------------------
 % Build contiguous data from file.  The transmit blocks are appropriately
 %  modulated and filtered.
-nPropDelaySampFix = fix(nPropDelaySamp);  % Get the integer part
-d = nPropDelaySamp - nPropDelaySampFix;   % Get the decimal part
-if d ~= 0  % Get block length including fractional-delay filter length
-  fracDelayFilter = linkobj.channel.fracDelayFilter;
-  delayFiltLen = length(fracDelayFilter);
-  nEndSamps = min(delayFiltLen - 1, nDelay + nPropDelaySampFix - 1);
-  startRxChan = startRx - nDelay - nPropDelaySampFix + 1 - delayFiltLen + 1;
-  blockLengthRxChan = blockLengthRx + nDelay - 1 ...
-      + delayFiltLen - 1 ...
-      + nEndSamps;
+nPropDelaySampFix  = fix(nPropDelaySamp);  % Get the integer part
+nPropDelaySampFrac = nPropDelaySamp - nPropDelaySampFix;   % Get the decimal part
+
+if nPropDelaySampFrac == 0  
+    % No fractional delay filter applied
+    fracDelayFilter = [];
 else
-  delayFiltLen = 0;
-  d = 0;
-  startRxChan = startRx - nDelay - nPropDelaySampFix + 1;
-  blockLengthRxChan = blockLengthRx + nDelay - 1;
+    % Get block length including fractional-delay filter length
+    fracDelayFilter = linkobj.channel.fracDelayFilter;
 end
+delayFiltLen = max(1, length(fracDelayFilter)); 
+
+switch lower(linkobj.channel.chanType)
+  case {'stfcs', 'wideband_awgn'}
+    nDelay  = linkobj.channel.nDelaySamp;
+ 
+  case {'wssus', 'los_awgn', 'env_awgn'}
+    nDelay  = linkobj.channel.longestLag + 1;
+  
+  case {'wssus-wideband'}
+    nDelay  = linkobj.channel.longestLag + 1; % Delay spread
+    delayFiltLen = linkobj.channel.nDelayFiltLen;
+end
+
+startRxChan = startRx - (nDelay-1) - nPropDelaySampFix - ((delayFiltLen - 1)/2) - antSepSamps;
+blockLengthRxChan = blockLengthRx + ...
+    (nDelay - 1) + ...
+    (delayFiltLen - 1) + ...     
+    antSepSamps;
 
 fs = GetFs(modTx);
 taps = linkobj.antialiasTaps;
 [result, ft] = AllSameTxFc(modTx, startRxChan, blockLengthRxChan, fr); % If tx blocks have same fc
 if isempty(result)
-  source = [];  % source is empty if all wait blocks or all out of band
-
+    source = [];  % source is empty if all wait blocks or all out of band
+    
 elseif result
-  [source, blockLen] = ReadContiguousData(modTx, startRxChan, blockLengthRxChan, fr);
-  %ft = GetFc(modTx);
-
-  % Check for sufficient length
-  if (size(source, 2) < length(taps)) && ~isempty(source)
-
-    % Build Link ID
-    linkID = sprintf('''%s:%s'' -> ''%s:%s:%.2f MHz''', ...
-                     linkobj.fromID{1}, linkobj.fromID{2}, ...
-                     linkobj.toID{1}, linkobj.toID{2}, linkobj.toID{3}/1e6);
-
-    % Display a warning
+    [source, blockLen] = ReadContiguousData(modTx, startRxChan, blockLengthRxChan, fr);
+    %ft = GetFc(modTx);
+   
+    % Check for sufficient length
+    if (size(source, 2) < length(taps)) && ~isempty(source)
+        
+        % Build Link ID
+        linkID = sprintf('''%s:%s'' -> ''%s:%s:%.2f MHz''', ...
+                         linkobj.fromID{1}, linkobj.fromID{2}, ...
+                         linkobj.toID{1}, linkobj.toID{2}, linkobj.toID{3}/1e6);
+        
+        % Display a warning
+        if DisplayLLAMACommWarnings
+            disp(['Warning in link: ', linkID, '. Receive blocklength (', ...
+                  num2str(blockLen), ...
+                  ') is less than number of filtfilt taps (', num2str(length(taps)), ')']) 
+        end
+    end
+    
+    % Display a warning if fr ~= ft
     if DisplayLLAMACommWarnings
-      disp(['Warning in link: ', linkID, '. Receive blocklength (', ...
-            num2str(blockLen), ...
-            ') is less than number of filtfilt taps (', num2str(length(taps)), ')'])
+        if fr ~= ft
+
+            % Build Link ID
+            linkID = sprintf('''%s:%s:%.2f MHz'' -> ''%s:%s:%.2f MHz''', ...
+                             linkobj.fromID{1}, linkobj.fromID{2}, ft/1e6, ...
+                             linkobj.toID{1}, linkobj.toID{2}, linkobj.toID{3}/1e6);        
+
+            msg1 =['Warning: The time edges of link ', linkID];
+            msg2 = '         are mangled because the Tx and Rx modules have different center frequencies!';
+            msg3 = '         See Section 3.2.2 in the documentation for more details.';
+            fprintf('\n%s\n%s\n%s\n', msg1, msg2, msg3);
+        end
     end
-  end
-
-  % Display a warning if fr ~= ft
-  if DisplayLLAMACommWarnings
-    if fr ~= ft
-
-      % Build Link ID
-      linkID = sprintf('''%s:%s:%.2f MHz'' -> ''%s:%s:%.2f MHz''', ...
-                       linkobj.fromID{1}, linkobj.fromID{2}, ft/1e6, ...
-                       linkobj.toID{1}, linkobj.toID{2}, linkobj.toID{3}/1e6);
-
-      msg1 =['Warning: The time edges of link ', linkID];
-      msg2 = '         are mangled because the Tx and Rx modules have different center frequencies!';
-      msg3 = '         See Section 3.2.2 in the documentation for more details.';
-      fprintf('\n%s\n%s\n%s\n', msg1, msg2, msg3);
-    end
-  end
-
-  % Modulate transmit signal based on receive module center frequency
-  source = ProcessTransmitBlock(source, startRxChan, blockLengthRxChan, ft, fr, fs, taps);
+    
+    % Modulate transmit signal based on receive module center frequency
+    source = ProcessTransmitBlock(source, startRxChan, blockLengthRxChan, ft, fr, fs, taps);
 else
-
-  % Modulate each transmit block individually according to
-  % their center frequencies and take each signal separately
-  [source, blockLen] = BuildTransmitSignal(modTx, ...
-                                           startRxChan, ...
-                                           blockLengthRxChan, ...
-                                           fr, ...
-                                           taps, ...
-                                           linkobj.fromID, ...
-                                           linkobj.toID); %#ok blockLen unused
+    
+    % Modulate each transmit block individually according to 
+    % their center frequencies and take each signal separately
+    [source, blockLen] = BuildTransmitSignal(modTx, ...
+                                             startRxChan, ...
+                                             blockLengthRxChan, ...
+                                             fr, ...
+                                             taps, ...
+                                             linkobj.fromID, ...
+                                             linkobj.toID); %#ok blockLen unused
 end
 
 % Return empty if source is empty
 if isempty(source)
-  rxsig = [];
-  return
+    rxsig = [];
+    return
 end
 
 % Perform partial-delay filtering if necessary
-if d ~= 0
-  out = zeros(nT, size(source, 2) + length(fracDelayFilter) - 1);
-  for dLoop = 1:nT
-    out(dLoop, :) = conv(source(dLoop, :), fracDelayFilter);
-  end
-  source = out(:, (3*delayFiltLen - 1)/2 + (0:blockLengthRx + nDelay - 2));
+if ~isempty(fracDelayFilter) && (nPropDelaySampFrac ~= 0)
+    out = zeros(nT, size(source, 2) + delayFiltLen - 1);
+    for dLoop = 1:nT
+        out(dLoop, :) = conv(source(dLoop, :), fracDelayFilter);
+    end
+    source = out(:, (3*delayFiltLen - 1)/2 + (0:blockLengthRx + nDelay - 2));
 end
 
 %---------------------------------------------------------------
@@ -162,23 +177,32 @@ end
 %rxsig = linkobj.channel.chanTensor*source;
 
 switch lower(linkobj.channel.chanType)
-
-  case {'stfcs','wideband_awgn'}
+    
+  case {'stfcs', 'wideband_awgn'}
 
     rxsig = ProcessSampledChannel(startRx, linkobj.channel, source);
-
+    
   case 'wssus'
-
-    rxsig = ProcessIidChannel(startRx, linkobj.channel, source);
-
+    
+    rxsig = ProcessIidChannel(startRx, linkobj.channel, source); 
+    
+  case 'wssus-wideband'
+    
+    rxsig = ProcessIidWBChannel(startRx, linkobj.channel, source); 
+    
   case {'los_awgn', 'env_awgn'}
+
     rxsig = linkobj.channel.riceMatrix*source;
-
+    
   otherwise
-    error(['Incorrect channel type: ', chanType])
-
+    error('Incorrect channel type: %s', chanType);
+    
 end % END switch over channel type
 
+if debug
+    fprintf(1, 'ProcessChannel:\n');
+    fprintf(1, '    length(rxsig)     = %d\n', length(rxsig));
+end
 
 %---------------------------------------------------------------
 % Apply the local oscillator frequency offsets
@@ -194,7 +218,7 @@ mRx = struct(modRx);
 %                   linkobj.toID{1}, linkobj.toID{2}, linkobj.toID{3}/1e6);
 %  error('The frequency offset %2.2f Hz in link %s\nis greater than 1%% of the sample rate %2.6f MHz\n', ...
 %        freqOffset, linkID, sampRate/1e6);
-%end
+%end  
 %
 %if freqOffset ~= 0
 %  modulation = exp(1i*2*pi*(freqOffset/fs)...
@@ -205,17 +229,17 @@ loOffset = (mTx.loError + mTx.loCorrection ...
             - mRx.loError - mRx.loCorrection)*fr;
 
 if loOffset > 0.01*sampRate
-  % Build Link ID
-  linkID = sprintf('''%s:%s:%.2f MHz'' -> ''%s:%s:%.2f MHz''', ...
-                   linkobj.fromID{1}, linkobj.fromID{2}, ft/1e6, ...
-                   linkobj.toID{1}, linkobj.toID{2}, linkobj.toID{3}/1e6);
-
-  error('The frequency offset %2.2f Hz in link %s\nis greater than 1%% of the sample rate %2.6f MHz\n', ...
-        loOffset, linkID, sampRate/1e6);
-end
+    % Build Link ID
+    linkID = sprintf('''%s:%s:%.2f MHz'' -> ''%s:%s:%.2f MHz''', ...
+                     linkobj.fromID{1}, linkobj.fromID{2}, ft/1e6, ...
+                     linkobj.toID{1}, linkobj.toID{2}, linkobj.toID{3}/1e6);
+    
+    error('The frequency offset %2.2f Hz in link %s\nis greater than 1%% of the sample rate %2.6f MHz\n', ...
+          loOffset, linkID, sampRate/1e6);
+end  
 
 % add in doppler offset on the link
-if(linkobj.propParams.velocityShift ~= 0)
+if(linkobj.propParams.velocityShift ~= 0)   
     c         = 2.998e8; % speed of light
     dopplerOffset = GetFc(modRx).*(linkobj.propParams.velocityShift./c);
 else
@@ -225,8 +249,9 @@ if loOffset ~= 0 || dopplerOffset ~= 0
     totalOffset = loOffset + dopplerOffset;
     modulation = exp(1i*2*pi*(totalOffset/fs)...
                      *((0:size(rxsig, 2)-1) + startRx));
-    rxsig = repmat(modulation, size(rxsig, 1), 1).*rxsig;
+    rxsig = repmat(modulation, size(rxsig, 1), 1).*rxsig;    
 end
+
 
 % DISTRIBUTION STATEMENT A. Approved for public release.
 % Distribution is unlimited.
@@ -249,5 +274,3 @@ end
 % DFARS 252.227-7014 as detailed above. Use of this work other than as
 % specifically authorized by the U.S. Government may violate any copyrights
 % that exist in this work.
-
-
