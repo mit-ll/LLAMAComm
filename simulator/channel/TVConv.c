@@ -1,25 +1,22 @@
-/*
-  DISTRIBUTION STATEMENT A. Approved for public release. 
-  Distribution is unlimited.
-  
-  This material is based upon work supported by the Defense Advanced Research 
-  Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions, 
-  findings, conclusions or recommendations expressed in this material are those 
-  of the author(s) and do not necessarily reflect the views of the Defense 
-  Advanced Research Projects Agency.
-  
-  © 2019 Massachusetts Institute of Technology.
-  
-  Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
-  
-  The software/firmware is provided to you on an As-Is basis
-  
-  Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-  Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-  U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-  DFARS 252.227-7014 as detailed above. Use of this work other than as 
-  specifically authorized by the U.S. Government may violate any copyrights 
-  that exist in this work.
+/* 
+   Approved for public release: distribution unlimited.
+   
+   This material is based upon work supported by the Defense Advanced Research 
+   Projects Agency under Air Force Contract No. FA8721-05-C-0002. Any opinions, 
+   findings, conclusions or recommendations expressed in this material are those 
+   of the author(s) and do not necessarily reflect the views of the Defense 
+   Advanced Research Projects Agency.
+   
+   © 2014 Massachusetts Institute of Technology.
+   
+   The software/firmware is provided to you on an As-Is basis
+   
+   Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
+   Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
+   U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
+   DFARS 252.227-7014 as detailed above. Use of this work other than as 
+   specifically authorized by the U.S. Government may violate any copyrights
+   that exist in this work.   
 */
 
 #include <stdio.h>
@@ -32,163 +29,219 @@
 
 void mexFunction(int nlhs, mxArray *plhs[], 
 		 int nrhs, const mxArray *prhs[]){
-  /*--- Local.. ---*/
 
-  double *pHr, *pHi, *pSr, *pSi;
-  double *pOr, *pOi, *pL;
+  /********** Values directly related to input arguments **********/
 
-  int nS, nLags, iLag;
-  int complexH, complexS;
-  int longestLag, lag, i, nLagsm1;
+  const mxArray *pH_mxArr = prhs[0];          /* Pointer to the channel matrix mxArray input argument */
+  double *pH_re;                              /* Pointer to the real part of the channel matrix H */
+  double *pH_im;                              /* Pointer to the imaginary part of the channel matrix H */
+  int H_isComplex;                            /* Flag set if channel matrix H is complex */
+  int nS;                                     /* Number of rows of the channel matrix */
+  int nLags;                                  /* Number of columns of the channel matrix */
+  int nLagsm1;                                /* Number of columns of the channel matrix minus 1 */
 
-  double rp1, ip1, rp2, ip2;
-  double sumr, sumi;
-  double **pSSr, **pSSi;
+  const mxArray *pLags_mxArr = prhs[1];       /* Pointer to the lags mxArray input argument */
+  double *pLags_re;                           /* Pointer to the real part of the lags array */
 
-  int j0;
-  double *pOrPtr, *pOiPtr, *pOrPtrEnd;
-  double **pSSrPtr, **pSSiPtr, **pSSrPtrEnd;
-  double *pLPtr, *pSrPtr, *pSiPtr;
-  double *rp1Ptr, *ip1Ptr;
+  const mxArray *pSource_mxArr = prhs[2];     /* Pointer to the source mxArray input argument*/
+  double *pSource_re;                         /* Pointer to the real part of the source array */
+  double *pSource_im;                         /* Pointer to the imaginary part of the source array */
+  int source_isComplex;                       /* Flag set if channel matrix H is complex */
+  double *pSrcLongLag_re;                     /* source pointer offset real part by longestLag */
+  double *pSrcLongLag_im;                     /* source pointer offset imaginary part by longestLag */
 
-  /*---------------*/
+  const mxArray *pLongestLag_mxArr = prhs[3]; /* Pointer to the longestLag mxArray input argument (Scalar) */
+  int longestLag;                             /* Scalar value of longestLag */
 
-  nS    = mxGetM(prhs[0]);
-  nLags = mxGetN(prhs[0]);
+  double *pOut_re;                            /* Pointer to the real part of the output */
+  double *pOut_im;                            /* Pointer to the imaginary part of the output */
+  double *pOutEnd_re;                         /* Sentinel pointer for the end of the output */
 
-  pHr = mxGetPr(prhs[0]);
-  complexH = mxIsComplex(prhs[0]);
-  if ( complexH ){
-    pHi = mxGetPi(prhs[0]);
+  /********** Internally allocated values **********/
+  double **pLagSrc_re;                        /* lagSrc real part */
+  double **pLagSrc_im;                        /* lagSrc imaginary part */
+  double **pLagSrcEnd_re;                     /* Sentinel pointer for the end of lagSrc */
+
+  /********** "Working" values, used for loops **********/
+  double *pElLags;                            /* Points to an element of lags */
+  int elLags;                                 /* Value of element of lags */
+  double **pElLagSrc_re;                      /* Points to real part of an element of lagSrc */
+  double **pElLagSrc_im;                      /* Points to imaginary part of an element of lagSrc */
+  double elLagSrc_re;                         /* Value of element of lagSrc[][] */
+  double elLagSrc_im;                         /* Value of element of lagSrc[][] */
+  double *pElH_re;                            /* Points to real part of an element of channel matrix H */
+  double *pElH_im;                            /* Points to imaginary part of an element of channel matrix H */
+  double elH_re;                              /* Value of real part of an element of channel matrix H */
+  double elH_im;                              /* Value of imaginary part of an element of channel matrix H */
+  double *pOutEl_re;                          /* Points to real part of an element of output */
+  double *pOutEl_im;                          /* Points to imaginary part of an element of output */
+  int rowOffset;                              /* Row offset into the channel matrix */
+  double sum_re;                              /* Accumulates the real part of multiply and add */
+  double sum_im;                              /* Accumulates the imaginary part of multiply and add */
+
+
+  /* Get Channel Matrix info */
+  nS = mxGetM(pH_mxArr);
+  nLags = mxGetN(pH_mxArr);
+  nLagsm1 = nLags - 1;                               /* nLags minus 1 */
+  H_isComplex = mxIsComplex(pH_mxArr);               /* Flag checking if 'H' is complex */
+  pH_re = mxGetPr(pH_mxArr);                         /* Pointer to the real part of 'H' */
+  if ( H_isComplex ){
+    pH_im = mxGetPi(pH_mxArr);                       /* Pointer to the imaginary part of 'H' */
   }
 
-  pL = mxGetPr(prhs[1]);
+  /* Get Lags info */
+  pLags_re = mxGetPr(pLags_mxArr);                   /* Pointer to the real part of 'lags' */
 
-  pSr = mxGetPr(prhs[2]);
-  complexS = mxIsComplex(prhs[2]);
+  /* Get Source info */
+  pSource_re = mxGetPr(pSource_mxArr);               /* Pointer to real part of source */
+  source_isComplex = mxIsComplex(pSource_mxArr);     /* Flag check if 'source' is complex */
+  if ( source_isComplex ){
+    pSource_im = mxGetPi(pSource_mxArr);             /* Pointer to imaginary part of source */
+  }
 
-  longestLag = (int)mxGetScalar(prhs[3]);
+  /* Get longestLag */
+  longestLag = (int)mxGetScalar(pLongestLag_mxArr);  /* Value for longestLag */
 
-  pSSr = (double **)mxCalloc(nLags, sizeof(double *));
-  pSSrPtrEnd = pSSr + nLags;
+  /* Allocate space for the output and get info */
+  if ( H_isComplex || source_isComplex ){
+    plhs[0] = mxCreateNumericMatrix(1, nS, mxDOUBLE_CLASS, mxCOMPLEX);
+    pOut_re = mxGetPr(plhs[0]);
+    pOut_im = mxGetPi(plhs[0]);
+  } else {
+    plhs[0] = mxCreateNumericMatrix(1, nS, mxDOUBLE_CLASS, mxREAL);
+    pOut_re = mxGetPr(plhs[0]);
+  }
+  pOutEnd_re = pOut_re + nS; /* output array (real part) sentinel value */
+  
 
-  if ( complexS ){
-    pSi = mxGetPi(prhs[2]);
-    pSSi = (double **)mxCalloc(nLags, sizeof(double *));
-    pSrPtr = pSr + longestLag;
-    pSiPtr = pSi + longestLag;
-    for (pSSrPtr = pSSr, pSSiPtr = pSSi, pLPtr = pL+nLags-1; pSSrPtr < pSSrPtrEnd; pSSrPtr++, pSSiPtr++, pLPtr--){
-      lag = (int)*pLPtr;
-      *pSSrPtr = pSrPtr - lag;      
-      *pSSiPtr = pSiPtr - lag;
+  /* 
+     Build laggedSource so that:
+     lagSrc[ii][jj] = Source[jj + longestLag - lags[nLags-ii-1]] 
+
+     pElLags starts at the last element of lags and moves to the start
+  */
+  pLagSrc_re = (double **)mxCalloc(nLags, sizeof(double *));
+  pLagSrcEnd_re = pLagSrc_re + nLags;
+  if ( source_isComplex ){
+    pLagSrc_im = (double **)mxCalloc(nLags, sizeof(double *));
+
+    pSrcLongLag_re = pSource_re + longestLag;
+    pSrcLongLag_im = pSource_im + longestLag;
+    for (pElLags = pLags_re+nLagsm1, pElLagSrc_re = pLagSrc_re, pElLagSrc_im = pLagSrc_im; 
+	 pElLagSrc_re < pLagSrcEnd_re; 
+	 pElLags--, pElLagSrc_re++, pElLagSrc_im++){
+      elLags = (int)*pElLags;
+      *pElLagSrc_re = pSrcLongLag_re - elLags; 
+      *pElLagSrc_im = pSrcLongLag_im - elLags;
     }
   } else {
-    pSSi = (double **)NULL; /* Safe for mxFree */
-    pSrPtr = pSr + longestLag;
-    for (pSSrPtr = pSSr, pLPtr = pL+nLags-1; pSSrPtr < pSSrPtrEnd; pSSrPtr++, pLPtr--){
-      lag = (int)*pLPtr;
-      *pSSrPtr = pSrPtr - lag;      
+    pLagSrc_im = (double **)NULL; /* Safe for mxFree */
+
+    pSrcLongLag_re = pSource_re + longestLag;
+    for (pElLags = pLags_re + nLagsm1, pElLagSrc_re = pLagSrc_re; 
+	 pElLagSrc_re < pLagSrcEnd_re; 
+	 pElLagSrc_re++, pElLags--){
+      elLags = (int)*pElLags;
+      *pElLagSrc_re = pSrcLongLag_re - elLags;      
     }
   }
   
-  nLagsm1 = nLags - 1;
-  if ( complexH && complexS ){
-    *plhs = mxCreateNumericMatrix(1, nS, mxDOUBLE_CLASS, mxCOMPLEX);
-    pOr = mxGetPr(*plhs);
-    pOi = mxGetPi(*plhs);
-    pOrPtrEnd = pOr + nS;
-    for (pOrPtr = pOr, pOiPtr = pOi, j0 = (nLagsm1*nS); pOrPtr < pOrPtrEnd; pOrPtr++, pOiPtr++, j0++ ){
-      for (pSSrPtr = pSSr, pSSiPtr = pSSi, rp1Ptr =pHr + j0, ip1Ptr = pHi + j0, sumr=0., sumi=0.; 
-	   pSSrPtr < pSSrPtrEnd; 
-	   pSSrPtr++, pSSiPtr++, rp1Ptr-=nS, ip1Ptr-=nS){	
-        rp1 = *rp1Ptr;
-        ip1 = *ip1Ptr;
-        rp2 = *((*pSSrPtr)++);
-        ip2 = *((*pSSiPtr)++);
-	sumr += (rp1*rp2 - ip1*ip2);
-        sumi += (rp1*ip2 + rp2*ip1);
+
+  /*
+    Now used laggedSource to do the multiply and add operations
+  */
+  if ( H_isComplex && source_isComplex ){
+    /* 
+       Case 1: 
+       channel matrix is complex
+       source is complex 
+    */    
+    for (pOutEl_re = pOut_re, pOutEl_im = pOut_im, rowOffset = (nLagsm1*nS); 
+	 pOutEl_re < pOutEnd_re; 
+	 pOutEl_re++, pOutEl_im++, rowOffset++ ){
+      sum_re=0.;
+      sum_im=0.; 
+      for (pElLagSrc_re = pLagSrc_re, pElLagSrc_im = pLagSrc_im, pElH_re = pH_re + rowOffset, pElH_im = pH_im + rowOffset;
+	   pElLagSrc_re < pLagSrcEnd_re; 
+	   pElLagSrc_re++, pElLagSrc_im++, pElH_re-=nS, pElH_im-=nS){	
+        elH_re = *pElH_re;
+        elH_im = *pElH_im;
+        elLagSrc_re = *((*pElLagSrc_re)++);
+        elLagSrc_im = *((*pElLagSrc_im)++);
+	sum_re += (elH_re*elLagSrc_re - elH_im*elLagSrc_im);
+        sum_im += (elH_re*elLagSrc_im + elLagSrc_re*elH_im);
       }      
-      *pOrPtr = sumr;
-      *pOiPtr = sumi; 
+      *pOutEl_re = sum_re;
+      *pOutEl_im = sum_im; 
     }
 
-  } else if ( complexH && !complexS ) {
-    *plhs = mxCreateNumericMatrix(1, nS, mxDOUBLE_CLASS, mxCOMPLEX);
-    pOr = mxGetPr(*plhs);
-    pOi = mxGetPi(*plhs);
-    pOrPtrEnd = pOr + nS;
-    for (pOrPtr = pOr, pOiPtr = pOi, j0 = (nLagsm1*nS); pOrPtr < pOrPtrEnd; pOrPtr++, pOiPtr++, j0++ ){
-      for (pSSrPtr = pSSr, rp1Ptr =pHr + j0, ip1Ptr = pHi + j0, sumr=0., sumi=0.; 
-	   pSSrPtr<pSSrPtrEnd; 
-	   pSSrPtr++, rp1Ptr-=nS, ip1Ptr-=nS) {
-	rp1 = *rp1Ptr;
-	ip1 = *ip1Ptr;
-	rp2 = *((*pSSrPtr)++);
-	sumr += (rp1*rp2);
-	sumi += (rp2*ip1);
+  } else if ( H_isComplex && !source_isComplex ) {
+    /* 
+       Case 2: 
+       channel matrix is complex 
+       source is real 
+    */
+    for (pOutEl_re = pOut_re, pOutEl_im = pOut_im, rowOffset = (nLagsm1*nS); pOutEl_re < pOutEnd_re; pOutEl_re++, pOutEl_im++, rowOffset++ ){
+      sum_re=0.;
+      sum_im=0.; 
+      for (pElLagSrc_re = pLagSrc_re, pElH_re =pH_re + rowOffset, pElH_im = pH_im + rowOffset;
+	   pElLagSrc_re<pLagSrcEnd_re; 
+	   pElLagSrc_re++, pElH_re-=nS, pElH_im-=nS) {
+	elH_re = *pElH_re;
+	elH_im = *pElH_im;
+	elLagSrc_re = *((*pElLagSrc_re)++);
+	sum_re += (elH_re*elLagSrc_re);
+	sum_im += (elLagSrc_re*elH_im);
       }
-      *pOrPtr = sumr;
-      *pOiPtr = sumi;
+      *pOutEl_re = sum_re;
+      *pOutEl_im = sum_im;
     }
-  } else if ( !complexH && complexS ) {
-    *plhs = mxCreateNumericMatrix(1, nS, mxDOUBLE_CLASS, mxCOMPLEX);
-    pOr = mxGetPr(*plhs);
-    pOi = mxGetPi(*plhs);
-    pOrPtrEnd = pOr + nS;
-    for (pOrPtr = pOr, pOiPtr = pOi, j0 = (nLagsm1*nS); pOrPtr < pOrPtrEnd; pOrPtr++, pOiPtr++, j0++ ){
-      for (pSSrPtr = pSSr, pSSiPtr = pSSi, rp1Ptr =pHr + j0, sumr=0., sumi=0.; pSSrPtr < pSSrPtrEnd; pSSrPtr++, pSSiPtr++, rp1Ptr-=nS){
-	rp1 = *rp1Ptr;       
-	rp2 = *((*pSSrPtr)++);
-	ip2 = *((*pSSiPtr)++);
-	sumr += (rp1*rp2);
-	sumi += (rp1*ip2);
+  } else if ( !H_isComplex && source_isComplex ) {
+    /* 
+       Case 3: 
+       channel matrix is real
+       source is complex
+    */
+    for (pOutEl_re = pOut_re, pOutEl_im = pOut_im, rowOffset = (nLagsm1*nS); 
+	 pOutEl_re < pOutEnd_re; 
+	 pOutEl_re++, pOutEl_im++, rowOffset++ ){
+      sum_re=0.;
+      sum_im=0.;
+      for (pElLagSrc_re = pLagSrc_re, pElLagSrc_im = pLagSrc_im, pElH_re =pH_re + rowOffset; 
+	   pElLagSrc_re < pLagSrcEnd_re; 
+	   pElLagSrc_re++, pElLagSrc_im++, pElH_re-=nS){
+	elH_re = *pElH_re;       
+	elLagSrc_re = *((*pElLagSrc_re)++);
+	elLagSrc_im = *((*pElLagSrc_im)++);
+	sum_re += (elH_re*elLagSrc_re);
+	sum_im += (elH_re*elLagSrc_im);
       }
-      *pOrPtr = sumr;
-      *pOiPtr = sumi;
+      *pOutEl_re = sum_re;
+      *pOutEl_im = sum_im;
     }
-  } else if ( !complexH && !complexS ) {
-    *plhs = mxCreateNumericMatrix(1, nS, mxDOUBLE_CLASS, mxREAL);
-    pOr = mxGetPr(*plhs);
-    pOrPtrEnd = pOr + nS;
-    for (pOrPtr = pOr, j0 = (nLagsm1*nS); 
-	 pOrPtr < pOrPtrEnd; 
-	 pOrPtr++, j0++ ){
-      for (pSSrPtr = pSSr, rp1Ptr = pHr + j0, sumr=0; 
-	   pSSrPtr<pSSrPtrEnd; 
-	   pSSrPtr++, rp1Ptr-=nS) {
-	rp1 = *rp1Ptr;
-	rp2 = *((*pSSrPtr)++);
-	sumr += (rp1*rp2);
+  } else if ( !H_isComplex && !source_isComplex ) {
+    /* 
+       Case 4: 
+       channel matrix is real
+       source is real
+    */
+    for (pOutEl_re = pOut_re, rowOffset = (nLagsm1*nS); 
+	 pOutEl_re < pOutEnd_re; 
+	 pOutEl_re++, rowOffset++ ){
+      sum_re=0.; 
+      for (pElLagSrc_re = pLagSrc_re, pElH_re = pH_re + rowOffset;
+	   pElLagSrc_re < pLagSrcEnd_re; 
+	   pElLagSrc_re++, pElH_re-=nS) {
+	elH_re = *pElH_re;
+	elLagSrc_re = *((*pElLagSrc_re)++);
+	sum_re += (elH_re*elLagSrc_re);
       }
-      *pOrPtr = sumr;
+      *pOutEl_re = sum_re;
     }
   }
 
-  mxFree(pSSr);
-  mxFree(pSSi);
+  mxFree(pLagSrc_re);
+  mxFree(pLagSrc_im);
   return;
 } /*--- end of mexFunction ---*/
-
-/*
-  DISTRIBUTION STATEMENT A. Approved for public release. 
-  Distribution is unlimited.
-  
-  This material is based upon work supported by the Defense Advanced Research 
-  Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions, 
-  findings, conclusions or recommendations expressed in this material are those 
-  of the author(s) and do not necessarily reflect the views of the Defense 
-  Advanced Research Projects Agency.
-  
-  © 2019 Massachusetts Institute of Technology.
-  
-  Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
-  
-  The software/firmware is provided to you on an As-Is basis
-  
-  Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-  Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-  U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-  DFARS 252.227-7014 as detailed above. Use of this work other than as 
-  specifically authorized by the U.S. Government may violate any copyrights 
-  that exist in this work.
-*/
