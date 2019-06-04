@@ -54,9 +54,9 @@ typedef __int64 int64_t;
 #define INDEXVAR_T int
 #define AWKWARD_LUT_SIZE
 #if defined(_WIN32) || defined(_WIN32_) || defined (__WIN32__)
-#pragma message("Note: The including LUT size cannot be indexed efficiently")
+#pragma message("Note: The included LUT size cannot be indexed efficiently")
 #else
-#warning "Note: The including LUT size cannot be indexed efficiently"
+#warning "Note: The included LUT size cannot be indexed efficiently"
 #endif
 #endif
 
@@ -96,16 +96,15 @@ void mexFunction(int nlhs, mxArray *plhs[],
   phir  = mxGetPr(Phi);
   sphir = mxGetPr(Sphi);
 
-  *plhs = mxCreateNumericMatrix(1, nSamp, mxDOUBLE_CLASS, mxCOMPLEX);
-  hr = mxGetPr(*plhs);
-  hi = mxGetPi(*plhs);
+  plhs[0] = mxCreateNumericMatrix(1, nSamp, mxDOUBLE_CLASS, mxCOMPLEX);
+  hr = mxGetPr(plhs[0]);
+  hi = mxGetPi(plhs[0]);
 
   r2dscale = R2D * STEPSIZE;
   twopif = f * TWOPI;
 
   hrPtrEnd = hr + nSamp;
   
-  /*printf(">> m = %d, nSamp = %d \n", m, nSamp); */
 
   alphrPtrEnd = alphr + m;
 #ifdef AWKWARD_LUT_SIZE
