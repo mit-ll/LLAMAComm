@@ -21,7 +21,10 @@ DFARS 252.227-7014 as detailed above. Use of this work other than as
 specifically authorized by the U.S. Government may violate any copyrights 
 that exist in this work.
 ___________________________________________________________________________
-
+___________________________________________________________________________
+ *** June 2019:  LLAMAComm (v. 2.20) (MATLAB R2015b)
+     - TVConv.m now functional
+     - Improved readabiity of TVConv.c
 ___________________________________________________________________________
  *** May 2019:  LLAMAComm (v. 2.19) (MATLAB R2015b)
      - Added WSSUS-wideband channel model
