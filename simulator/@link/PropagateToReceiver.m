@@ -109,7 +109,7 @@ if isempty(result)
 elseif result
     [source, blockLen] = ReadContiguousData(modTx, startRxChan, blockLengthRxChan, fr);
     %ft = GetFc(modTx);
-   
+    
     % Check for sufficient length
     if (size(source, 2) < length(taps)) && ~isempty(source)
         
@@ -145,7 +145,6 @@ elseif result
     % Modulate transmit signal based on receive module center frequency
     source = ProcessTransmitBlock(source, startRxChan, blockLengthRxChan, ft, fr, fs, taps);
 else
-    
     % Modulate each transmit block individually according to 
     % their center frequencies and take each signal separately
     [source, blockLen] = BuildTransmitSignal(modTx, ...
@@ -187,6 +186,21 @@ switch lower(linkobj.channel.chanType)
     rxsig = ProcessIidChannel(startRx, linkobj.channel, source); 
     
   case 'wssus-wideband'
+
+    % Check to see if there is a shortfall in the requested samples
+    % This can happ
+    if size(source, 2) < blockLengthRxChan
+        nSampShortfall = blockLengthRxChan-size(source,2);
+        
+        % Sanity check. It makes sense to fix the sample shortfall iff 
+        % it consistent with being due to the fractional delay filtering. 
+        % Otherwise, there must be some other problem:
+        if nSampShortfall < floor(delayFiltLen*0.5)
+            source = [source, zeros(size(source,1), nSampShortfall)];
+        else
+            error('Excessive shortfall from number of requested samples, unable to continue');
+        end
+    end
     
     rxsig = ProcessIidWBChannel(startRx, linkobj.channel, source); 
     
