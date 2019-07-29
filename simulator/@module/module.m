@@ -77,7 +77,14 @@ elseif isstruct(a)
         m.distToExteriorWall = a.distToExteriorWall;
         m.exteriorBldgAngle = a.exteriorBldgAngle;
         m.numInteriorWalls = a.numInteriorWalls;
-
+        if(isfield(a, 'rxCorrMat'))
+            m.rxCorrMat = a.rxCorrMat;
+        end
+        
+        if(isfield(a, 'txCorrMat'))
+            m.txCorrMat = a.txCorrMat;
+        end
+        
         % Optional fields
         if isfield(a,'TDCallbackFcn')
             m.TDCallbackFcn = a.TDCallbackFcn;
@@ -135,7 +142,9 @@ m.genieToNodeName = '';
 m.genieToModName = '';
 m.genieQueue = {};
 
-
+m.rxCorrMat = [];
+m.txCorrMat = [];
+        
 
 
 

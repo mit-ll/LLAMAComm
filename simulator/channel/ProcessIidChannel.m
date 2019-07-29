@@ -39,6 +39,28 @@ function [rxsig] = ProcessIidChannel(startSamp, channel, source)
 % Specify the number of receivers and transmitters
 [nR, nT] = size(channel.powerProfile);
 
+% If applicable, compute Rx spatial correlation matrix square-root
+if(nR > 1 && ~isempty(channel.rxCorrMat))
+    Rr = channel.rxCorrMat;
+    flagCorrRx = true;
+else
+    Rr = 1;
+    flagCorrRx = false;
+end
+
+% If applicable, compute Tx spatial correlation matrix square-root
+if(nT > 1 && ~isempty(channel.txCorrMat))
+    Rt = channel.txCorrMat;
+    flagCorrTx = true;
+else
+    Rt = 1;
+    flagCorrTx = false;
+end
+
+if(flagCorrTx || flagCorrRx)
+    Rf = kron(Rt.', Rr);
+end
+
 % Specify the number of output samples per Rx antenna
 nS = size(source, 2) - channel.longestLag;
 
@@ -58,41 +80,75 @@ else
     % transpose the source so multiplication works out
     source = source.';
 
-
     nS_ones = ones(1, nS);
     longestLag = channel.longestLag;
     powerProf = channel.powerProfile;
 
     rxtxDOF = nR*nT;
     allSigs = zeros(rxtxDOF, nS);
+    
+    % obtain the first antenna-pair power profile for initialization
+    pprofInit = powerProf(1, 1);
+    Hagg = zeros(rxtxDOF, length(pprofInit.lags)*nS);
+    
+    if(flagCorrTx || flagCorrRx)
+
+        numLags = length(pprofInit.lags);
+        for rxtxLoop = 1:rxtxDOF
+        
+            chanstateC = chanstates{rxtxLoop};
+            
+            % Get transmitter and receiver out of the combined rxtx indexing
+            rxIndx = 1 + mod(rxtxLoop-1, nR);
+            txIndx = 1 + floor((rxtxLoop-1)/nR);
+            
+            % Generate time-varying channel
+            Hj = jakes4(startSamp, nS, chanstateC);
+            
+            % Aggregate Jakes processes in MIMO-Jakes matrix
+            Hagg(rxtxLoop, :) = Hj(:).';
+        end
+        
+        Hcorr = sqrtm(Rf)*Hagg; % correlate the Jakes processes
+
+    end
+
+    %parfor rxtxLoop = 1:rxtxDOF
     for rxtxLoop = 1:rxtxDOF
-        %parfor rxtxLoop = 1:rxtxDOF
-
-        chanstate = chanstates{rxtxLoop};
-        pprof = powerProf(rxtxLoop);
-        % rLoop = 1+ mod(rxtxLoop-1, nR);
-        tLoop = 1+floor((rxtxLoop-1)/nR);
-
+        rxIndx = 1 + mod(rxtxLoop-1, nR);
+        txIndx = 1 + floor((rxtxLoop-1)/nR);
+              
         % Generate time-varying channel
-        H = jakes4(startSamp, nS, chanstate);
-
+        if(flagCorrTx || flagCorrRx) % if spatial-correlation is on
+            
+            H = reshape(Hcorr(rxtxLoop, :), numLags, nS);
+            pprof = pprofInit;
+        else
+            chanstate = chanstates{rxtxLoop};
+            pprof = powerProf(rxtxLoop);
+            % rLoop = 1+ mod(rxtxLoop-1, nR);
+            
+            H = jakes4(startSamp, nS, chanstate);
+        end
+        
+        tLoop = 1+floor((rxtxLoop-1)/nR);
         % Apply power profile
         %pows = pprof.pows /sqrt(riceKlin + 1);
         pows = pprof.pows /(riceKlin + 1);
-
+        
         % H = H.*repmat(sqrt(pows(:)), 1, nS);
         % H = bsxfun(@times, H, sqrt(pows(:)));
         H = H.*(sqrt(pows(:))*nS_ones);
-
+        
         % Get ready for convolution
         H = H.';
-
+        
         allSigs(rxtxLoop, :) = TVConv(H, pprof.lags, source(:, tLoop), longestLag);
     end % END rLoop
-
+    
     rxsig = reshape(sum(reshape(allSigs, [nR, nT, nS]), 2), [nR, nS]);
     allSigs = []; %#ok - allSigs no longer needed
-
+    
     % Do the Rice tap
     inds = (1:nS) + channel.longestLag - channel.powerProfile(1, 1).riceLag;
     source = source.';  % Flip the source back

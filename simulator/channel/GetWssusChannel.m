@@ -44,6 +44,7 @@ function channel = GetWssusChannel(nodeTx, modTx, nodeRx, modRx, ...
 
 global includePropagationDelay
 global includeFractionalDelay
+global DisplayLLAMACommWarnings
 
 % Build transmitter node struct
 txnode.location = nodeTx.location;
@@ -64,6 +65,27 @@ totalPathLossLin = 10^(pathLoss.totalPathLoss/10);
 % Extract number of antennas for link
 nT   = size(txnode.antLocation, 1);
 nR   = size(rxnode.antLocation, 1);
+
+% Obtain spatial correlation matrices
+if(nR > 1)
+    rxCorrMat = modRx.rxCorrMat;
+    errStr = corrErrCheck(rxCorrMat);
+    if(~isempty(errStr))
+       error(['Invalid user-defined correlation matrix for module ', modRx.name, ': ', errStr]); 
+    end
+else
+    rxCorrMat = [];
+end
+
+if(nT > 1)
+    txCorrMat = modTx.txCorrMat;
+    errStr = corrErrCheck(rxCorrMat);
+    if(~isempty(errStr))
+       error(['Invalid user-defined correlation matrix for module ', modTx.name, ': ', errStr]);  
+    end
+else
+    txCorrMat = [];
+end
 
 % Get the power profile for each Tx-Rx antenna pair
 % Output structure array with the following fields:
@@ -89,23 +111,33 @@ end
 
 maxLags = max(cellfun(@length, {powerProfile(:).lags}));
 
+% Obtain the lags of the first antenna-pair profile (as initialization)
+nLags = length(powerProfile(1, 1).lags);
+
 % Create a cell array of methods if only a single method is chosen
 if ~iscell(methodstring)
-  method = cell(nR, nT, maxLags);
-  for rLoop = 1:nR
-    for tLoop = 1:nT
-      for lLoop = 1:length(powerProfile(rLoop, tLoop).lags)
-        method{rLoop, tLoop, lLoop} = methodstring;
-      end
+    method = cell(nR, nT, maxLags);
+    for rLoop = 1:nR
+        for tLoop = 1:nT
+            if(isempty(txCorrMat) && isempty(rxCorrMat))
+                nLags = length(powerProfile(rLoop, tLoop).lags);
+            end
+            for lLoop = 1:nLags
+                method{rLoop, tLoop, lLoop} = methodstring;
+            end
+        end
     end
-  end
 end
 
 % Get the initial state of each channel tap over nT, nR, and nL
 chanstates = cell(nR, nT);
+
+
 for rLoop = 1:nR
   for tLoop = 1:nT
-    nLags = length(powerProfile(rLoop, tLoop).lags);
+    if(isempty(txCorrMat) && isempty(rxCorrMat))
+        nLags = length(powerProfile(rLoop, tLoop).lags);
+    end
     for lLoop = 1:nLags
       switch lower(method{rLoop, tLoop, lLoop})
         case 'patzold'
@@ -255,6 +287,9 @@ channel.chanstates      = chanstates;
 channel.nPropDelaySamp  = nPropDelaySamp;
 channel.dopplerSpreadHz = dopSpread; % (Hz)
 channel.ricePhaseRad    = ricePhaseRad;
+channel.rxCorrMat       = rxCorrMat;
+channel.txCorrMat       = txCorrMat;
+
 if exist('fracDelayFilter', 'var')
   channel.fracDelayFilter = fracDelayFilter;
 end

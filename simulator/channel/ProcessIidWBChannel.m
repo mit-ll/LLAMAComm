@@ -39,6 +39,29 @@ function [rxsig] = ProcessIidWBChannel(startSamp, channel, source)
 
 % Specify the number of receivers and transmitters
 [nR, nT] = size(channel.powerProfile);
+
+% If applicable, compute Rx spatial correlation matrix square-root
+if(nR > 1 && ~isempty(channel.rxCorrMat))
+    Rr = channel.rxCorrMat;
+    flagCorrRx = true;
+else
+    Rr = 1;
+    flagCorrRx = false;
+end
+
+% If applicable, compute Tx spatial correlation matrix square-root
+if(nT > 1 && ~isempty(channel.txCorrMat))
+    Rt = channel.txCorrMat;
+    flagCorrTx = true;
+else
+    Rt = 1;
+    flagCorrTx = false;
+end
+
+if(flagCorrTx || flagCorrRx)
+    Rf = kron(Rt.', Rr);
+end
+
 nodeAntSepSamps = channel.nodeAntSepSamps;
 
 % Specify the number of output samples per Rx antenna
@@ -65,13 +88,41 @@ longestLag = channel.longestLag;
 powerProf = channel.powerProfile;
 riceMat = sqrt(riceKlin/(riceKlin + 1))*channel.riceMatrix;
 
-% Get info about 
+% Get info about fractional delay filter
 nDelayFiltLen = channel.nDelayFiltLen;
 delayFiltHalfLen = (nDelayFiltLen-1)/2;
 tDelayFilt = -delayFiltHalfLen:delayFiltHalfLen;
 
 rxtxDOF = nR*nT;
 allSigs = zeros(rxtxDOF, nS);
+
+% obtain the first antenna-pair power profile for initialization
+pprofInit = powerProf(1, 1);
+
+Hagg = zeros(rxtxDOF, length(pprofInit.lags)*nS);
+
+if(flagCorrTx || flagCorrRx)
+    
+    numLags = length(pprofInit.lags);
+    for rxtxLoop = 1:rxtxDOF
+        
+        chanstateC = chanstates{rxtxLoop};
+        
+        % Get transmitter and receiver out of the combined rxtx indexing
+        rxIndx = 1 + mod(rxtxLoop-1, nR);
+        txIndx = 1 + floor((rxtxLoop-1)/nR);
+        
+        % Generate time-varying channel
+        Hj = jakes4(startSamp, nS, chanstateC);
+        
+        % Aggregate Jakes processes in MIMO-Jakes matrix
+        Hagg(rxtxLoop, :) = Hj(:).';
+    end
+    
+    Hcorr = sqrtm(Rf)*Hagg; % correlate the Jakes processes
+
+end
+    
 
 % Loop over transmit/receive pairs
 for rxtxLoop = 1:rxtxDOF
@@ -80,12 +131,18 @@ for rxtxLoop = 1:rxtxDOF
     rxIndx = 1 + mod(rxtxLoop-1, nR);
     txIndx = 1 + floor((rxtxLoop-1)/nR);
     
-    
-    chanstate = chanstates{rxtxLoop};
-    pprof = powerProf(rxtxLoop);
-    
     % Generate time-varying channel
-    H = jakes4(startSamp, nS, chanstate);
+    if(flagCorrTx || flagCorrRx) % if spatial-correlation is on
+        
+        H = reshape(Hcorr(rxtxLoop, :), numLags, nS);
+        pprof = pprofInit;
+    else
+        chanstate = chanstates{rxtxLoop};
+        pprof = powerProf(rxtxLoop);
+        % rLoop = 1+ mod(rxtxLoop-1, nR);
+        
+        H = jakes4(startSamp, nS, chanstate);
+    end
     
     % Apply power profile
     pows = pprof.pows /(riceKlin + 1);
