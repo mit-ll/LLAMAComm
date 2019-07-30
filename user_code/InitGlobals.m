@@ -24,7 +24,7 @@
 % that exist in this work.
 
 
-clear globals;
+clear global;
 
 % Declare global variables
 global simulationSampleRate;
