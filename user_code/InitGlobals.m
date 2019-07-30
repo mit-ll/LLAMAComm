@@ -51,7 +51,7 @@ simulationSampleRate = 12.5e6;
 
 %------------------------------------------------------------------------
 % Determines the channel propagation model used to build links in LLAMAComm
-chanType = 'wssus-wideband';  % 'wssus', 'stfcs', 'los_awgn', 'wideband_awgn',
+chanType = 'stfcs';  % 'wssus', 'stfcs', 'los_awgn', 'wideband_awgn',
                      % or 'env_awgn'
 
 %------------------------------------------------------------------------
@@ -112,7 +112,7 @@ addGaussianNoiseFlag = 1;
 % assumed (and a Doppler spread applied to the channel) and above which
 % static specular scattering is assumed (and a Doppler shift is applied to
 % the channel)
-%heightLimitDiffuseScattering = 50;
+heightLimitDiffuseScattering = 50;
 
 %------------------------------------------------------------------------
 % LLAMAComm warnings are printed to the command window if this flag is set.

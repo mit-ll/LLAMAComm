@@ -61,8 +61,7 @@ tx_mod_params.exteriorWallMaterial = 'none';
 tx_mod_params.distToExteriorWall = [0];
 tx_mod_params.exteriorBldgAngle = [0];
 tx_mod_params.numInteriorWalls = [0];
-%tx_mod_params.txCorrMat = diag(ones(size(tx_mod_params.antPosition, 1), 1));
-%tx_mod_params.txCorrMat = [];
+tx_mod_params.txCorrMat = diag(ones(size(tx_mod_params.antPosition, 1), 1));
 
 rx_mod_params.name = 'LLmimo_rx';
 rx_mod_params.callbackFcn = @LLMimo_Receive;
@@ -83,9 +82,7 @@ rx_mod_params.exteriorWallMaterial = 'none';
 rx_mod_params.distToExteriorWall = [0];
 rx_mod_params.exteriorBldgAngle = [0];
 rx_mod_params.numInteriorWalls = [0];
-%rx_mod_params.rxCorrMat = diag(ones(size(rx_mod_params.antPosition, 1), 1));
-%rx_mod_params.rxCorrMat = [];
-
+rx_mod_params.rxCorrMat = diag(ones(size(rx_mod_params.antPosition, 1), 1));
 
 tx_mod = module(tx_mod_params);
 rx_mod = module(rx_mod_params);
