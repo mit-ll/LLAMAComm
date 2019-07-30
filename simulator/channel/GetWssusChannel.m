@@ -69,7 +69,7 @@ nR   = size(rxnode.antLocation, 1);
 % Obtain spatial correlation matrices
 if(nR > 1)
     rxCorrMat = modRx.rxCorrMat;
-    errStr = corrErrCheck(rxCorrMat);
+    errStr = corrErrCheck(rxCorrMat, nR);
     if(~isempty(errStr))
        error(['Invalid user-defined correlation matrix for module ', modRx.name, ': ', errStr]); 
     end
@@ -79,7 +79,7 @@ end
 
 if(nT > 1)
     txCorrMat = modTx.txCorrMat;
-    errStr = corrErrCheck(rxCorrMat);
+    errStr = corrErrCheck(rxCorrMat, nT);
     if(~isempty(errStr))
        error(['Invalid user-defined correlation matrix for module ', modTx.name, ': ', errStr]);  
     end

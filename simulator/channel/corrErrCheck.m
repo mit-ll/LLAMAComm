@@ -1,5 +1,10 @@
-function errStr = corrErrCheck(R)
+function errStr = corrErrCheck(R, numAnt)
 errStr = [];
+
+if(size(R, 1) ~= size(R, 2) || size(R, 1) ~= numAnt)
+    errStr = [errStr, '(Code 0) matrix must be nxn matrix with n equal to the number of antennas'];
+    return;
+end
 
 d = diag(R);
 if(~all(d == 1))

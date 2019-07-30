@@ -44,14 +44,13 @@ function [velocitySpread, velocityShift, txHighFlag, rxHighFlag] = GetVelocitySp
 % specifically authorized by the U.S. Government may violate any copyrights 
 % that exist in this work.
 
+global heightLimitDiffuseScattering;
+
 envParams = struct(env);
 velocitySpread = envParams.propParams.velocitySpread;
 velocityShift = 0;
 rangeVector = [];
-heightThresh = 200; % This is the height threshold (in meters) for the 
-                    % Okumura-Hata Model used in LLAMAComm getPathloss() 
-                    % function; we use this as the height threshold above 
-                    % which diffuse scattering is assumed to be negligible
+heightThresh = heightLimitDiffuseScattering; 
 
 % Transmitter spread vs. shift decision
 txHeight = nodTx.location(3);

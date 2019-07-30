@@ -43,7 +43,7 @@ function [env, linkobj] = BuildLink(env, nodeTx, modTx, nodeRx, modRx, nodes)
 % that exist in this work.
 
 global chanType
-
+global DisplayLLAMACommWarnings
 DEBUGGING = 0;  % Print link at the end
 
 nTx = GetNumAnts(modTx);
@@ -227,11 +227,19 @@ linkID = sprintf('''%s:%s'' -> ''%s:%s:%.2f MHz''', ...
                  k.fromID{1}, k.fromID{2}, ...
                  k.toID{1}, k.toID{2}, k.toID{3}/1e6);
 if propParams.txHighFlag
-    warning('In %s, the node named %s is above 200 m.\n Doppler-offset will be added instead of Doppler-spread', linkID, GetNodeName(nodeTx));
+    %warning('In %s, the node named %s is above height threshold set by global variable heightLimitDiffuseScattering.\n Doppler-offset will be added instead of Doppler-spread', linkID, GetNodeName(nodeTx));
+    if DisplayLLAMACommWarnings
+        fprintf('\nWarning: In %s, the node named %s is above height threshold set by global variable heightLimitDiffuseScattering.\n', linkID, GetNodeName(nodeTx));
+        fprintf('           Doppler shift will be added instead of Doppler spread\n');
+    end
 end
 
 if propParams.rxHighFlag
-    warning('In %s, the node named %s is above 200 m.\n Doppler-offset will be added instead of Doppler-spread', linkID, GetNodeName(nodeRx));
+    %warning('In %s, the node named %s is above height threshold set by global variable heightLimitDiffuseScattering.\n Doppler-offset will be added instead of Doppler-spread', linkID, GetNodeName(nodeRx));
+    if DisplayLLAMACommWarnings
+        fprintf('\nWarning: In %s, the node named %s is above height threshold set by global variable heightLimitDiffuseScattering.\n', linkID, GetNodeName(nodeRx));
+        fprintf('           Doppler shift will be added instead of Doppler spread\n');
+    end
 end
 
 

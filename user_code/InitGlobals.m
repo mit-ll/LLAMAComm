@@ -26,6 +26,8 @@
 
 clear globals;
 
+rng(2);
+
 % Declare global variables
 global simulationSampleRate;
 global chanType;
@@ -40,6 +42,7 @@ global timingDiagramForceRefresh;
 global timingDiagramShowExecOrder;
 global addGaussianNoiseFlag;
 global DisplayLLAMACommWarnings;
+global heightLimitDiffuseScattering;
 
 % Initialize global variables
 %------------------------------------------------------------------------
@@ -106,6 +109,12 @@ timingDiagramShowExecOrder = true;
 % This flag turns the additive Gaussian noise on/off---used for debugging
 addGaussianNoiseFlag = 1;
 
+%------------------------------------------------------------------------
+% This variable sets the height limit below which diffuse scattering is
+% assumed (and a Doppler spread applied to the channel) and above which
+% static specular scattering is assumed (and a Doppler shift is applied to
+% the channel)
+heightLimitDiffuseScattering = 50;
 
 %------------------------------------------------------------------------
 % LLAMAComm warnings are printed to the command window if this flag is set.
