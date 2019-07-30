@@ -68,7 +68,7 @@ nT   = size(txnode.antLocation, 1);
 nR   = size(rxnode.antLocation, 1);
 
 % Obtain spatial correlation matrices
-if(nR > 1)
+if(nR > 1 && ~isempty(modRx.rxCorrMat))
     rxCorrMat = modRx.rxCorrMat;
     errStr = corrErrCheck(rxCorrMat, nR);
     if(~isempty(errStr))
@@ -78,7 +78,7 @@ else
     rxCorrMat = [];
 end
 
-if(nT > 1)
+if(nT > 1 && ~isempty(modTx.txCorrMat))
     txCorrMat = modTx.txCorrMat;
     errStr = corrErrCheck(txCorrMat, nT);
     if(~isempty(errStr))

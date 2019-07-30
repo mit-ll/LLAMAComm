@@ -50,8 +50,11 @@ envParams = struct(env);
 velocitySpread = envParams.propParams.velocitySpread;
 velocityShift = 0;
 rangeVector = [];
-heightThresh = heightLimitDiffuseScattering; 
-
+if(isempty(heightLimitDiffuseScattering))
+    heightThresh = 200;
+else
+    heightThresh = heightLimitDiffuseScattering;
+end
 % Transmitter spread vs. shift decision
 txHeight = nodTx.location(3);
 if(txHeight > heightThresh) 
