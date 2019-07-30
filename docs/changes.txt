@@ -22,6 +22,16 @@ specifically authorized by the U.S. Government may violate any copyrights
 that exist in this work.
 ___________________________________________________________________________
 ___________________________________________________________________________
+ *** July 2019:  LLAMAComm (v. 2.21) (MATLAB R2015b)
+     - Patch for wssus-wideband channel to handle fractional delay filtering
+       sample support problems when transmit/receive pairs are close
+     - Added support for spatially-correlating fading processes at Tx and Rx nodes 
+       independently (WSSUS and WSSUS-wideband models)
+     - Added global variable "heightLimitDiffuseScattering" to InitGlobals.m, 
+       to give user ability to set the height threshold for applying Dopper shift 
+       vs. Doppler spread
+     - Minor aesthetic fixes (e.g. to warning message formatting)
+___________________________________________________________________________
  *** June 2019:  LLAMAComm (v. 2.20) (MATLAB R2015b)
      - TVConv.m now functional
      - Improved readabiity of TVConv.c
