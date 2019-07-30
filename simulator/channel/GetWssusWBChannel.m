@@ -80,7 +80,7 @@ end
 
 if(nT > 1)
     txCorrMat = modTx.txCorrMat;
-    errStr = corrErrCheck(rxCorrMat, nT);
+    errStr = corrErrCheck(txCorrMat, nT);
     if(~isempty(errStr))
        error(['Invalid user-defined correlation matrix for module ', modTx.name, ': ', errStr]);  
     end
