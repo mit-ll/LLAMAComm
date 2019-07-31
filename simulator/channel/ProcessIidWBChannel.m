@@ -12,10 +12,8 @@ function [rxsig] = ProcessIidWBChannel(startSamp, channel, source)
 %  source    (nT x blockLength + nDelay complex)  Transmitted signal
 %
 % Output argument:
-%  rxsig     (nR x N complex) Analog signal received by module.  
+%  rxsig     (nR x N complex) Analog signal received by module.
 
-% DISTRIBUTION STATEMENT A. Approved for public release.
-% Distribution is unlimited.
 %
 % This material is based upon work supported by the Defense Advanced Research
 % Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
@@ -25,9 +23,22 @@ function [rxsig] = ProcessIidWBChannel(startSamp, channel, source)
 %
 % © 2019 Massachusetts Institute of Technology.
 %
-% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
 %
-% The software/firmware is provided to you on an As-Is basis
+% This program is free software; you can redistribute it and/or modify
+% it under the terms of the GNU General Public License version 2 as
+% published by the Free Software Foundation;
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
 %
 % Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
 % Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
@@ -102,27 +113,27 @@ pprofInit = powerProf(1, 1);
 Hagg = zeros(rxtxDOF, length(pprofInit.lags)*nS);
 
 if(flagCorrTx || flagCorrRx)
-    
+
     numLags = length(pprofInit.lags);
     for rxtxLoop = 1:rxtxDOF
-        
+
         chanstateC = chanstates{rxtxLoop};
-        
+
         % Get transmitter and receiver out of the combined rxtx indexing
         rxIndx = 1 + mod(rxtxLoop-1, nR);
         txIndx = 1 + floor((rxtxLoop-1)/nR);
-        
+
         % Generate time-varying channel
         Hj = jakes4(startSamp, nS, chanstateC);
-        
+
         % Aggregate Jakes processes in MIMO-Jakes matrix
         Hagg(rxtxLoop, :) = Hj(:).';
     end
-    
+
     Hcorr = sqrtm(Rf)*Hagg; % correlate the Jakes processes
 
 end
-    
+
 
 % Loop over transmit/receive pairs
 for rxtxLoop = 1:rxtxDOF
@@ -130,34 +141,34 @@ for rxtxLoop = 1:rxtxDOF
     % Get transmitter and receiver out of the combined rxtx indexing
     rxIndx = 1 + mod(rxtxLoop-1, nR);
     txIndx = 1 + floor((rxtxLoop-1)/nR);
-    
+
     % Generate time-varying channel
     if(flagCorrTx || flagCorrRx) % if spatial-correlation is on
-        
+
         H = reshape(Hcorr(rxtxLoop, :), numLags, nS);
         pprof = pprofInit;
     else
         chanstate = chanstates{rxtxLoop};
         pprof = powerProf(rxtxLoop);
         % rLoop = 1+ mod(rxtxLoop-1, nR);
-        
+
         H = jakes4(startSamp, nS, chanstate);
     end
-    
+
     % Apply power profile
     pows = pprof.pows /(riceKlin + 1);
-    H = H.*(sqrt(pows(:))*nS_ones); 
+    H = H.*(sqrt(pows(:))*nS_ones);
 
-    % Add the Rice tap 
+    % Add the Rice tap
     H(1+pprof.riceLag, :) = H(1+pprof.riceLag, :) + riceMat(rxIndx, txIndx);
 
     % Get ready for convolution
     H = H.';
-    
+
     % offsetDelaySamp is the delay (in samples) to the antenna with the bulk
     % (integer part of the smallest delay) removed:
-    offsetDelaySamp = channel.offsetDelayMatrix(rxIndx, txIndx); 
-    
+    offsetDelaySamp = channel.offsetDelayMatrix(rxIndx, txIndx);
+
     % Decompose offsetDelaySamp into integer and fractional parts:
     dFix = fix(offsetDelaySamp); % Integer part of the delay (0 for the closest antenna)
     dFrac = offsetDelaySamp - dFix; % Fractional part of the delay
@@ -165,32 +176,32 @@ for rxtxLoop = 1:rxtxDOF
     % Construct fractional delay filter
     fracDelayFilter = sinc(tDelayFilt - dFrac);
 
-    %% Apply fractional delay filter 
-    %src = conv(source(:, txIndx), fracDelayFilter);   
+    %% Apply fractional delay filter
+    %src = conv(source(:, txIndx), fracDelayFilter);
     %
     %% Keep the "valid" portion by stripping off (nDelayFiltLen-1)
-    %% samples from both sides added by performing the convolution, 
+    %% samples from both sides added by performing the convolution,
     %% Note the extra 0.5*(nDelayFiltLen-1) early samples fetched
     %% in "PropagateToReceiver" guarantee that the first and last
-    %% outputs of filtering+trimming correspond to the first and 
+    %% outputs of filtering+trimming correspond to the first and
     %% last filtered samples.
     %src = src((1+(2*delayFiltHalfLen)):end-(2*delayFiltHalfLen));
 
     % Apply fractional delay filter and strip off 'invalid' portion
     % (This is equivalent to the conv and chop commented out above)
-    src = conv(source(:, txIndx), fracDelayFilter, 'valid');   
-         
+    src = conv(source(:, txIndx), fracDelayFilter, 'valid');
+
     % Remove extra samples added to the beginning
     % (Antennas with later delays have fewer samples removed)
     src = src(1+(nodeAntSepSamps-dFix):end);
-    
+
     % Apply channel matrix
-    allSigs(rxtxLoop, :) = TVConv(H, pprof.lags, src, longestLag); 
+    allSigs(rxtxLoop, :) = TVConv(H, pprof.lags, src, longestLag);
 
 end % END rxtxLoop
 
 rxsig = reshape(sum(reshape(allSigs, [nR, nT, nS]), 2), [nR, nS]);
-allSigs = []; %#ok - allSigs no longer needed 
+allSigs = []; %#ok - allSigs no longer needed
 
 % Do the Rice tap
 %inds = (1:nS) + channel.longestLag - channel.powerProfile(1, 1).riceLag;
@@ -198,8 +209,6 @@ allSigs = []; %#ok - allSigs no longer needed
 %riceMat = sqrt(riceKlin/(riceKlin + 1))*channel.riceMatrix;
 %rxsig = rxsig + riceMat*source(:, inds);
 
-% DISTRIBUTION STATEMENT A. Approved for public release.
-% Distribution is unlimited.
 %
 % This material is based upon work supported by the Defense Advanced Research
 % Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
@@ -209,9 +218,22 @@ allSigs = []; %#ok - allSigs no longer needed
 %
 % © 2019 Massachusetts Institute of Technology.
 %
-% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
 %
-% The software/firmware is provided to you on an As-Is basis
+% This program is free software; you can redistribute it and/or modify
+% it under the terms of the GNU General Public License version 2 as
+% published by the Free Software Foundation;
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
 %
 % Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
 % Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,

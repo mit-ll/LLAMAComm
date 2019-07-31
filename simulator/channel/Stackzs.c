@@ -1,25 +1,28 @@
 /*
-  DISTRIBUTION STATEMENT A. Approved for public release. 
-  Distribution is unlimited.
-  
-  This material is based upon work supported by the Defense Advanced Research 
-  Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions, 
-  findings, conclusions or recommendations expressed in this material are those 
-  of the author(s) and do not necessarily reflect the views of the Defense 
+  This material is based upon work supported by the Defense Advanced Research
+  Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+  findings, conclusions or recommendations expressed in this material are those
+  of the author(s) and do not necessarily reflect the views of the Defense
   Advanced Research Projects Agency.
-  
+
   © 2019 Massachusetts Institute of Technology.
-  
-  Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
-  
-  The software/firmware is provided to you on an As-Is basis
-  
-  Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-  Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-  U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-  DFARS 252.227-7014 as detailed above. Use of this work other than as 
-  specifically authorized by the U.S. Government may violate any copyrights 
-  that exist in this work.
+
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License version 2 as
+  published by the Free Software Foundation;
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <stdio.h>
@@ -37,21 +40,21 @@ void mexFunction(int nlhs, mxArray *plhs[],
   double *shifts;
 
   /* Gather Information */
-  classIn = mxGetClassID(*prhs); 
+  classIn = mxGetClassID(*prhs);
   complexIn = mxIsComplex(*prhs);
   nRowsIn = mxGetM(*prhs);
   nColsIn = mxGetN(*prhs);
   nShifts = mxGetNumberOfElements(prhs[1]);
-  shifts = mxGetPr(prhs[1]);  
+  shifts = mxGetPr(prhs[1]);
 
   nRowsOut = nRowsIn*nShifts;
   nColsOut = nColsIn;
-  
+
 
 
   /* (int)(*(double *)mxGetData(prhs[1])); */
 
-  
+
   /* Checks */
   if ((nRowsOut < 1)|(nColsOut < 1)|(nShifts < 1)){
     /* Match corner cases */
@@ -71,27 +74,27 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
 
   /* Note: Return values ignored - could add error checks here */
-  (void)Stackzs(mxGetPr(*plhs), 
-		mxGetPr(*prhs), 
-		nRowsIn, nColsIn, 
-		nShifts, shifts);  
+  (void)Stackzs(mxGetPr(*plhs),
+		mxGetPr(*prhs),
+		nRowsIn, nColsIn,
+		nShifts, shifts);
   if (complexIn){
     (void)Stackzs(mxGetPi(*plhs),
-		     mxGetPi(*prhs), 
-		     nRowsIn, nColsIn, 
-		     nShifts, shifts);  
-    
+		     mxGetPi(*prhs),
+		     nRowsIn, nColsIn,
+		     nShifts, shifts);
+
   }
- 
+
 
 }
 #endif
 
 /*************************************************************************/
-int Stackzs(double *ptrOut, 
-	    double *ptrIn, 
-	    int nrIn, 
-	    int ncIn, 
+int Stackzs(double *ptrOut,
+	    double *ptrIn,
+	    int nrIn,
+	    int ncIn,
 	    int nShifts,
 	    double *shifts){
 
@@ -128,12 +131,12 @@ int Stackzs(double *ptrOut,
   if (nShifts < 0){
     return(3); /*Error */
   }
-  
+
   endInPtr = ptrIn+(nrIn*ncIn);
 
   /* Loop over shifts */
-  for(shiftPtr = shifts, endShifts = shifts+nShifts, outPtr1 = ptrOut; 
-      shiftPtr < endShifts; 
+  for(shiftPtr = shifts, endShifts = shifts+nShifts, outPtr1 = ptrOut;
+      shiftPtr < endShifts;
       shiftPtr++, outPtr1+=nrIn){
 
     /* Index in to the correct starting column */
@@ -149,8 +152,8 @@ int Stackzs(double *ptrOut,
 	outPtr2+=nrOut, endPtr2+=nrOut){
 
       /* Loop down rows */
-      for(outPtr3 = outPtr2; 
-	  outPtr3 < endPtr2; 
+      for(outPtr3 = outPtr2;
+	  outPtr3 < endPtr2;
 	  outPtr3++){
 	*outPtr3 = *inPtr2++;
       }
@@ -162,15 +165,15 @@ int Stackzs(double *ptrOut,
 	outPtr2+=nrOut, endPtr2+=nrOut){
 
       /* Loop down rows */
-      for(outPtr3 = outPtr2; 
-	  outPtr3 < endPtr2; 
+      for(outPtr3 = outPtr2;
+	  outPtr3 < endPtr2;
 	  outPtr3++){
 	*outPtr3 = *inPtr2++;
       }
-    }       
+    }
   }
 
-  
+
   return(0);
 }
 /*************************************************************************/
@@ -182,25 +185,28 @@ int main(void){
 #endif
 
 /*
-  DISTRIBUTION STATEMENT A. Approved for public release. 
-  Distribution is unlimited.
-  
-  This material is based upon work supported by the Defense Advanced Research 
-  Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions, 
-  findings, conclusions or recommendations expressed in this material are those 
-  of the author(s) and do not necessarily reflect the views of the Defense 
+  This material is based upon work supported by the Defense Advanced Research
+  Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+  findings, conclusions or recommendations expressed in this material are those
+  of the author(s) and do not necessarily reflect the views of the Defense
   Advanced Research Projects Agency.
-  
+
   © 2019 Massachusetts Institute of Technology.
-  
-  Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
-  
-  The software/firmware is provided to you on an As-Is basis
-  
-  Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-  Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-  U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-  DFARS 252.227-7014 as detailed above. Use of this work other than as 
-  specifically authorized by the U.S. Government may violate any copyrights 
-  that exist in this work.
+
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License version 2 as
+  published by the Free Software Foundation;
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  POSSIBILITY OF SUCH DAMAGE.
 */

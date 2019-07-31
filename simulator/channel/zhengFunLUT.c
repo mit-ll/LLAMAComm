@@ -1,25 +1,28 @@
 /*
-  DISTRIBUTION STATEMENT A. Approved for public release. 
-  Distribution is unlimited.
-  
-  This material is based upon work supported by the Defense Advanced Research 
-  Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions, 
-  findings, conclusions or recommendations expressed in this material are those 
-  of the author(s) and do not necessarily reflect the views of the Defense 
+  This material is based upon work supported by the Defense Advanced Research
+  Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+  findings, conclusions or recommendations expressed in this material are those
+  of the author(s) and do not necessarily reflect the views of the Defense
   Advanced Research Projects Agency.
-  
+
   © 2019 Massachusetts Institute of Technology.
-  
-  Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
-  
-  The software/firmware is provided to you on an As-Is basis
-  
-  Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-  Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-  U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-  DFARS 252.227-7014 as detailed above. Use of this work other than as 
-  specifically authorized by the U.S. Government may violate any copyrights 
-  that exist in this work.
+
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License version 2 as
+  published by the Free Software Foundation;
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <stdlib.h>
@@ -63,7 +66,7 @@ typedef __int64 int64_t;
 #define TWOPI (6.283185307179586)
 #define R2D (57.295779513082323)
 
-void mexFunction(int nlhs, mxArray *plhs[], 
+void mexFunction(int nlhs, mxArray *plhs[],
 		 int nrhs, const mxArray *prhs[]){
 
   double f, twopif, theta;
@@ -104,16 +107,16 @@ void mexFunction(int nlhs, mxArray *plhs[],
   twopif = f * TWOPI;
 
   hrPtrEnd = hr + nSamp;
-  
+
 
   alphrPtrEnd = alphr + m;
 #ifdef AWKWARD_LUT_SIZE
-  for(alphrPtr = alphr, phirPtr = phir, sphirPtr = sphir; 
-      alphrPtr < alphrPtrEnd ; 
+  for(alphrPtr = alphr, phirPtr = phir, sphirPtr = sphir;
+      alphrPtr < alphrPtrEnd ;
       alphrPtr++, phirPtr++, sphirPtr++){
 
     lutIndx = ((INDEXVAR_T)(*alphrPtr*r2dscale))%LUTSIZE;
-    lutIndx = lutIndx<0 ? lutIndx+LUTSIZE : lutIndx;      
+    lutIndx = lutIndx<0 ? lutIndx+LUTSIZE : lutIndx;
     tempd1 = twopif*coslut[lutIndx];
 
     lutIndx = ((INDEXVAR_T)((*alphrPtr*R2D-90.)*STEPSIZE))%LUTSIZE;
@@ -122,21 +125,21 @@ void mexFunction(int nlhs, mxArray *plhs[],
     tempd2 = twopif*coslut[lutIndx];
     tempd3 = *phirPtr;
     tempd4 = *sphirPtr;
-  
+
     for(hrPtr = hr, hiPtr = hi, tPtr = t; hrPtr < hrPtrEnd; hrPtr++, hiPtr++, tPtr++) {
       lutIndx = ((INDEXVAR_T)((tempd1**tPtr+tempd3)*r2dscale))%LUTSIZE;
       lutIndx = lutIndx<0 ? lutIndx+LUTSIZE : lutIndx;
       *hrPtr += 2.*coslut[lutIndx];
 
       lutIndx = ((INDEXVAR_T)((tempd2**tPtr+tempd4)*r2dscale))%LUTSIZE;
-      lutIndx = lutIndx<0 ? lutIndx+LUTSIZE : lutIndx;      
+      lutIndx = lutIndx<0 ? lutIndx+LUTSIZE : lutIndx;
       *hiPtr += 2.*coslut[lutIndx];
     }
   }
-  
+
 #else
-  for(alphrPtr = alphr, phirPtr = phir, sphirPtr = sphir; 
-      alphrPtr < alphrPtrEnd ; 
+  for(alphrPtr = alphr, phirPtr = phir, sphirPtr = sphir;
+      alphrPtr < alphrPtrEnd ;
       alphrPtr++, phirPtr++, sphirPtr++){
 
     lutIndx = (INDEXVAR_T)(*alphrPtr*r2dscale);
@@ -147,7 +150,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     tempd3 = *phirPtr;
     tempd4 = *sphirPtr;
     for(hrPtr = hr, hiPtr = hi, tPtr = t; hrPtr < hrPtrEnd; hrPtr++, hiPtr++, tPtr++) {
-      
+
 	lutIndx = (INDEXVAR_T)((tempd1**tPtr+tempd3)*r2dscale);
 	*hrPtr += 2.*coslut[lutIndx];
 
@@ -160,32 +163,35 @@ void mexFunction(int nlhs, mxArray *plhs[],
   for (hrPtr = hr, hiPtr = hi; hrPtr < hrPtrEnd; hrPtr++, hiPtr++){
     *hrPtr *= tempd1;
     *hiPtr *= tempd1;
-  }     
-  
+  }
+
   return;
 } /*--- end of mexFunction ---*/
 
 #undef AWKWARD_LUT_SIZE
 /*
-  DISTRIBUTION STATEMENT A. Approved for public release. 
-  Distribution is unlimited.
-  
-  This material is based upon work supported by the Defense Advanced Research 
-  Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions, 
-  findings, conclusions or recommendations expressed in this material are those 
-  of the author(s) and do not necessarily reflect the views of the Defense 
+  This material is based upon work supported by the Defense Advanced Research
+  Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+  findings, conclusions or recommendations expressed in this material are those
+  of the author(s) and do not necessarily reflect the views of the Defense
   Advanced Research Projects Agency.
-  
+
   © 2019 Massachusetts Institute of Technology.
-  
-  Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
-  
-  The software/firmware is provided to you on an As-Is basis
-  
-  Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-  Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-  U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-  DFARS 252.227-7014 as detailed above. Use of this work other than as 
-  specifically authorized by the U.S. Government may violate any copyrights 
-  that exist in this work.
+
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License version 2 as
+  published by the Free Software Foundation;
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  POSSIBILITY OF SUCH DAMAGE.
 */

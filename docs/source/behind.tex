@@ -1,24 +1,28 @@
-% DISTRIBUTION STATEMENT A. Approved for public release. 
-% Distribution is unlimited.
-%  
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
+%
 % © 2019 Massachusetts Institute of Technology.
-% 
-% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
-% 
-% The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
-% specifically authorized by the U.S. Government may violate any copyrights 
-% that exist in this work.
+%
+%
+% This program is free software; you can redistribute it and/or modify
+% it under the terms of the GNU General Public License version 2 as
+% published by the Free Software Foundation;
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
 
 \chapter{Behind the Scenes}
 
@@ -302,7 +306,7 @@ debugging purposes, the \link\ object also contains the path-loss, the
 shadow-loss, and other channel properties (see \secref{linkparams}).%
 % Much of
 %the code for creating the \link\ was taken verbatim from LLAMAComm's
-%predecessor---Cogcom. 
+%predecessor---Cogcom.
 Each \link\ is created as needed. For example, if a
 transmit module and receive module have non-overlapping bands, then no \link\
 is created between them.
@@ -377,7 +381,7 @@ The fine frequency offset is the last processing applied to the received signal 
 \begin{verbatim}
 freqOffset = (mTx.loError + mTx.loCorrection ...
             - mRx.loError - mRx.loCorrection)*fr;
-            
+
 if freqOffset ~= 0
     modulation = exp(1i*2*pi*(freqOffset/fs)...
                      *((0:size(rxsig,2)-1) + startRx));
@@ -436,24 +440,28 @@ noise samples is as follows:
 where $K \defn 1.38\times 10^{-23}$ is Boltzmann's constant, $T\defn 300$ is
 the temperature in Kelvin, $f_s$ is the simulation sample rate,  $F_{\rm ext}$ is the external noise factor, and $F_{\rm int}$ is the internal noise factor (i.e., in dB the noise figure).
 
-% DISTRIBUTION STATEMENT A. Approved for public release. 
-% Distribution is unlimited.
-%  
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
+%
 % © 2019 Massachusetts Institute of Technology.
-% 
-% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
-% 
-% The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
-% specifically authorized by the U.S. Government may violate any copyrights 
-% that exist in this work.
+%
+%
+% This program is free software; you can redistribute it and/or modify
+% it under the terms of the GNU General Public License version 2 as
+% published by the Free Software Foundation;
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.

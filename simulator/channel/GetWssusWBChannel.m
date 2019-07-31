@@ -1,8 +1,8 @@
 function channel = GetWssusWBChannel(nodeTx, modTx, nodeRx, modRx, ...
                                    propParams, pathLoss)
 
-% Function 'simulator/channel/GetWssusChannel.m':  
-% Builds channel struct which contains relevant parameters relating 
+% Function 'simulator/channel/GetWssusChannel.m':
+% Builds channel struct which contains relevant parameters relating
 % to the MIMO link.  All the taps are independent identically distributed.
 % with a certain power profile
 %
@@ -20,8 +20,6 @@ function channel = GetWssusWBChannel(nodeTx, modTx, nodeRx, modRx, ...
 %  channel          (struct) Structure containing channel parameters
 %
 
-% DISTRIBUTION STATEMENT A. Approved for public release.
-% Distribution is unlimited.
 %
 % This material is based upon work supported by the Defense Advanced Research
 % Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
@@ -31,9 +29,22 @@ function channel = GetWssusWBChannel(nodeTx, modTx, nodeRx, modRx, ...
 %
 % © 2019 Massachusetts Institute of Technology.
 %
-% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
 %
-% The software/firmware is provided to you on an As-Is basis
+% This program is free software; you can redistribute it and/or modify
+% it under the terms of the GNU General Public License version 2 as
+% published by the Free Software Foundation;
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
 %
 % Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
 % Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,
@@ -72,7 +83,7 @@ if(nR > 1 && ~isempty(modRx.rxCorrMat))
     rxCorrMat = modRx.rxCorrMat;
     errStr = corrErrCheck(rxCorrMat, nR);
     if(~isempty(errStr))
-       error(['Invalid user-defined correlation matrix for module ', modRx.name, ': ', errStr]); 
+       error(['Invalid user-defined correlation matrix for module ', modRx.name, ': ', errStr]);
     end
 else
     rxCorrMat = [];
@@ -82,7 +93,7 @@ if(nT > 1 && ~isempty(modTx.txCorrMat))
     txCorrMat = modTx.txCorrMat;
     errStr = corrErrCheck(txCorrMat, nT);
     if(~isempty(errStr))
-       error(['Invalid user-defined correlation matrix for module ', modTx.name, ': ', errStr]);  
+       error(['Invalid user-defined correlation matrix for module ', modTx.name, ': ', errStr]);
     end
 else
     txCorrMat = [];
@@ -145,7 +156,7 @@ for rLoop = 1:nR
                     chanstate.theta1 = 2*pi*rand(chanstate.M, 1);
                     chanstate.theta2 = 2*pi*rand(chanstate.M+1, 1);
                     chanstate.method = method{rLoop, tLoop, lLoop};
-                    
+
                 case 'zheng'
                     chanstate.doppf  = dopSpread/fs;
                     chanstate.M      = 8;
@@ -155,28 +166,28 @@ for rLoop = 1:nR
                     chanstate.phi    = 2*pi*rand(chanstate.M, 1);
                     chanstate.sphi   = 2*pi*rand(chanstate.M, 1);
                     chanstate.method = method{rLoop, tLoop, lLoop};
-                    
+
                 case 'randangle'
                     chanstate.doppf  = dopSpread/fs;
                     chanstate.M      = 16;
                     chanstate.alph   = 2*pi*rand(chanstate.M, 1);
                     chanstate.phi    = 2*pi*rand(chanstate.M, 1);
                     chanstate.method = method{rLoop, tLoop, lLoop};
-                    
+
                 case 'randfreq'
                     chanstate.doppf  = dopSpread/fs;
                     chanstate.M      = 16;
                     chanstate.freqs  = f*(2*rand(chanstate.M, 1) - 1);
                     chanstate.phi    = 2*pi*rand(chanstate.M, 1);
                     chanstate.method = method{rLoop, tLoop, lLoop};
-                    
+
                 case 'uniformfreq'
                     chanstate.doppf  = dopSpread/fs;
                     chanstate.M      = 15;
                     chanstate.freqs  = f*linspace(-1, 1, chanstate.M).';
                     chanstate.phi    = 2*pi*rand(chanstate.M, 1);
                     chanstate.method = method{rLoop, tLoop, lLoop};
-                    
+
                 case 'uniformfreq_nonuniformprof'
                     chanstate.doppf  = dopSpread/fs;
                     chanstate.M      = 15;
@@ -187,7 +198,7 @@ for rLoop = 1:nR
                     chanstate.prof   = 10.^(chanstate.prof/10); % Lognormal
                     chanstate.prof   = chanstate.prof/sum(chanstate.prof)*chanstate.M;
                     chanstate.method = method{rLoop, tLoop, lLoop};
-                    
+
                 case 'randfreq_nonuniformprof'
                     chanstate.doppf  = dopSpread/fs;
                     chanstate.M      = 16;
@@ -198,20 +209,20 @@ for rLoop = 1:nR
                     chanstate.prof   = 10.^(chanstate.prof/10); % Lognormal
                     chanstate.prof   = chanstate.prof/sum(chanstate.prof)*chanstate.M;
                     chanstate.method = method{rLoop, tLoop, lLoop};
-                    
+
                 case 'constant'
                     chanstate.doppf  = dopSpread/fs;
                     chanstate.coeff  = complex(randn, randn)/sqrt(2);
                     chanstate.method = method{rLoop, tLoop, lLoop};
-                    
+
                 case 'los_awgn'
                     chanstate.doppf  = dopSpread/fs;
                     chanstate.coeff  = 0;
                     chanstate.method = 'constant';
-                    
+
                 otherwise
                     error(['Unknown Doppler spread method: ', method{rLoop, tLoop}])
-                    
+
             end % END switch
             chanstates{rLoop, tLoop}(lLoop) = chanstate;
         end % END lLoop
@@ -240,7 +251,7 @@ for rxLoop = 1:nR % index Rx
         % Transmit antenna location
         txAntLoc = mic2mac(txnode.location, txnode.antLocation(txLoop, :));
         delr = norm(rxAntLoc-txAntLoc); % range between tx and rx antennas
-        
+
         phase(rxLoop, txLoop) = delr*2*pi/lam; % Phase offset
         delayMatrix(rxLoop, txLoop) = delr*fs/c; % Delay, in samples
     end
@@ -254,11 +265,11 @@ offsetDelayMatrix = delayMatrix - integerPropOffset;
 
 % Samples to account for delay difference between antennas at this node
 % Typically small,  ~ceil((nR+nT-2)/2), but really could be anything:
-nodeAntSepSamps = ceil(dmax) - floor(dmin); 
+nodeAntSepSamps = ceil(dmax) - floor(dmin);
 nDelayFiltLen = 63; % + 2*nodeAntSepSamps; % Add nodeAntSepSamps to both sides
 
 fracDelayFilter = []; % No fractional delay filter *for the node*
-                      % For this channel type fractional delay filtering is done 
+                      % For this channel type fractional delay filtering is done
                       % seperately each antenna inside processIidWBChannel
 
 % Specify Rice matrix:
@@ -289,8 +300,6 @@ if exist('fracDelayFilter', 'var')
   channel.fracDelayFilter = fracDelayFilter;
 end
 
-% DISTRIBUTION STATEMENT A. Approved for public release.
-% Distribution is unlimited.
 %
 % This material is based upon work supported by the Defense Advanced Research
 % Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
@@ -300,9 +309,22 @@ end
 %
 % © 2019 Massachusetts Institute of Technology.
 %
-% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
 %
-% The software/firmware is provided to you on an As-Is basis
+% This program is free software; you can redistribute it and/or modify
+% it under the terms of the GNU General Public License version 2 as
+% published by the Free Software Foundation;
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
 %
 % Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS
 % Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice,

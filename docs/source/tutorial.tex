@@ -1,24 +1,28 @@
-% DISTRIBUTION STATEMENT A. Approved for public release. 
-% Distribution is unlimited.
-%  
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
+%
 % © 2019 Massachusetts Institute of Technology.
-% 
-% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
-% 
-% The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
-% specifically authorized by the U.S. Government may violate any copyrights 
-% that exist in this work.
+%
+%
+% This program is free software; you can redistribute it and/or modify
+% it under the terms of the GNU General Public License version 2 as
+% published by the Free Software Foundation;
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
 \chapter{Tutorial} \label{chp:tutorial}
 
 The purpose of this chapter is to demonstrate how to use LLAMAComm
@@ -61,9 +65,9 @@ installation archive ships with several examples in \verb+user_code/examples/+.
 
 When developing radios for simulation in LLAMAComm, user code should
 be confined to a folder within \verb+user_code/+. (e.g.
-\verb+user_code/newradio/+).  
+\verb+user_code/newradio/+).
 %The only exception is the startup script
-%which must be located in \verb+llamacomm/+.  
+%which must be located in \verb+llamacomm/+.
 Code within
 \verb+simulator/+ should never be modified.
 
@@ -349,7 +353,7 @@ transmission scheme. The two controller functions are very similar;
 they are different only in that one controller starts in a transmit
 state while the other starts in a receive state.
 
-There are six files in the \verb+user_code/examples/BPSKNodes+ directory 
+There are six files in the \verb+user_code/examples/BPSKNodes+ directory
 that are
 used to implement the half-duplex radios: \verb+HD_BuildNodes.m+,
 \verb+BPSK_Receive.m+, \verb+BPSK_Transmit.m+,
@@ -373,7 +377,7 @@ all the example radios provided, these steps are incorporated into a
 \end{enumerate}
 
 Code to construct the half-duplex nodes is found in
-\verb+llamacomm/user_code/examples/BPSKNodes/HD_BuildNodes.m+.  
+\verb+llamacomm/user_code/examples/BPSKNodes/HD_BuildNodes.m+.
 Let us walk through
 the file.  The block of code listed below is the function header and
 help comments. The build functions return an array of completed node
@@ -568,7 +572,7 @@ function [nodeobj,sig] = BPSK_Transmit(nodeobj,modname,blockLen)
 
 % Function BPSK_Transmit.m:
 % This is an example of a user-written callback function for a module
-% object.  It generates or loads data to transmit. The output signal 
+% object.  It generates or loads data to transmit. The output signal
 % should be analog baseband, and can be multichannel.
 %
 % This example is a single-channel BPSK transmitter.  2x oversampled.
@@ -685,7 +689,7 @@ for \verb+BPSK_Receive+ is included below for comparison.
 function nodeobj = BPSK_Receive(nodeobj,modname,sig)
 
 % Function BPSK_Receive.m:
-% This is an example of a user-written callback function for a 
+% This is an example of a user-written callback function for a
 % receive module.  This example demodulates an analog, BPSK signal.
 %
 % This example is designed to work with BPSK_Transmit
@@ -726,7 +730,7 @@ R = toeplitz([sig(1) zeros(1,eqLen-1)], sig(1:nTrain));
 Sd = [zeros(1,eqDelay),sTrain(1:nTrain-eqDelay)];
 f = Sd*R'*inv(R*R');
 
-% equalize and extract bit estimates 
+% equalize and extract bit estimates
 nBits = p.bitLen;
 sHat = conv(sig,f);
 bits = real(sHat(eqDelay+1:nBits+eqDelay))<0;
@@ -773,17 +777,17 @@ relatively straight-forward.  The code for
 function [nodeobj,status] = HD_UserA_Controller(nodeobj)
 
 % Function HD_UserA_Controller.m:
-% Controller state machine for example Half-Duplex radio.  
-% These controllers assume that the user nodes are already synchronized.  
-% The UserA and UserB controllers are identical except that UserA starts 
-% by sending a block and UserB starts by receiving a block.  
-% The controller switches to the done state after receiving/sending a set 
+% Controller state machine for example Half-Duplex radio.
+% These controllers assume that the user nodes are already synchronized.
+% The UserA and UserB controllers are identical except that UserA starts
+% by sending a block and UserB starts by receiving a block.
+% The controller switches to the done state after receiving/sending a set
 % number of blocks.
 %
 % USAGE: [nodeobj,status] = HD_UserA_Controller(nodeobj)
 %
 % Input arguments:
-%  nodeobj    (node obj) Parent node object.  
+%  nodeobj    (node obj) Parent node object.
 %
 % Output arguments:
 %  nodeobj    (node obj) Modified copy of node object
@@ -839,7 +843,7 @@ switch currState
         nodeobj = SetModuleRequest(nodeobj,'hd_tx','transmit',p.blockLen);
         nodeobj = SetModuleRequest(nodeobj,'hd_rx','wait',p.blockLen);
         nextState = 'transmit_wait';
-        
+
     case 'transmit_wait'
         requests = CheckRequestFlags(nodeobj);
         if requests==0
@@ -854,7 +858,7 @@ switch currState
 
     case 'receive_wait'
         requests = CheckRequestFlags(nodeobj);
-        if requests==0 
+        if requests==0
             if  p.receivedBlocks>=p.nBlocksToSim
                 % Goto done
                 nodeobj = SetModuleRequest(nodeobj,'hd_tx','done');
@@ -870,12 +874,12 @@ switch currState
             % Requests pending, wait
             nextState = 'receive_wait';
         end
-        
+
     case 'done'
         % Done!
         nextState = 'done';
         status = 'done';
-                
+
     otherwise
         error(sprintf('Unknown state: %s',currState));
 end
@@ -1143,14 +1147,14 @@ switch currState
         nodeobj = SetModuleRequest(nodeobj,'fd2_rx','receive',p.blockLen);
         nodeobj = SetModuleRequest(nodeobj,'fd1_tx','wait',p.blockLen);
         nextState = 'listen_wait';
-        
+
     case 'listen_wait'
         requests = CheckRequestFlags(nodeobj);
-        if requests==0 
+        if requests==0
             % Pause for awhile
             nodeobj = SetModuleRequest(nodeobj,'fd2_rx','wait',250);
             nodeobj = SetModuleRequest(nodeobj,'fd1_tx','wait',250);
-            
+
             nextState = 'pause_wait';
         else
             % Requests pending, wait
@@ -1170,7 +1174,7 @@ switch currState
             % All requests not satisfied, wait
             nextState = 'pause_wait';
         end
-        
+
     case 'txrx_wait'
         requests = CheckRequestFlags(nodeobj);
         if requests==0
@@ -1191,12 +1195,12 @@ switch currState
             % All requests not satisfied, wait
             nextState = 'txrx_wait';
         end
-        
+
     case 'done'
         % Done!
         nextState = 'done';
         status = 'done';
-                
+
     otherwise
         error(sprintf('Unknown state: %s',currState));
 end
@@ -1249,7 +1253,7 @@ will stall if there are not enough interference samples created.
 The final nodes included in the canonical example are the Lincoln
 Laboratory MIMO nodes.  These demonstrate the simulation of a very
 basic MIMO (Multiple Input Multiple Output) communication system
-Files related to these nodes can be found in the 
+Files related to these nodes can be found in the
 \verb+user_code/examples/MIMONodes+ directory.
 This example also makes use of the special ``genie'' channel for
 quickly implementing a reverse link, and defines custom plots for
@@ -1262,10 +1266,10 @@ the timing diagram.
 \end{figure}
 
 Figure \ref{fig:llmimoNodes} shows the node structure for the LL
-MIMO nodes.% 
+MIMO nodes.%
 %The nodes are named \verb+DN+ and \verb+AN+ for
 %historical reasons.  These were the names given to the transmitter
-%and receiver, respectively, in Cogcom.  
+%and receiver, respectively, in Cogcom.
 \verb+DN+ is an acronym for ``disadvantaged node'', and \verb+AN+ stands for ``advantaged node''.  The genie channel is implemented by including genie
 modules. The genie modules are shown as octagons in the figure.
 
@@ -1284,7 +1288,7 @@ function LLMimoNodes = LLMimo_BuildNodes(range, envType)
 % Function LLMimo_BuildNodes.m:
 % Example function/script for building user nodes with common
 % transmit/receive modules and user parameters.
-% 
+%
 % USAGE: LLMimoNodes = LLMimo_BuildNodes
 %
 % Input arguments:
@@ -1760,9 +1764,9 @@ calling the \verb+Main()+ function.  The contents of the
 
 \begin{lstlisting}[name=startExample]
 % Script StartExample.m:
-% The start script sets up the MATLAB path, calls user functions 
-% to set up the simulation universe, and starts the simulation.  
-% When the simulation is complete, user-defined functions can be 
+% The start script sets up the MATLAB path, calls user functions
+% to set up the simulation universe, and starts the simulation.
+% When the simulation is complete, user-defined functions can be
 % called to analyze the results.
 %
 % This script runs the example described in the documentation:
@@ -1775,7 +1779,7 @@ calling the \verb+Main()+ function.  The contents of the
 %
 \end{lstlisting}
 \begin{lstlisting}[name=startExample,firstnumber=21]
-% Add required directories containing simulator functions 
+% Add required directories containing simulator functions
 % to the MATLAB search path
 SetupPaths;
 
@@ -1950,7 +1954,7 @@ objects created during the simulation.
 \begin{lstlisting}[numbers=none]
 >> env
 
-env = 
+env =
 
             envType: rural
           propParams.
@@ -1978,7 +1982,7 @@ Link #        From (node:module) -> To (node:module:fc)
    3.             HD_UserB:hd_tx -> HD_UserA:hd_rx:98.500 MHz
    4.          Interf_FM:ccgn_tx -> HD_UserA:hd_rx:98.500 MHz
    5.         Interf_ISM:cwgn_tx -> FD_UserB:fd1_rx:2495.000 MHz
-   6.               DN:LLmimo_tx -> AN:LLmimo_rx:850.000 MHz 
+   6.               DN:LLmimo_tx -> AN:LLmimo_rx:850.000 MHz
    7.            FD_UserB:fd2_tx -> FD_UserA:fd2_rx:1500.000 MHz
    8.            FD_UserA:fd1_tx -> FD_UserB:fd1_rx:2495.000 MHz
 \end{lstlisting}
@@ -2044,7 +2048,7 @@ object's built-in display function.
 \begin{lstlisting}[numbers=none]
 >> nodes(1)
 
-ans = 
+ans =
 
            name: HD_UserA
        location: [0 20 3]
@@ -2081,7 +2085,7 @@ useful for debugging the controller function.
 >> hd = FindNode(nodes,'HD_UserA');
 >> DisplayModule(hd,'hd_tx')
 
-modobj = 
+modobj =
 
              name: hd_tx
                fc: 98500000 Hz
@@ -2091,19 +2095,19 @@ modobj =
           loError: 0 parts
      loCorrection: 0 parts
           antType: dipole_halfWavelength
-      antPosition:     0.00     0.00     0.00 
+      antPosition:     0.00     0.00     0.00
   antPolarization: v
-       antAzimuth:     0.00 
-     antElevation:     0.00 
-                       0.00 
-     exteriorWallMaterial: none 
-     distToExteriorWall:     0.00 
-     exteriorBldgAngle:     0.00 
+       antAzimuth:     0.00
+     antElevation:     0.00
+                       0.00
+     exteriorWallMaterial: none
+     distToExteriorWall:     0.00
+     exteriorBldgAngle:     0.00
 
                  Request
               job: 'done'
       requestFlag: 0
-      blockLength: 
+      blockLength:
        blockStart: 60001
 
                  History
@@ -2142,10 +2146,10 @@ modobj =
 
                  Save file info
          filename: './save/20120323T164527/HD_UserA-hd_tx.sig'
-              fid: 
+              fid:
 
 
->> 
+>>
 \end{lstlisting}
 
 
@@ -2159,11 +2163,11 @@ printing debugging output are often very effective.
 \newcounter{enumitemp}
 After looking over the example LLAMAComm code, you might not know where to begin building your own code.  In this section, we walk you through the process of modifying the example code to build a simple receiver-only node.  This experience will help you design more complicated nodes and simulations.  Please make the changes exactly as given so the line numbers can be referred to correctly.  In many cases you can copy and paste directly from the electronic version of this document.
 
-To begin, create the directory \verb+user_code\observer+ and copy in the following files from 
-\verb+user_code\examples\InterferenceNodes+: \verb+CWGN_Controller.m+, and \verb+Ex_BuildInterference.m+.  
+To begin, create the directory \verb+user_code\observer+ and copy in the following files from
+\verb+user_code\examples\InterferenceNodes+: \verb+CWGN_Controller.m+, and \verb+Ex_BuildInterference.m+.
 In addition copy in the file \verb+BPSK_Receive.m+ from \verb+user_code\examples\BPSKNodes+ directory.
 
-In the \verb+observer+ subdirectory, 
+In the \verb+observer+ subdirectory,
 change the file names from \verb+BPSK_Receive.m+, \verb+CWGN_Controller.m+, and \verb+Ex_BuildInterference.m+ to \verb+Observer_Receive.m+, \verb+Observer_Controller.m+, and \verb+Build_Observer.m+, respectively.
 
 \subsection{Receive Callback Function}
@@ -2639,24 +2643,28 @@ Make sure you save the changes when you are finished.
 
 Now it is time to see how well you followed the above instructions!  Change the current MATLAB directory to \verb+/llamacomm/user_code/examples+ and run \verb+StartExample.m+.  If you don't have any bugs, you should see the received power displayed in a MATLAB figure and the observer node should appear at the bottom of the timing diagram.  The observer node will also be present in the node map.
 
-% DISTRIBUTION STATEMENT A. Approved for public release. 
-% Distribution is unlimited.
-%  
-% This material is based upon work supported by the Defense Advanced Research 
-% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions, 
-% findings, conclusions or recommendations expressed in this material are those 
-% of the author(s) and do not necessarily reflect the views of the Defense 
+%
+% This material is based upon work supported by the Defense Advanced Research
+% Projects Agency under Air Force Contract No. FA8702-15-D-0001. Any opinions,
+% findings, conclusions or recommendations expressed in this material are those
+% of the author(s) and do not necessarily reflect the views of the Defense
 % Advanced Research Projects Agency.
-% 
+%
 % © 2019 Massachusetts Institute of Technology.
-% 
-% Subject to FAR52.227-11 Patent Rights - Ownership by the contractor (May 2014)
-% 
-% The software/firmware is provided to you on an As-Is basis
-% 
-% Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS 
-% Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, 
-% U.S. Government rights in this work are defined by DFARS 252.227-7013 or 
-% DFARS 252.227-7014 as detailed above. Use of this work other than as 
-% specifically authorized by the U.S. Government may violate any copyrights 
-% that exist in this work.
+%
+%
+% This program is free software; you can redistribute it and/or modify
+% it under the terms of the GNU General Public License version 2 as
+% published by the Free Software Foundation;
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
