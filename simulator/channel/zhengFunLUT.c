@@ -67,7 +67,8 @@ typedef __int64 int64_t;
 #define R2D (57.295779513082323)
 
 void mexFunction(int nlhs, mxArray *plhs[],
-		 int nrhs, const mxArray *prhs[]){
+		 int nrhs, const mxArray *prhs[])
+{
 
   double f, twopif, theta;
   double *alphr, *phir, *sphir;
@@ -113,57 +114,62 @@ void mexFunction(int nlhs, mxArray *plhs[],
 #ifdef AWKWARD_LUT_SIZE
   for(alphrPtr = alphr, phirPtr = phir, sphirPtr = sphir;
       alphrPtr < alphrPtrEnd ;
-      alphrPtr++, phirPtr++, sphirPtr++){
+      alphrPtr++, phirPtr++, sphirPtr++)
+    {
 
-    lutIndx = ((INDEXVAR_T)(*alphrPtr*r2dscale))%LUTSIZE;
-    lutIndx = lutIndx<0 ? lutIndx+LUTSIZE : lutIndx;
-    tempd1 = twopif*coslut[lutIndx];
-
-    lutIndx = ((INDEXVAR_T)((*alphrPtr*R2D-90.)*STEPSIZE))%LUTSIZE;
-    lutIndx = lutIndx<0 ? lutIndx+LUTSIZE : lutIndx;
-
-    tempd2 = twopif*coslut[lutIndx];
-    tempd3 = *phirPtr;
-    tempd4 = *sphirPtr;
-
-    for(hrPtr = hr, hiPtr = hi, tPtr = t; hrPtr < hrPtrEnd; hrPtr++, hiPtr++, tPtr++) {
-      lutIndx = ((INDEXVAR_T)((tempd1**tPtr+tempd3)*r2dscale))%LUTSIZE;
+      lutIndx = ((INDEXVAR_T)(*alphrPtr*r2dscale))%LUTSIZE;
       lutIndx = lutIndx<0 ? lutIndx+LUTSIZE : lutIndx;
-      *hrPtr += 2.*coslut[lutIndx];
+      tempd1 = twopif*coslut[lutIndx];
 
-      lutIndx = ((INDEXVAR_T)((tempd2**tPtr+tempd4)*r2dscale))%LUTSIZE;
+      lutIndx = ((INDEXVAR_T)((*alphrPtr*R2D-90.)*STEPSIZE))%LUTSIZE;
       lutIndx = lutIndx<0 ? lutIndx+LUTSIZE : lutIndx;
-      *hiPtr += 2.*coslut[lutIndx];
+
+      tempd2 = twopif*coslut[lutIndx];
+      tempd3 = *phirPtr;
+      tempd4 = *sphirPtr;
+
+      for(hrPtr = hr, hiPtr = hi, tPtr = t; hrPtr < hrPtrEnd; hrPtr++, hiPtr++, tPtr++) 
+	{
+	  lutIndx = ((INDEXVAR_T)((tempd1**tPtr+tempd3)*r2dscale))%LUTSIZE;
+	  lutIndx = lutIndx<0 ? lutIndx+LUTSIZE : lutIndx;
+	  *hrPtr += 2.*coslut[lutIndx];
+
+	  lutIndx = ((INDEXVAR_T)((tempd2**tPtr+tempd4)*r2dscale))%LUTSIZE;
+	  lutIndx = lutIndx<0 ? lutIndx+LUTSIZE : lutIndx;
+	  *hiPtr += 2.*coslut[lutIndx];
+	}
     }
-  }
 
 #else
   for(alphrPtr = alphr, phirPtr = phir, sphirPtr = sphir;
       alphrPtr < alphrPtrEnd ;
-      alphrPtr++, phirPtr++, sphirPtr++){
+      alphrPtr++, phirPtr++, sphirPtr++)
+    {
 
-    lutIndx = (INDEXVAR_T)(*alphrPtr*r2dscale);
-    tempd1 = twopif*coslut[lutIndx];
-    lutIndx = (INDEXVAR_T)((*alphrPtr*R2D-90.)*STEPSIZE);
+      lutIndx = (INDEXVAR_T)(*alphrPtr*r2dscale);
+      tempd1 = twopif*coslut[lutIndx];
+      lutIndx = (INDEXVAR_T)((*alphrPtr*R2D-90.)*STEPSIZE);
 
-    tempd2 = twopif*coslut[lutIndx];
-    tempd3 = *phirPtr;
-    tempd4 = *sphirPtr;
-    for(hrPtr = hr, hiPtr = hi, tPtr = t; hrPtr < hrPtrEnd; hrPtr++, hiPtr++, tPtr++) {
+      tempd2 = twopif*coslut[lutIndx];
+      tempd3 = *phirPtr;
+      tempd4 = *sphirPtr;
+      for(hrPtr = hr, hiPtr = hi, tPtr = t; hrPtr < hrPtrEnd; hrPtr++, hiPtr++, tPtr++) 
+	{
 
-	lutIndx = (INDEXVAR_T)((tempd1**tPtr+tempd3)*r2dscale);
-	*hrPtr += 2.*coslut[lutIndx];
+	  lutIndx = (INDEXVAR_T)((tempd1**tPtr+tempd3)*r2dscale);
+	  *hrPtr += 2.*coslut[lutIndx];
 
-	lutIndx = (INDEXVAR_T)((tempd2**tPtr+tempd4)*r2dscale);
-	*hiPtr += 2.*coslut[lutIndx];
+	  lutIndx = (INDEXVAR_T)((tempd2**tPtr+tempd4)*r2dscale);
+	  *hiPtr += 2.*coslut[lutIndx];
+	}
     }
-  }
 #endif
   tempd1 = sqrt(1./(4.*m));
-  for (hrPtr = hr, hiPtr = hi; hrPtr < hrPtrEnd; hrPtr++, hiPtr++){
-    *hrPtr *= tempd1;
-    *hiPtr *= tempd1;
-  }
+  for (hrPtr = hr, hiPtr = hi; hrPtr < hrPtrEnd; hrPtr++, hiPtr++)
+    {
+      *hrPtr *= tempd1;
+      *hiPtr *= tempd1;
+    }
 
   return;
 } /*--- end of mexFunction ---*/
