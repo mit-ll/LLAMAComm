@@ -48,7 +48,7 @@ function nodeArray = CreateShadowlossNodeArray(nodes)
 % that exist in this work.
 
 % Allocate nodeArray
-nodeArray(1, length(nodes)) = struct('type','','name','','location','');
+nodeArray(1, 1:length(nodes)) = struct('type','', 'name','', 'location', '');
 
 for nodeLoop = 1:length(nodes)
 
@@ -70,7 +70,8 @@ for nodeLoop = 1:length(nodes)
     type = [transmitter receiver];
     switch [num2str(type(1)) num2str(type(2))]
         case '00'
-            % Do nothing, must be Genie only
+            % Must be Genie only
+            nodeArray(nodeLoop).type = '';
         case '10'
             nodeArray(nodeLoop).type = 'transmitter';
         case '01'
