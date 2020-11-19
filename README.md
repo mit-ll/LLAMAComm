@@ -5,7 +5,6 @@ a ratio of interest. LLAMAComm makes use of these functions and applies propagat
 radio signal waveform. It also coordinates the simulation so that multiple radios may be simultaneously simulated.
 
 ## Disclaimer
----
 
 DISTRIBUTION STATEMENT A. Approved for public release: distribution unlimited.
 
