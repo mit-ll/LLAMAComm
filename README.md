@@ -4,6 +4,11 @@ presence of interference. Users of this software create their own MATLAB functio
 a ratio of interest. LLAMAComm makes use of these functions and applies propagation models to simulate the transmission of the 
 radio signal waveform. It also coordinates the simulation so that multiple radios may be simultaneously simulated.
 
+## Citation
+
+Please use this DOI number reference, published on [Zenodo](https://zenodo.org), when citing the software:    
+[![DOI](https://zenodo.org/badge/199025692.svg)](https://zenodo.org/badge/latestdoi/199025692).    
+
 ## Disclaimer
 
 DISTRIBUTION STATEMENT A. Approved for public release: distribution unlimited.  
