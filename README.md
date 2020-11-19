@@ -6,14 +6,12 @@ radio signal waveform. It also coordinates the simulation so that multiple radio
 
 ## Disclaimer
 
-DISTRIBUTION STATEMENT A. Approved for public release: distribution unlimited.
+DISTRIBUTION STATEMENT A. Approved for public release: distribution unlimited.  
 
-<b>© 2019 MASSACHUSETTS INSTITUTE OF TECHNOLOGY</b>
+<b>© 2019 MASSACHUSETTS INSTITUTE OF TECHNOLOGY</b>  
+* Subject to FAR 52.227-11 – Patent Rights – Ownership by the Contractor (May 2014)  
+* SPDX-License-Identifier: GPL-2.0-or-later   
 
-Subject to FAR 52.227-11 – Patent Rights – Ownership by the Contractor (May 2014).
-
-This material is based upon work supported by the DARPA under Air Force Contract No. FA8702-15-D-0001. Any opinions, findings, conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of DARPA.
+This material is based upon work supported by the DARPA under Air Force Contract No. FA8702-15-D-0001. Any opinions, findings, conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of DARPA.  
 
 The software/firmware is provided to you on an As-Is basis
-
-SPDX-License-Identifier: GPL-2.0-or-later
