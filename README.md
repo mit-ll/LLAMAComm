@@ -1,4 +1,5 @@
 # LLAMAComm
+![LLAMAComm_logo_Final-sm-clear](https://user-images.githubusercontent.com/53277798/174195325-635a96de-c99f-423a-bb6d-f74e29995651.png)
 
 Lincoln Laboratory Ad-hoc Multi-input, multi-output Communication simulation tool (LLAMAComm) is a MATLAB-based software package 
 for simulating cognitive Multi-Input, Multi-Output (MIMO) communications, cognitive radios and ad-hoc radio networks in the 
